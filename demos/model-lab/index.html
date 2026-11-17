@@ -1,0 +1,775 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Model Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout: a lit stage on the left with a keyframe timeline under it; the active model's rig, controls and source on the right. */
+:root{
+  --bg:#eceef2; --panel:#ffffff; --sunk:#e2e5eb; --line:#cdd2db;
+  --fg:#151920; --dim:#5a6371;
+  --key:#b87a00; --key-soft:#b87a0026; --on-key:#1a1204;
+  --stage-hi:#fafbfc; --stage-lo:#d6dae2;
+  --grid1:#8f98a8; --grid2:#bcc3ce; --shadow:0.2;
+  --display:"Unbounded","Arial Black",system-ui,sans-serif;
+  --body:"Instrument Sans",ui-sans-serif,system-ui,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f1217; --panel:#161a21; --sunk:#0b0d11; --line:#29303b;
+  --fg:#e7eaef; --dim:#8a93a2;
+  --key:#f2b22b; --key-soft:#f2b22b22; --on-key:#1a1204;
+  --stage-hi:#1d232c; --stage-lo:#0a0c10;
+  --grid1:#3b4554; --grid2:#232a35; --shadow:0.45;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0f1217; --panel:#161a21; --sunk:#0b0d11; --line:#29303b;
+  --fg:#e7eaef; --dim:#8a93a2;
+  --key:#f2b22b; --key-soft:#f2b22b22; --on-key:#1a1204;
+  --stage-hi:#1d232c; --stage-lo:#0a0c10;
+  --grid1:#3b4554; --grid2:#232a35; --shadow:0.45;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{
+  background:var(--bg); color:var(--fg); font:15px/1.5 var(--body);
+  margin:0; padding-block:20px 48px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--key);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;display:grid;gap:16px}
+
+.top{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px}
+.top h1{font:700 22px/1.1 var(--display);letter-spacing:-.01em;margin:0}
+.top p{margin:0;color:var(--dim);max-width:62ch}
+
+.tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tab{
+  display:grid;gap:2px;text-align:left;padding:10px 12px;cursor:pointer;
+  background:var(--panel);border:1px solid var(--line);border-radius:6px;
+}
+.tab b{font:500 14px/1.2 var(--display)}
+.tab span{font:12px/1.3 var(--mono);color:var(--dim)}
+.tab[aria-selected="true"]{border-color:var(--key);box-shadow:inset 0 -3px 0 var(--key)}
+.tab:hover{border-color:var(--dim)}
+
+.grid{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:920px){.grid{grid-template-columns:minmax(0,1fr) 330px}}
+
+.stage{display:grid;gap:10px;min-width:0}
+.view{
+  position:relative;width:100%;max-width:100%;aspect-ratio:4/3;max-height:72vh;
+  border:1px solid var(--line);border-radius:8px;overflow:hidden;
+  background:radial-gradient(120% 90% at 50% 25%, var(--stage-hi), var(--stage-lo));
+}
+@media (min-width:640px){.view{aspect-ratio:16/10}}
+.view canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+.view canvas:active{cursor:grabbing}
+.hud{position:absolute;left:12px;top:10px;right:12px;display:flex;justify-content:space-between;gap:10px;pointer-events:none;font:12px/1.4 var(--mono);color:var(--dim)}
+.hud b{color:var(--fg);font-weight:500}
+.hint{position:absolute;left:12px;bottom:10px;font:12px var(--mono);color:var(--dim);pointer-events:none}
+.loading{position:absolute;inset:0;display:grid;place-content:center;color:var(--dim);font:13px var(--mono)}
+
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:7px 12px;cursor:pointer;
+  background:var(--panel);border:1px solid var(--line);border-radius:5px;font-size:14px;
+}
+.btn:hover{border-color:var(--dim)}
+.btn[aria-pressed="true"]{background:var(--key);border-color:var(--key);color:var(--on-key)}
+.btn.primary{min-width:92px;justify-content:center}
+.field{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--dim)}
+.field output{font:12px var(--mono);color:var(--fg);min-width:4ch}
+input[type=range]{accent-color:var(--key);width:120px}
+
+.timeline{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px 12px;display:grid;gap:8px}
+.tl-head{display:flex;justify-content:space-between;gap:10px;font:12px var(--mono);color:var(--dim);flex-wrap:wrap}
+.tl-head b{color:var(--fg);font-weight:500}
+.track{position:relative;height:30px;background:var(--sunk);border-radius:4px;cursor:ew-resize;touch-action:none}
+.track[aria-disabled="true"]{cursor:default}
+.ticks{position:absolute;inset:0}
+.ticks i{position:absolute;top:50%;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;background:var(--key);transform:rotate(45deg);opacity:.85}
+.ticks .note{position:absolute;inset:0;display:grid;place-content:center;font:12px var(--mono);color:var(--dim)}
+.head{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--fg);left:0}
+.head::before{content:"";position:absolute;top:-4px;left:-4px;width:10px;height:6px;background:var(--fg);border-radius:2px}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px;display:grid;gap:18px;align-content:start;min-width:0}
+.panel > *, .tab, .tl-head > *{min-width:0}
+.panel h2{font:500 16px/1.2 var(--display);margin:0}
+.panel h3{font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin:0 0 8px}
+.panel p{margin:0;color:var(--dim);font-size:14px}
+.clips{display:flex;flex-wrap:wrap;gap:6px}
+.sliders{display:grid;gap:10px}
+.sliders .field{justify-content:space-between}
+.sliders input[type=range]{flex:1;width:auto;min-width:0}
+.sliders label{min-width:64px;color:var(--fg)}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0}
+.stats div{background:var(--sunk);border-radius:5px;padding:8px 10px}
+.stats dt{font-size:12px;color:var(--dim)}
+.stats dd{margin:0;font:500 16px var(--mono);font-variant-numeric:tabular-nums}
+pre{margin:0;background:var(--sunk);border-radius:5px;padding:10px 12px;overflow-x:auto;font:12px/1.55 var(--mono);color:var(--fg)}
+pre .c{color:var(--dim)}
+.kbd{font:12px var(--mono);color:var(--dim)}
+@media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Model Lab</h1>
+    <p>Three models built entirely in code, with no model files loaded. Each one is animated a different way.</p>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Model">
+    <button class="tab" role="tab" id="tab-bolt" aria-controls="panel-bolt" aria-selected="true" data-model="bolt"><b>Bolt</b><span>jointed robot · keyframe clips</span></button>
+    <button class="tab" role="tab" id="tab-kelp" aria-controls="panel-kelp" aria-selected="false" data-model="kelp"><b>Kelp</b><span>skinned mesh · bones in code</span></button>
+    <button class="tab" role="tab" id="tab-bloom" aria-controls="panel-bloom" aria-selected="false" data-model="bloom"><b>Bloom</b><span>morph targets · blend shapes</span></button>
+  </nav>
+
+  <main class="grid">
+    <section class="stage" aria-label="Stage">
+      <div class="view" id="view">
+        <div class="loading" id="loading">Building models…</div>
+        <div class="hud"><span id="hudModel"><b>Bolt</b> · 11 joints</span><span id="hudFps">— fps</span></div>
+        <div class="hint">Drag to orbit · scroll or pinch to zoom</div>
+      </div>
+      <div class="bar">
+        <button class="btn primary" id="play" aria-pressed="true">Pause</button>
+        <label class="field" for="speed">Speed <input id="speed" type="range" min="0.1" max="2" step="0.05" value="1"><output id="speedOut">1.00×</output></label>
+        <button class="btn" id="turn" aria-pressed="false">Turntable</button>
+        <button class="btn" id="helpers" aria-pressed="false">Show rig</button>
+      </div>
+      <div class="timeline">
+        <div class="tl-head"><span>Clip <b id="tlClip">Idle</b></span><span id="tlTime">frame 0 / 120 @ 30 fps</span></div>
+        <div class="track" id="track" role="slider" tabindex="0" aria-label="Clip time" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="ticks" id="ticks"></div>
+          <div class="head" id="playhead"></div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel" id="panel-bolt" role="tabpanel" aria-labelledby="tab-bolt">
+      <div><h2>Bolt</h2><p>A robot assembled from rounded boxes and capsules. Each limb hangs off a named joint group, and every clip is a set of rotation keyframes on those joints.</p></div>
+      <div><h3>Clips</h3><div class="clips" id="boltClips"></div></div>
+      <dl class="stats" id="boltStats"></dl>
+      <div><h3>How a clip is written</h3>
+<pre><span class="c">// one track per joint, Euler keys → quaternions</span>
+rot('hipL',  T, [[-.5,0,0],[0,0,0],[.5,0,0],…]),
+rot('kneeL', T, [[.1,0,0],[.15,0,0],…,[.95,0,0]]),
+<span class="c">// switch with a 0.35 s crossfade</span>
+next.reset().play();
+current.crossFadeTo(next, 0.35, true);</pre></div>
+    </aside>
+
+    <aside class="panel" id="panel-kelp" role="tabpanel" aria-labelledby="tab-kelp" hidden>
+      <div><h2>Kelp</h2><p>Tapered cylinders bound to a chain of bones. Each vertex is weighted to the two nearest bones, and every frame a sine wave bends the chain, so the mesh flexes smoothly instead of hinging.</p></div>
+      <div class="sliders"><h3>Wave</h3>
+        <div class="field"><label for="kAmp">Sway</label><input id="kAmp" type="range" min="0" max="1" step="0.01" value="0.55"><output id="kAmpOut">0.55</output></div>
+        <div class="field"><label for="kLen">Ripple</label><input id="kLen" type="range" min="0.1" max="1.2" step="0.01" value="0.5"><output id="kLenOut">0.50</output></div>
+        <div class="field"><label for="kCurl">Curl</label><input id="kCurl" type="range" min="0" max="1" step="0.01" value="0.25"><output id="kCurlOut">0.25</output></div>
+      </div>
+      <dl class="stats" id="kelpStats"></dl>
+      <div><h3>How the skin is weighted</h3>
+<pre><span class="c">// vertex at height y → bones b and b+1</span>
+const b = Math.floor(y / segH);
+const w = (y - b * segH) / segH;
+skinIndex.push(b, b + 1, 0, 0);
+skinWeight.push(1 - w, w, 0, 0);
+<span class="c">// per frame</span>
+bone.rotation.z = sway * Math.sin(t - i * ripple);</pre></div>
+    </aside>
+
+    <aside class="panel" id="panel-bloom" role="tabpanel" aria-labelledby="tab-bloom" hidden>
+      <div><h2>Bloom</h2><p>An icosphere with three extra copies of its vertex positions stored as morph targets. A clip blends between them over six seconds. Drag a slider to take over by hand.</p></div>
+      <div class="sliders"><h3>Morph targets</h3>
+        <div class="field"><label for="mSpikes">Spikes</label><input id="mSpikes" type="range" min="0" max="1" step="0.01" value="0"><output id="mSpikesOut">0.00</output></div>
+        <div class="field"><label for="mTwist">Twist</label><input id="mTwist" type="range" min="0" max="1" step="0.01" value="0"><output id="mTwistOut">0.00</output></div>
+        <div class="field"><label for="mSquash">Squash</label><input id="mSquash" type="range" min="0" max="1" step="0.01" value="0"><output id="mSquashOut">0.00</output></div>
+        <button class="btn" id="mResume" hidden>Resume clip</button>
+      </div>
+      <dl class="stats" id="bloomStats"></dl>
+      <div><h3>How a target is made</h3>
+<pre><span class="c">// copy every vertex, displace, store</span>
+const twist = base.clone();
+twist.name = 'twist';
+<span class="c">// rotate around Y by 1.6 × height</span>
+geo.morphAttributes.position =
+  [spikes, twist, squash];
+'.morphTargetInfluences[twist]'</pre></div>
+    </aside>
+  </main>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+const $ = id => document.getElementById(id);
+const FPS = 30;
+
+/* ───────── renderer, camera, stage ───────── */
+const view = $('view');
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+view.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = 0.55;
+
+const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
+camera.position.set(4.2, 2.8, 6.6);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.target.set(0, 1.15, 0);
+controls.minDistance = 3; controls.maxDistance = 15;
+controls.maxPolarAngle = Math.PI * 0.495;
+controls.autoRotateSpeed = 1.2;
+
+const key = new THREE.DirectionalLight(0xffffff, 2.4);
+key.position.set(3.5, 7, 4.5);
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+Object.assign(key.shadow.camera, { left: -4, right: 4, top: 5, bottom: -3, near: 1, far: 20 });
+key.shadow.bias = -0.0004; key.shadow.normalBias = 0.02;
+scene.add(key);
+const rim = new THREE.DirectionalLight(0x9db8ff, 0.9);
+rim.position.set(-5, 3, -4);
+scene.add(rim);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x3a4250, 0.5));
+
+const shadowMat = new THREE.ShadowMaterial({ opacity: 0.2 });
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), shadowMat);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+let grid = null;
+function applyTheme() {
+  const cs = getComputedStyle(document.documentElement);
+  const g1 = cs.getPropertyValue('--grid1').trim() || '#888';
+  const g2 = cs.getPropertyValue('--grid2').trim() || '#bbb';
+  shadowMat.opacity = parseFloat(cs.getPropertyValue('--shadow')) || 0.2;
+  const z = grid ? grid.position.z : 0;
+  if (grid) { scene.remove(grid); grid.geometry.dispose(); grid.material.dispose(); }
+  grid = new THREE.GridHelper(20, 40, g1, g2);
+  grid.material.transparent = true; grid.material.opacity = 0.55; grid.material.depthWrite = false;
+  grid.position.set(0, 0.001, z);
+  scene.add(grid);
+}
+applyTheme();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+/* ───────── keyframe helpers ───────── */
+const _q = new THREE.Quaternion(), _e = new THREE.Euler();
+function rot(name, times, eulers) {
+  const v = [];
+  for (const [x, y, z] of eulers) { _q.setFromEuler(_e.set(x, y, z)); v.push(_q.x, _q.y, _q.z, _q.w); }
+  return new THREE.QuaternionKeyframeTrack(name + '.quaternion', times, v);
+}
+function pos(name, times, vecs) {
+  return new THREE.VectorKeyframeTrack(name + '.position', times, vecs.flat()).setInterpolation(THREE.InterpolateSmooth);
+}
+const X = a => [a, 0, 0];
+
+/* ───────── 1. Bolt: jointed robot + keyframe clips ───────── */
+const JOINTS = ['hips', 'spine', 'head', 'shoulderL', 'shoulderR', 'elbowL', 'elbowR', 'hipL', 'hipR', 'kneeL', 'kneeR'];
+
+function buildBolt() {
+  const root = new THREE.Group(); root.name = 'bolt';
+  const shell = new THREE.MeshStandardMaterial({ color: 0xdfe3ea, metalness: 0.35, roughness: 0.36 });
+  const dark  = new THREE.MeshStandardMaterial({ color: 0x2b3039, metalness: 0.55, roughness: 0.45 });
+  const glow  = new THREE.MeshStandardMaterial({ color: 0x1a1206, emissive: 0xffb21a, emissiveIntensity: 2.4 });
+  const rbox = (w, h, d) => new RoundedBoxGeometry(w, h, d, 4, Math.min(w, h, d) * 0.28);
+  const cap = (r, len) => new THREE.CapsuleGeometry(r, len, 6, 16);
+  const ball = r => new THREE.SphereGeometry(r, 24, 16);
+  const part = (geo, mat, parent, y = 0, x = 0, z = 0) => {
+    const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; parent.add(m); return m;
+  };
+  const joint = (name, parent, x, y, z) => {
+    const g = new THREE.Group(); g.name = name; g.position.set(x, y, z); parent.add(g); return g;
+  };
+
+  const hips = joint('hips', root, 0, 1.0, 0);
+  part(rbox(0.5, 0.18, 0.3), dark, hips);
+  const spine = joint('spine', hips, 0, 0.1, 0);
+  part(rbox(0.72, 0.7, 0.42), shell, spine, 0.42);
+  part(rbox(0.24, 0.08, 0.03), glow, spine, 0.56, 0, 0.21);
+  part(new THREE.CylinderGeometry(0.07, 0.08, 0.12, 16), dark, spine, 0.82);
+  const head = joint('head', spine, 0, 0.88, 0);
+  part(rbox(0.5, 0.4, 0.42), shell, head, 0.2);
+  part(rbox(0.38, 0.1, 0.04), glow, head, 0.22, 0, 0.215);
+  part(new THREE.CylinderGeometry(0.015, 0.015, 0.2, 8), dark, head, 0.48);
+  part(ball(0.045), glow, head, 0.6);
+
+  for (const [s, sx] of [['L', 1], ['R', -1]]) {
+    const sh = joint('shoulder' + s, spine, 0.46 * sx, 0.68, 0);
+    part(ball(0.11), dark, sh);
+    part(cap(0.075, 0.3), shell, sh, -0.24);
+    const el = joint('elbow' + s, sh, 0, -0.48, 0);
+    part(ball(0.08), dark, el);
+    part(cap(0.065, 0.26), shell, el, -0.2);
+    part(ball(0.09), dark, el, -0.42);
+    const hp = joint('hip' + s, hips, 0.16 * sx, -0.05, 0);
+    part(ball(0.1), dark, hp);
+    part(cap(0.085, 0.28), shell, hp, -0.22);
+    const kn = joint('knee' + s, hp, 0, -0.45, 0);
+    part(ball(0.085), dark, kn);
+    part(cap(0.075, 0.26), shell, kn, -0.2);
+    part(rbox(0.17, 0.08, 0.3), dark, kn, -0.44, 0, 0.05);
+  }
+  return root;
+}
+
+// Give every clip a track for every joint, so blends never fall back to a half-posed rest state.
+function complete(clip) {
+  const have = new Set(clip.tracks.map(t => t.name));
+  if (!have.has('hips.position')) clip.tracks.push(pos('hips', [0, clip.duration], [[0, 1, 0], [0, 1, 0]]));
+  for (const j of JOINTS) if (!have.has(j + '.quaternion')) clip.tracks.push(rot(j, [0, clip.duration], [[0, 0, 0], [0, 0, 0]]));
+  return clip;
+}
+
+function boltClips() {
+  const T = [0, 0.25, 0.5, 0.75, 1];
+  const walk = new THREE.AnimationClip('Walk', 1, [
+    pos('hips', T, [[0, 1, 0], [0, 1.04, 0], [0, 1, 0], [0, 1.04, 0], [0, 1, 0]]),
+    rot('spine', T, [[0.06, 0.12, 0], [0.06, 0, 0], [0.06, -0.12, 0], [0.06, 0, 0], [0.06, 0.12, 0]]),
+    rot('head', T, [[-0.05, -0.1, 0], [-0.05, 0, 0], [-0.05, 0.1, 0], [-0.05, 0, 0], [-0.05, -0.1, 0]]),
+    rot('hipL', T, [-0.5, 0, 0.5, 0, -0.5].map(X)),
+    rot('hipR', T, [0.5, 0, -0.5, 0, 0.5].map(X)),
+    rot('kneeL', T, [0.1, 0.15, 0.1, 0.95, 0.1].map(X)),
+    rot('kneeR', T, [0.1, 0.95, 0.1, 0.15, 0.1].map(X)),
+    rot('shoulderL', T, [0.45, 0, -0.45, 0, 0.45].map(a => [a, 0, 0.08])),
+    rot('shoulderR', T, [-0.45, 0, 0.45, 0, -0.45].map(a => [a, 0, -0.08])),
+    rot('elbowL', [0, 1], [X(-0.4), X(-0.4)]),
+    rot('elbowR', [0, 1], [X(-0.4), X(-0.4)]),
+  ]);
+
+  const Ti = [0, 1, 2, 3, 4];
+  const idle = new THREE.AnimationClip('Idle', 4, [
+    pos('hips', Ti, [[0, 1, 0], [0, 0.99, 0], [0, 0.98, 0], [0, 0.99, 0], [0, 1, 0]]),
+    rot('spine', Ti, [X(0), X(0.03), X(0.05), X(0.03), X(0)]),
+    rot('head', Ti, [[0, 0, 0], [0.06, 0.32, 0], [0, 0, 0], [0.06, -0.32, 0], [0, 0, 0]]),
+    rot('shoulderL', [0, 2, 4], [[0, 0, 0.1], [0.05, 0, 0.15], [0, 0, 0.1]]),
+    rot('shoulderR', [0, 2, 4], [[0, 0, -0.1], [0.05, 0, -0.15], [0, 0, -0.1]]),
+    rot('elbowL', [0, 2, 4], [X(-0.15), X(-0.25), X(-0.15)]),
+    rot('elbowR', [0, 2, 4], [X(-0.15), X(-0.25), X(-0.15)]),
+    rot('hipL', [0, 4], [[0, 0, 0.03], [0, 0, 0.03]]),
+    rot('hipR', [0, 4], [[0, 0, -0.03], [0, 0, -0.03]]),
+  ]);
+
+  const Tw = [0, 0.5, 1, 1.5, 2];
+  const wave = new THREE.AnimationClip('Wave', 2, [
+    pos('hips', Tw, [[0, 1, 0], [0, 0.99, 0], [0, 1, 0], [0, 0.99, 0], [0, 1, 0]]),
+    rot('spine', [0, 2], [[0, 0, 0.06], [0, 0, 0.06]]),
+    rot('head', Tw, [[0, -0.2, 0.1], [0, -0.2, 0.2], [0, -0.2, 0.1], [0, -0.2, 0.2], [0, -0.2, 0.1]]),
+    rot('shoulderR', [0, 2], [[0, 0, -2.5], [0, 0, -2.5]]),
+    rot('elbowR', Tw, [[0, 0, -0.55], [0, 0, 0.35], [0, 0, -0.55], [0, 0, 0.35], [0, 0, -0.55]]),
+    rot('shoulderL', [0, 2], [[0, 0, 0.12], [0, 0, 0.12]]),
+    rot('elbowL', [0, 2], [X(-0.2), X(-0.2)]),
+  ]);
+
+  const Tj = [0, 0.25, 0.5, 0.7, 0.95, 1.2];
+  const jump = new THREE.AnimationClip('Jump', 1.2, [
+    pos('hips', Tj, [[0, 1, 0], [0, 0.76, 0], [0, 1.6, 0], [0, 1.85, 0], [0, 0.78, 0], [0, 1, 0]]),
+    rot('spine', Tj, [0, 0.35, -0.1, 0.15, 0.35, 0].map(X)),
+    rot('head', Tj, [0, -0.25, 0.1, 0, -0.25, 0].map(X)),
+    rot('hipL', Tj, [0, -0.75, 0.15, -0.95, -0.75, 0].map(X)),
+    rot('hipR', Tj, [0, -0.75, 0.15, -0.95, -0.75, 0].map(X)),
+    rot('kneeL', Tj, [0.05, 1.5, 0.1, 1.6, 1.5, 0.05].map(X)),
+    rot('kneeR', Tj, [0.05, 1.5, 0.1, 1.6, 1.5, 0.05].map(X)),
+    rot('shoulderL', Tj, [0, 0.8, -2.9, -2.6, -0.6, 0].map(a => [a, 0, 0.12])),
+    rot('shoulderR', Tj, [0, 0.8, -2.9, -2.6, -0.6, 0].map(a => [a, 0, -0.12])),
+    rot('elbowL', Tj, [-0.2, -0.3, -0.1, -0.6, -0.4, -0.2].map(X)),
+    rot('elbowR', Tj, [-0.2, -0.3, -0.1, -0.6, -0.4, -0.2].map(X)),
+  ]);
+
+  const Td = [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+  const alt = (a, b) => Td.map((_, i) => (i % 2 ? b : a));
+  const sway = [0.12, 0, -0.12, 0, 0.12, 0, -0.12, 0, 0.12];
+  const dance = new THREE.AnimationClip('Dance', 2, [
+    pos('hips', Td, Td.map((_, i) => [sway[i], i % 2 ? 1.0 : 0.93, 0])),
+    rot('spine', Td, sway.map(s => [0.05, 0, -s])),
+    rot('head', Td, sway.map((s, i) => [i % 2 ? -0.05 : 0.12, 0, s * 1.3])),
+    rot('hipL', Td, alt(-0.32, -0.05).map(X)),
+    rot('hipR', Td, alt(-0.32, -0.05).map(X)),
+    rot('kneeL', Td, alt(0.62, 0.1).map(X)),
+    rot('kneeR', Td, alt(0.62, 0.1).map(X)),
+    rot('shoulderL', Td, alt(1.3, 2.7).map(z => [0, 0, z])),
+    rot('shoulderR', Td, alt(-1.3, -2.7).map(z => [0, 0, z])),
+    rot('elbowL', Td, alt(1.5, 0.2).map(z => [0, 0, z])),
+    rot('elbowR', Td, alt(-1.5, -0.2).map(z => [0, 0, z])),
+  ]);
+
+  return [idle, walk, wave, dance, jump].map(complete);
+}
+
+const bolt = buildBolt();
+scene.add(bolt);
+const boltMixer = new THREE.AnimationMixer(bolt);
+const boltActions = {};
+for (const clip of boltClips()) {
+  const a = boltMixer.clipAction(clip);
+  if (clip.name === 'Jump') { a.setLoop(THREE.LoopOnce, 1); a.clampWhenFinished = true; }
+  boltActions[clip.name] = a;
+}
+let boltCurrent = boltActions.Idle;
+let boltLastLoop = boltCurrent;
+boltCurrent.play();
+
+function boltPlay(name) {
+  const next = boltActions[name];
+  if (next === boltCurrent && next.isRunning() && !next.paused) return;
+  setPlaying(true);
+  next.enabled = true; next.paused = false;
+  next.reset().setEffectiveTimeScale(1).setEffectiveWeight(1).play();
+  if (boltCurrent !== next) boltCurrent.crossFadeTo(next, 0.35, true);
+  boltCurrent = next;
+  if (name !== 'Jump') boltLastLoop = next;
+  syncClipButtons();
+}
+boltMixer.addEventListener('finished', e => { if (e.action === boltActions.Jump) boltPlay(boltLastLoop.getClip().name); });
+
+const boltAxes = [];
+bolt.traverse(o => { if (JOINTS.includes(o.name)) { const h = new THREE.AxesHelper(0.18); h.visible = false; h.material.depthTest = false; h.renderOrder = 2; o.add(h); boltAxes.push(h); } });
+
+/* ───────── 2. Kelp: skinned mesh, bones driven per frame ───────── */
+function buildTentacle(height, radius, segs, base, tip) {
+  const geo = new THREE.CylinderGeometry(radius * 0.14, radius, height, 28, segs * 5, false);
+  geo.translate(0, height / 2, 0);
+  const p = geo.attributes.position, segH = height / segs;
+  const skinIndex = [], skinWeight = [], colors = [];
+  const c0 = new THREE.Color(base), c1 = new THREE.Color(tip), c = new THREE.Color();
+  for (let i = 0; i < p.count; i++) {
+    const y = THREE.MathUtils.clamp(p.getY(i), 0, height);   // float noise can dip below 0
+    const b = Math.min(Math.floor(y / segH), segs - 1);
+    const w = (y - b * segH) / segH;
+    skinIndex.push(b, b + 1, 0, 0);
+    skinWeight.push(1 - w, w, 0, 0);
+    c.lerpColors(c0, c1, Math.pow(y / height, 1.4));
+    colors.push(c.r, c.g, c.b);
+  }
+  geo.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(skinIndex, 4));
+  geo.setAttribute('skinWeight', new THREE.Float32BufferAttribute(skinWeight, 4));
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+  const bones = [];
+  for (let i = 0; i <= segs; i++) {
+    const b = new THREE.Bone();
+    b.position.y = i === 0 ? 0 : segH;
+    if (i) bones[i - 1].add(b);
+    bones.push(b);
+  }
+  const mesh = new THREE.SkinnedMesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5, metalness: 0.05 }));
+  mesh.add(bones[0]);
+  mesh.bind(new THREE.Skeleton(bones));
+  mesh.castShadow = true;
+  mesh.frustumCulled = false;
+  const bulb = new THREE.Mesh(new THREE.SphereGeometry(radius * 0.32, 20, 14),
+    new THREE.MeshStandardMaterial({ color: 0x0c1a14, emissive: 0x7dffb0, emissiveIntensity: 1.6 }));
+  bulb.position.y = radius * 0.2;
+  bones[segs].add(bulb);
+  return { mesh, bones, height, segs };
+}
+
+const kelp = new THREE.Group(); kelp.name = 'kelp';
+const tentacles = [];
+const kelpLayout = [
+  [0, 0, 3.0, 0.3, 12, 0],
+  [-1.1, -0.5, 1.9, 0.2, 9, 1.7],
+  [1.0, -0.7, 2.2, 0.22, 10, 3.1],
+  [0.7, 0.9, 1.5, 0.17, 8, 4.4],
+  [-0.8, 0.8, 1.3, 0.15, 8, 5.6],
+];
+for (const [x, z, h, r, segs, phase] of kelpLayout) {
+  const t = buildTentacle(h, r, segs, 0x123c33, 0x6fd39a);
+  t.mesh.position.set(x, 0, z);
+  t.mesh.rotation.y = phase;
+  t.phase = phase;
+  kelp.add(t.mesh);
+  tentacles.push(t);
+}
+const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.55, 0),
+  new THREE.MeshStandardMaterial({ color: 0x5d6470, roughness: 0.9, flatShading: true }));
+rock.scale.set(1.4, 0.45, 1.1); rock.position.set(0.1, 0.12, 0.1); rock.castShadow = rock.receiveShadow = true;
+kelp.add(rock);
+const kelpHelpers = tentacles.map(t => { const h = new THREE.SkeletonHelper(t.mesh); h.visible = false; scene.add(h); return h; });
+scene.add(kelp);
+const kelpParams = { amp: 0.55, ripple: 0.5, curl: 0.25, t: 0 };
+
+function updateKelp(dt) {
+  kelpParams.t += dt;
+  const { amp, ripple, curl, t } = kelpParams;
+  for (const tt of tentacles) {
+    tt.bones.forEach((b, i) => {
+      if (i === 0) return;
+      const k = i / tt.segs;
+      b.rotation.z = amp * 0.22 * Math.sin(t * 1.6 + tt.phase - i * ripple);
+      b.rotation.x = amp * 0.14 * Math.cos(t * 1.1 + tt.phase * 1.3 - i * ripple * 0.8) + curl * 0.3 * k * k;
+    });
+  }
+}
+
+/* ───────── 3. Bloom: morph targets ───────── */
+function buildBloom() {
+  const geo = new THREE.IcosahedronGeometry(0.9, 24);
+  const base = geo.attributes.position;
+  const spikes = base.clone(), twist = base.clone(), squash = base.clone();
+  const v = new THREE.Vector3(), n = new THREE.Vector3();
+  for (let i = 0; i < base.count; i++) {
+    v.fromBufferAttribute(base, i);
+    n.copy(v).normalize();
+    const s = 1 + 0.55 * Math.pow(Math.abs(Math.sin(n.x * 5) * Math.sin(n.y * 5) * Math.sin(n.z * 5)), 0.7);
+    spikes.setXYZ(i, v.x * s, v.y * s, v.z * s);
+    const a = v.y * 1.6, ca = Math.cos(a), sa = Math.sin(a);
+    const wob = 1 + 0.18 * Math.sin(n.y * 9);
+    twist.setXYZ(i, (v.x * ca - v.z * sa) * wob, v.y * 1.1, (v.x * sa + v.z * ca) * wob);
+    squash.setXYZ(i, v.x * 1.32, v.y * 0.58 - 0.3, v.z * 1.32);
+  }
+  spikes.name = 'spikes'; twist.name = 'twist'; squash.name = 'squash';
+  geo.morphAttributes.position = [spikes, twist, squash];
+  const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0x7c6cff, roughness: 0.28, metalness: 0.2, flatShading: true }));
+  mesh.updateMorphTargets();
+  mesh.castShadow = true;
+  mesh.position.y = 1.35;
+  mesh.name = 'bloom';
+  return mesh;
+}
+const bloom = buildBloom();
+scene.add(bloom);
+const bloomMixer = new THREE.AnimationMixer(bloom);
+const Tb = [0, 1, 2, 3, 4, 5, 6];
+const num = (target, vals) => new THREE.NumberKeyframeTrack(`.morphTargetInfluences[${target}]`, Tb, vals).setInterpolation(THREE.InterpolateSmooth);
+const pulse = new THREE.AnimationClip('Pulse', 6, [
+  num('spikes', [0, 1, 0.6, 0, 0, 0.2, 0]),
+  num('twist',  [0, 0, 0.5, 1, 0.4, 0, 0]),
+  num('squash', [0, 0, 0, 0.2, 1, 0.35, 0]),
+]);
+const bloomAction = bloomMixer.clipAction(pulse).play();
+const bloomWire = new THREE.Mesh(bloom.geometry, new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 0.18 }));
+bloomWire.morphTargetInfluences = bloom.morphTargetInfluences;
+bloomWire.morphTargetDictionary = bloom.morphTargetDictionary;
+bloomWire.visible = false;
+bloom.add(bloomWire);
+
+/* ───────── models registry ───────── */
+const tris = obj => { let n = 0; obj.traverse(o => { if (o.isMesh && o !== bloomWire) n += (o.geometry.index ? o.geometry.index.count : o.geometry.attributes.position.count) / 3; }); return Math.round(n); };
+const keyCount = clips => clips.reduce((s, c) => s + c.tracks.reduce((t, k) => t + k.times.length, 0), 0);
+
+const models = {
+  bolt:  { obj: bolt,  target: [0, 1.15, 0], hud: 'Bolt · 11 joints · 5 clips' },
+  kelp:  { obj: kelp,  target: [0, 1.25, 0], hud: 'Kelp · 5 skinned meshes · ' + tentacles.reduce((s, t) => s + t.bones.length, 0) + ' bones' },
+  bloom: { obj: bloom, target: [0, 1.25, 0], hud: 'Bloom · 3 morph targets' },
+};
+let active = 'bolt';
+
+function stats(el, rows) { el.innerHTML = rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join(''); }
+const boltClipList = Object.values(boltActions).map(a => a.getClip());
+stats($('boltStats'), [['Joints', JOINTS.length], ['Clips', boltClipList.length], ['Keyframes', keyCount(boltClipList)], ['Triangles', tris(bolt).toLocaleString()]]);
+stats($('kelpStats'), [['Meshes', tentacles.length], ['Bones', tentacles.reduce((s, t) => s + t.bones.length, 0)], ['Weights / vertex', 2], ['Triangles', tris(kelp).toLocaleString()]]);
+stats($('bloomStats'), [['Targets', 3], ['Vertices', bloom.geometry.attributes.position.count.toLocaleString()], ['Keyframes', keyCount([pulse])], ['Triangles', tris(bloom).toLocaleString()]]);
+
+/* ───────── UI ───────── */
+let playing = true, timeScale = 1;
+function setPlaying(on) {
+  playing = on;
+  $('play').textContent = on ? 'Pause' : 'Play';
+  $('play').setAttribute('aria-pressed', String(on));
+  if (on) { for (const a of Object.values(boltActions)) a.paused = false; if (bloomAction.enabled) bloomAction.paused = false; }
+}
+$('play').onclick = () => setPlaying(!playing);
+$('speed').oninput = e => { timeScale = +e.target.value; $('speedOut').textContent = timeScale.toFixed(2) + '×'; };
+$('turn').onclick = e => { controls.autoRotate = !controls.autoRotate; e.currentTarget.setAttribute('aria-pressed', String(controls.autoRotate)); };
+let helpersOn = false;
+$('helpers').onclick = e => {
+  helpersOn = !helpersOn;
+  e.currentTarget.setAttribute('aria-pressed', String(helpersOn));
+  syncHelpers();
+};
+function syncHelpers() {
+  boltAxes.forEach(h => h.visible = helpersOn && active === 'bolt');
+  kelpHelpers.forEach(h => h.visible = helpersOn && active === 'kelp');
+  bloomWire.visible = helpersOn && active === 'bloom';
+}
+
+const clipBox = $('boltClips');
+for (const name of ['Idle', 'Walk', 'Wave', 'Dance', 'Jump']) {
+  const b = document.createElement('button');
+  b.className = 'btn'; b.textContent = name; b.dataset.clip = name;
+  b.onclick = () => boltPlay(name);
+  clipBox.append(b);
+}
+function syncClipButtons() { for (const b of clipBox.children) b.setAttribute('aria-pressed', String(b.dataset.clip === boltCurrent.getClip().name)); }
+syncClipButtons();
+
+for (const [id, k] of [['kAmp', 'amp'], ['kLen', 'ripple'], ['kCurl', 'curl']]) {
+  $(id).oninput = e => { kelpParams[k] = +e.target.value; $(id + 'Out').textContent = (+e.target.value).toFixed(2); };
+}
+
+const morphIds = { spikes: 'mSpikes', twist: 'mTwist', squash: 'mSquash' };
+for (const [name, id] of Object.entries(morphIds)) {
+  $(id).oninput = e => {
+    if (bloomAction.enabled) { bloomAction.stop(); bloomAction.enabled = false; $('mResume').hidden = false; }
+    bloom.morphTargetInfluences[bloom.morphTargetDictionary[name]] = +e.target.value;
+  };
+}
+$('mResume').onclick = () => {
+  bloomAction.enabled = true; bloomAction.reset().play(); $('mResume').hidden = true; setPlaying(true);
+};
+
+const tabs = [...document.querySelectorAll('.tab')];
+function select(name) {
+  active = name;
+  for (const t of tabs) {
+    const on = t.dataset.model === name;
+    t.setAttribute('aria-selected', String(on));
+    t.tabIndex = on ? 0 : -1;
+    $('panel-' + t.dataset.model).hidden = !on;
+  }
+  for (const [k, m] of Object.entries(models)) m.obj.visible = k === name;
+  controls.target.set(...models[name].target);
+  $('hudModel').innerHTML = '<b>' + models[name].hud.replace(' · ', '</b> · ');
+  syncHelpers();
+  buildTicks();
+}
+tabs.forEach((t, i) => {
+  t.onclick = () => select(t.dataset.model);
+  t.onkeydown = e => {
+    const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+    if (d) { const n = tabs[(i + d + tabs.length) % tabs.length]; n.focus(); select(n.dataset.model); }
+  };
+});
+
+/* ───────── timeline ───────── */
+const track = $('track'), ticks = $('ticks'), playhead = $('playhead');
+let tickedClip = null;
+function timelineAction() {
+  if (active === 'bolt') return boltCurrent;
+  if (active === 'bloom') return bloomAction.enabled ? bloomAction : null;
+  return null;
+}
+function buildTicks() {
+  const a = timelineAction();
+  const clip = a ? a.getClip() : null;
+  tickedClip = clip;
+  track.setAttribute('aria-disabled', String(!clip));
+  if (!clip) {
+    ticks.innerHTML = `<span class="note">${active === 'kelp' ? 'Procedural: bones are set from sin() every frame, no keys' : 'Manual: sliders are driving the targets'}</span>`;
+    return;
+  }
+  const times = new Set();
+  for (const t of clip.tracks) for (const k of t.times) times.add(Math.round(k * FPS));
+  ticks.innerHTML = [...times].map(f => `<i style="left:${(f / FPS / clip.duration * 100).toFixed(2)}%"></i>`).join('');
+}
+function updateTimeline() {
+  const a = timelineAction();
+  const clip = a ? a.getClip() : null;
+  if (clip !== tickedClip) buildTicks();
+  if (!clip) {
+    playhead.style.left = ((kelpParams.t % 4) / 4 * 100) + '%';
+    playhead.style.opacity = active === 'kelp' ? '0.35' : '0';
+    $('tlClip').textContent = active === 'kelp' ? 'live' : 'manual';
+    $('tlTime').textContent = active === 'kelp' ? `t = ${kelpParams.t.toFixed(1)} s` : '';
+    return;
+  }
+  playhead.style.opacity = '1';
+  const t = Math.min(a.time, clip.duration);
+  const frames = Math.round(clip.duration * FPS);
+  playhead.style.left = (t / clip.duration * 100) + '%';
+  $('tlClip').textContent = clip.name;
+  $('tlTime').textContent = `frame ${String(Math.round(t * FPS)).padStart(3, '0')} / ${frames} @ ${FPS} fps`;
+  track.setAttribute('aria-valuenow', String(Math.round(t / clip.duration * 100)));
+}
+function scrubTo(frac) {
+  const a = timelineAction(); if (!a) return;
+  const clip = a.getClip();
+  setPlaying(false);
+  a.paused = true;
+  a.time = THREE.MathUtils.clamp(frac, 0, 1) * clip.duration;
+  (active === 'bolt' ? boltMixer : bloomMixer).update(0);
+}
+let scrubbing = false;
+const fracAt = e => { const r = track.getBoundingClientRect(); return (e.clientX - r.left) / r.width; };
+track.addEventListener('pointerdown', e => { if (!timelineAction()) return; scrubbing = true; track.setPointerCapture(e.pointerId); scrubTo(fracAt(e)); });
+track.addEventListener('pointermove', e => { if (scrubbing) scrubTo(fracAt(e)); });
+track.addEventListener('pointerup', () => { scrubbing = false; });
+track.addEventListener('keydown', e => {
+  const a = timelineAction(); if (!a) return;
+  const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+  if (!d) return;
+  e.preventDefault();
+  const clip = a.getClip();
+  scrubTo((a.time + d / FPS * (e.shiftKey ? 10 : 1)) / clip.duration);
+});
+
+/* ───────── loop ───────── */
+function resize() {
+  const w = view.clientWidth, h = view.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(view);
+resize();
+
+const clock = new THREE.Clock();
+let floorOffset = 0, fpsAcc = 0, fpsFrames = 0;
+renderer.setAnimationLoop(() => {
+  const raw = Math.min(clock.getDelta(), 1 / 20);
+  const dt = playing ? raw * timeScale : 0;
+
+  if (active === 'bolt') {
+    boltMixer.update(dt);
+    const w = boltActions.Walk.isRunning() ? boltActions.Walk.getEffectiveWeight() : 0;
+    floorOffset -= dt * 1.55 * w;
+    grid.position.z = ((floorOffset % 0.5) + 0.5) % 0.5;
+  } else {
+    grid.position.z = 0;
+  }
+  if (active === 'kelp') updateKelp(dt);
+  if (active === 'bloom') {
+    if (bloomAction.enabled) bloomMixer.update(dt);
+    bloom.rotation.y += dt * 0.35;
+    for (const [name, id] of Object.entries(morphIds)) {
+      const v = bloom.morphTargetInfluences[bloom.morphTargetDictionary[name]];
+      if (document.activeElement !== $(id)) $(id).value = v;
+      $(id + 'Out').textContent = v.toFixed(2);
+    }
+  }
+
+  controls.update(raw);
+  renderer.render(scene, camera);
+  updateTimeline();
+
+  fpsAcc += raw; fpsFrames++;
+  if (fpsAcc > 0.5) { $('hudFps').textContent = Math.round(fpsFrames / fpsAcc) + ' fps'; fpsAcc = 0; fpsFrames = 0; }
+});
+
+select('bolt');
+$('loading').remove();
+window.__lab = { boltActions, boltPlay, bloom, bloomAction, tentacles, select, get active() { return active; } };
+</script>
+</body>
+</html>
