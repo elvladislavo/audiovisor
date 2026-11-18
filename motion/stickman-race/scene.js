@@ -7,7 +7,7 @@
 //
 // POLISH TEXT (checked): Strona z 2010 · 0,8 s / 12 s (decimal comma) · Start! · META · Szybkość to podstawa
 // SHOT PLAN (scene time τ; slow motion during the run 4.15–5.2)
-//   0–2.6 boots → face crane at the start line · 2.6–4.2 wide on the grid, tags + lights
+//   0–2.6 drone swoop from high over the street down onto him at the start line · 2.6–4.2 wide on the grid, tags + lights
 //   4.2–5.0 slow-mo launch, tracking · 5.0–5.35 through the arch · 5.35–7.0 drift stop
 //   7.0–8.2 he looks back and waves · 8.2–9.6 the old car's timer hits 12 s, stalls · 9.6– neon sign
 //
@@ -36,11 +36,23 @@ export const meta = { duration: Math.floor((REMAP.out.length - 1) * REMAP.dt * 1
 
 // hero's bike: idle rev at the line → huge launch (z = ½·a·u², 30 m in 0.8 s) with a wheelie → drift-turn stop
 const ACC = 2 * FIN / (RUN * RUN), V_FIN = ACC * RUN, STOP_D = 13, STOP_K = V_FIN / STOP_D;
-function bikeState(t) {
+function bikeRaw(t) {
   if (t < T_GO) return { x: LANE_H, y: 0.55 + (t > 2.8 ? 0.01 * Math.sin(t * 40) : 0), z: 0, pitch: t > 3.9 ? -0.02 : 0, roll: 0, yaw: 0 };
   if (t < T_FIN) { const u = t - T_GO; return { x: LANE_H, y: 0.55, z: 0.5 * ACC * u * u, pitch: -0.42 * sm(0, 0.12, u) * (1 - sm(0.55, 0.8, u)), roll: 0, yaw: 0 }; }
   const u = t - T_FIN, k = 1 - Math.exp(-STOP_K * u), turn = E.inOutCubic(range(u, 0.15, 1.3));
   return { x: LANE_H + 1.2 * turn, y: 0.55, z: FIN + STOP_D * k, pitch: 0, roll: 0.35 * Math.sin(PI * range(u, 0.15, 1.3)), yaw: -PI * 0.95 * turn };
+}
+// keep the lowest wheel on the road: lift the bike's COM by however far pitch/roll push an axle down
+const _e = { x: 0, y: 0, z: 0 };
+function axleY(zw, pitch, roll) {        // world-up offset of an axle (local 0, WHEEL_R-0.55, zw) under YXZ rotation (yaw doesn't change height)
+  const y0 = WHEEL_R - 0.55, y1 = y0 * Math.cos(pitch) - zw * Math.sin(pitch);
+  return y1 * Math.cos(roll);
+}
+function bikeState(t) {
+  const s = bikeRaw(t);
+  const lowest = Math.min(axleY(WHEEL_Z, s.pitch, s.roll), axleY(-WHEEL_Z, s.pitch, s.roll));
+  const ground = WHEEL_R * Math.cos(s.roll) - lowest + (s.y - 0.55);   // keep the rev wobble
+  return { ...s, y: ground };
 }
 // old car: sputters off the line and crawls, stalls at T_STALL
 function carState(t) {
@@ -318,8 +330,11 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
   const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
   const shoe = V3(0, 0, 0), headW = V3(0, 0, 0), com = V3(0, 0, 0), carC = V3(0, 0, 0);
   const SHOTS = [
-    [0, 2.6, t => { const u = E.inOutCubic(range(t, 0.15, 2.4)), look = shoe.clone().lerp(headW, u);
-      return { pos: look.clone().add(V3(lerp(1.05, 1.15, u), lerp(0.12, 0.15, u), lerp(-0.05, 0.95, u))), look }; }],
+    [0, 2.6, t => { const u = E.inOutCubic(range(t, 0, 2.5)), a = lerp(-2.6, 0.9, u), r = lerp(15, 3.1, u);   // drone swoop: high over the street → down and round to him
+      const pos = V3(LANE_H + Math.sin(a) * r, lerp(21, 1.75, E.inOutQuad(range(t, 0, 2.4))), Math.cos(a) * r);
+      const k = E.inOutCubic(range(t, 0.35, 1.5)), arch = V3(-0.6, 3.5, FIN);                     // look: arch → him, early in the dive
+      const look = arch.lerp(headW.clone().add(V3(0, -0.1, 0)), k);
+      return { pos, look }; }],
     [2.6, 4.2, t => ({ pos: V3(lerp(4.6, 4.0, range(t, 2.6, 4.2)), 2.0, -6.2), look: V3(-0.6, 1.5, 3.5) })],
     [4.2, 5.0, t => ({ pos: com.clone().add(V3(2.8, 0.25, 3.4)), look: com.clone().add(V3(0, 0.25, 0.8)) })],
     [5.0, 5.4, t => ({ pos: V3(4.2, 1.1, FIN - 8.5), look: V3(0.2, 2.9, FIN) })],
