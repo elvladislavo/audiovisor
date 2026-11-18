@@ -3,7 +3,7 @@
 // for a moment, opens his parachute, then cuts away just above the ground and "lags" in mid-air
 // windmilling his arms and pedalling his legs like a GTA San Andreas fall, before slamming into
 // the snow. The picture drains to grey, the camera rises and slowly circles the body, and
-// "elvladislavo.com" fades in, in white gothic letters with a black outline.
+// "elvladislavo.com" fades in, in white Fruktur (artsy fraktur) letters with a black outline.
 //
 // SHOT PLAN (s)        0.0–1.0 summit, step to the edge, crouch · 1.0–2.3 front flip
 //                      2.3–3.6 belly-down "flying" · 3.4–4.6 pull, canopy opens
@@ -139,7 +139,8 @@ const ZERO = [0, 0, 0];
 export async function setup({ THREE, renderer, scene, camera, width, height, asset }) {
   let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   renderer.toneMappingExposure = 1.05;
-  camera.fov = 40; camera.far = 3000; camera.updateProjectionMatrix();
+  const portrait = height > width;
+  camera.fov = portrait ? 55 : 40; camera.far = 3000; camera.updateProjectionMatrix();
 
   // sky gradient + haze
   {
@@ -376,19 +377,23 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
   composer.addPass(grade);
   composer.addPass(new OutputPass());
 
-  const font = new FontFace('Wasted', `url(${asset('PirataOne.ttf')})`);
+  const font = new FontFace('Wasted', `url(${asset('Fruktur.ttf')})`);
   await font.load(); document.fonts.add(font);
-  const tc = document.createElement('canvas'); tc.width = 2048; tc.height = 400;
+  // title: one line in landscape; stacked "elvladislavo" / ".com" in portrait so it can be much bigger
+  const LINES_TXT = portrait ? ['elvladislavo', '.com'] : ['elvladislavo.com'];
+  const LINE_H = 330, tc = document.createElement('canvas'); tc.width = 2048; tc.height = 120 + LINE_H * LINES_TXT.length;
   { const g = tc.getContext('2d');
-    g.translate(1024, 205);
-    g.font = '250px Wasted';                          // Pirata One: gothic but clean enough to read at a glance
+    g.font = '300px Wasted';                          // Fruktur: bold slanted fraktur, artsy but readable
     g.textAlign = 'center'; g.textBaseline = 'middle';
-    const fit = Math.min(1, 1880 / g.measureText('elvladislavo.com').width); g.scale(fit, fit);
-    g.lineJoin = 'round'; g.lineWidth = 34; g.strokeStyle = '#050505'; g.strokeText('elvladislavo.com', 0, 0);
-    g.fillStyle = '#f4f4f2'; g.fillText('elvladislavo.com', 0, 0); }
+    const fit = Math.min(330 / 260, 1860 / Math.max(...LINES_TXT.map(l => g.measureText(l).width)));   // fill the width, capped by line height
+    LINES_TXT.forEach((line, k) => {
+      g.save(); g.translate(1024, 60 + LINE_H * (k + 0.5)); g.scale(fit, fit);
+      g.lineJoin = 'round'; g.lineWidth = 40; g.strokeStyle = '#050505'; g.strokeText(line, 0, 0);
+      g.fillStyle = '#f4f4f2'; g.fillText(line, 0, 0); g.restore();
+    }); }
   const titleTex = new THREE.CanvasTexture(tc); titleTex.colorSpace = THREE.SRGBColorSpace;
   const overlay = new THREE.Scene(), ortho = new THREE.OrthographicCamera(-width / 2, width / 2, height / 2, -height / 2, -1, 1);
-  const tw = width * 0.9, title = new THREE.Mesh(new THREE.PlaneGeometry(tw, tw * 400 / 2048), new THREE.MeshBasicMaterial({ map: titleTex, transparent: true, toneMapped: false, opacity: 0 }));
+  const tw = width * (portrait ? 0.94 : 0.9), title = new THREE.Mesh(new THREE.PlaneGeometry(tw, tw * tc.height / 2048), new THREE.MeshBasicMaterial({ map: titleTex, transparent: true, toneMapped: false, opacity: 0 }));
   overlay.add(title);
 
   // check the jump clears the mountain slope
@@ -520,7 +525,7 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
       grade.uniforms.sat.value = 1 - 0.92 * g;
       grade.uniforms.bright.value = 1 - 0.12 * g;
       title.material.opacity = sm(T_TITLE, T_TITLE + 0.7, t);
-      title.position.y = -height * 0.02;
+      title.position.y = -height * (portrait ? 0.04 : 0.02);
     },
     render() {
       composer.render();
