@@ -282,6 +282,13 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
     if (z > 0.1) continue;
     curls.push([new THREE.Vector3(x, 0.35 + 0.1 * (1 - rr / 0.14) + rnd() * 0.035, z), 0.045 + rnd() * 0.025, M.hair]);
   }
+  // hair: curly bangs across the forehead, stopping just above the eyes
+  for (let i = 0; i < 24; i++) {                                    // 3 rows, the top one merging into the crown
+    const x = -0.095 + (i % 8) * 0.027 + (rnd() - 0.5) * 0.01, row = Math.floor(i / 8);
+    const y = [0.258, 0.288, 0.316][row] - Math.abs(x) * 0.25 + rnd() * 0.008;
+    const zz = Math.sqrt(Math.max(0, 0.15 * 0.15 - x * x - (y - 0.15) * (y - 0.15))) + 0.012;
+    curls.push([new THREE.Vector3(x, y, zz), 0.026 + rnd() * 0.01, M.hair]);
+  }
   // hair: the mullet — long curly business at the back down past the shoulders
   for (let i = 0; i < 40; i++) {
     const y = 0.14 - rnd() * 0.36, spread = 0.12 - Math.max(0, -y) * 0.12;
