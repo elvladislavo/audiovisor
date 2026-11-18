@@ -101,6 +101,11 @@ input[type=range]{accent-color:var(--accent);width:120px}
     <label class="field" for="speed">Speed <input id="speed" type="range" min="0.1" max="1.5" step="0.05" value="1"><output id="speedOut">1.00×</output></label>
     <button class="btn" id="cam" aria-pressed="true">Cinematic camera</button>
     <button class="btn" id="loop" aria-pressed="true">Loop</button>
+    <label class="btn" for="faceFile">Use my face</label>
+    <input id="faceFile" type="file" accept="image/*" hidden>
+    <label class="field" for="faceZoom" id="faceZoomWrap" hidden>Face zoom <input id="faceZoom" type="range" min="1" max="2.5" step="0.05" value="1.3"></label>
+    <button class="btn" id="faceOff" hidden>Remove face</button>
+    <span class="field" id="faceNote">Your photo stays in this browser and is never uploaded.</span>
   </div>
 
   <div class="timeline">
@@ -229,7 +234,7 @@ const P = {
   },
   flare: pose({ spine: [0.1, 0, 0], head: [0.25, 0, 0], hipL: [-0.55, 0, 0.05], hipR: [-0.55, 0, -0.05], kneeL: [0.45, 0, 0], kneeR: [0.45, 0, 0], shoulderL: [-0.6, 0, 0.9], shoulderR: [-0.6, 0, -0.9], elbowL: [-0.8, 0, 0], elbowR: [-0.8, 0, 0] }),
   land: pose({ hipsY: 0.76, spine: [0.4, 0, 0], head: [-0.3, 0, 0], hipL: [-0.9, 0, 0.08], hipR: [-0.9, 0, -0.08], kneeL: [1.5, 0, 0], kneeR: [1.5, 0, 0], shoulderL: [-0.7, 0, 0.35], shoulderR: [-0.7, 0, -0.35], elbowL: [-0.5, 0, 0], elbowR: [-0.5, 0, 0] }),
-  wave: t => ({ head: [0.05, -0.2, 0.15], spine: [0, 0, 0.06], shoulderL: [0, 0, 0.12], shoulderR: [0, 0, -2.5], elbowL: [-0.2, 0, 0], elbowR: [0, 0, -0.55 + 0.9 * (0.5 + 0.5 * Math.sin(t * 7))] }),
+  wave: t => ({ head: [0.02, 0, 0.08], spine: [0, 0, 0.06], shoulderL: [0, 0, 0.12], shoulderR: [0, 0, -2.5], elbowL: [-0.2, 0, 0], elbowR: [0, 0, -0.55 + 0.9 * (0.5 + 0.5 * Math.sin(t * 7))] }),
 };
 const KEYS = [
   [0, P.stand], [0.35, P.stand], [0.6, P.run], [1.42, P.run], [1.58, P.crouch], [1.74, P.extend], [1.92, P.tuck], [2.75, P.tuck],
@@ -388,7 +393,8 @@ system.add(body);
 scene.add(system);
 
 const joints = {};
-let pack, handR;
+let pack, handR, headJoint;
+const faceBits = [];
 {
   // 3-step toon ramp: flat bands of light instead of realistic shading
   const ramp = new THREE.DataTexture(new Uint8Array([90, 90, 90, 255, 175, 175, 175, 255, 255, 255, 255, 255]), 3, 1);
@@ -417,14 +423,15 @@ let pack, handR;
   part(new THREE.CylinderGeometry(0.05, 0.055, 0.08, 12), skin, spine, 0.53);  // neck
 
   const head = joint('head', spine, 0, 0.58, 0);
+  headJoint = head;
   part(ball(0.13), skin, head, 0.13, 0, 0, 1, 1.12, 1.02);                      // face
   part(ball(0.142, 0), helmet, head, 0.17, 0, -0.01, 1, 1, 1.05).geometry = new THREE.SphereGeometry(0.142, 22, 12, 0, Math.PI * 2, 0, 1.75);
   part(new THREE.TorusGeometry(0.135, 0.022, 8, 28), dark, head, 0.2, 0, 0.0, 1, 1, 1.05).rotation.x = Math.PI / 2 - 0.25; // goggle strap
   part(new THREE.BoxGeometry(0.17, 0.055, 0.04), lens, head, 0.205, 0, 0.13);   // goggles on the forehead
-  part(ball(0.017), dark, head, 0.125, 0.045, 0.125);                           // eyes
-  part(ball(0.017), dark, head, 0.125, -0.045, 0.125);
-  part(ball(0.022), skin, head, 0.09, 0, 0.14);                                // nose
-  part(new THREE.TorusGeometry(0.03, 0.007, 6, 12, Math.PI), dark, head, 0.05, 0, 0.122).rotation.z = Math.PI; // smile
+  faceBits.push(part(ball(0.017), dark, head, 0.125, 0.045, 0.125));            // eyes
+  faceBits.push(part(ball(0.017), dark, head, 0.125, -0.045, 0.125));
+  faceBits.push(part(ball(0.022), skin, head, 0.09, 0, 0.14));                              // nose
+  { const m = part(new THREE.TorusGeometry(0.03, 0.007, 6, 12, Math.PI), dark, head, 0.05, 0, 0.122); m.rotation.z = Math.PI; faceBits.push(m); } // smile
   part(ball(0.028), skin, head, 0.13, 0.13, 0);                                // ears
   part(ball(0.028), skin, head, 0.13, -0.13, 0);
   part(ball(0.05), hair, head, 0.06, 0, -0.1, 1.6, 0.9, 0.8);                  // hair at the nape
@@ -596,7 +603,8 @@ const CAM = [
   [9.5, [13, 4, 13], [0, 3.2, 0]],
   [T_LAND - 1.2, [8, 1.4, 11], [0, 2, 0]],
   [T_LAND + 1.2, [4.5, 1.0, 7.5], [0, 0.6, 0]],
-  [T_END, [3.2, 0.7, 5.6], [0, 0.6, 0]],
+  [T_LAND + 2.2, [2.6, 0.8, 4.4], [0, 0.7, 0]],
+  [T_END, [0.2, 0.82, 2.1], [0, 0.8, 0]],      // close-up on the face
 ];
 const camOff = new THREE.Vector3(), camLook = new THREE.Vector3();
 function cinematic(t) {
@@ -686,6 +694,48 @@ renderer.setAnimationLoop(() => {
   renderer.render(scene, camera);
   hud();
 });
+
+/* ───────── your face: a photo mapped onto the front of the head ───────── */
+const facePatch = (() => {
+  const geo = new THREE.SphereGeometry(0.1338, 32, 24, Math.PI / 2 - 0.95, 1.9, 0.95, 1.3);   // starts just under the helmet rim
+  const uv = geo.attributes.uv; let u0 = 1, u1 = 0, v0 = 1, v1 = 0;
+  for (let i = 0; i < uv.count; i++) { u0 = Math.min(u0, uv.getX(i)); u1 = Math.max(u1, uv.getX(i)); v0 = Math.min(v0, uv.getY(i)); v1 = Math.max(v1, uv.getY(i)); }
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, (uv.getX(i) - u0) / (u1 - u0), (uv.getY(i) - v0) / (v1 - v0));
+  const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ transparent: true }));
+  m.position.y = 0.13; m.scale.set(1, 1.12, 1.02); m.visible = false;
+  headJoint.add(m);
+  return m;
+})();
+let faceImg = null;
+function drawFace() {
+  if (!faceImg) return;
+  const N = 512, c = document.createElement('canvas'); c.width = c.height = N;
+  const g = c.getContext('2d'), zoom = +$('faceZoom').value;
+  const side = Math.min(faceImg.width, faceImg.height) / zoom;
+  const sx = (faceImg.width - side) / 2, sy = Math.max(0, (faceImg.height - side) / 2 - side * 0.08);
+  g.drawImage(faceImg, sx, sy, side, side, 0, 0, N, N);
+  // feather the edge into an oval so it blends with the cartoon head
+  g.globalCompositeOperation = 'destination-in';
+  const gr = g.createRadialGradient(N / 2, N / 2, N * 0.3, N / 2, N / 2, N * 0.5);
+  gr.addColorStop(0, '#000'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, N, N);
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+  facePatch.material.map?.dispose();
+  facePatch.material.map = tex; facePatch.material.needsUpdate = true;
+}
+function setFace(on) {
+  facePatch.visible = on; faceBits.forEach(b => b.visible = !on);
+  $('faceZoomWrap').hidden = $('faceOff').hidden = !on;
+}
+$('faceFile').onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const url = URL.createObjectURL(f), img = new Image();
+  img.onload = () => { faceImg = img; drawFace(); setFace(true); URL.revokeObjectURL(url); $('faceNote').textContent = 'Face added. Watch the run-up or the landing for a close look.'; };
+  img.onerror = () => { $('faceNote').textContent = "That file couldn't be read as an image. Try a JPG or PNG."; };
+  img.src = url; e.target.value = '';
+};
+$('faceZoom').oninput = drawFace;
+$('faceOff').onclick = () => { setFace(false); faceImg = null; $('faceNote').textContent = 'Your photo stays in this browser and is never uploaded.'; };
 
 window.__jump = { get t() { return t; }, set t(v) { t = v; }, H, T_LAND, T_END, M, canopy, canopyMesh, body, setPlaying };
 </script>
