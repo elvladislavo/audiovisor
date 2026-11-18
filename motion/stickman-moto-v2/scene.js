@@ -7,9 +7,9 @@
 // POLISH TEXT (checked): Projektowanie stron www · Responsywny design · Szybkie ładowanie ·
 //   Pozycjonowanie SEO · Błąd serwera · Stara strona
 // SHOT PLAN (scene time τ; slow motion around the grab and from the walk onward)
-//   0–3.2 boots → face crane · 3.2–6.45 tracking past the billboards · 6.6 hit · flip, grab (slow-mo)
-//   ~8.0 lands on his feet · 8.6–9.2 sunglasses on · 9.3– slow-mo walk toward camera · 9.9 BOOM behind him
-//   10.8– B&W, title rises from the smoke
+//   0–3.2 boots → face crane · 3.2–8.8 four held billboard shots (1.4 s each) as he rides past
+//   9.4 hit · flip, grab (slow-mo) · ~10.8 lands on his feet · 11.4–12 sunglasses on
+//   12.1– slow-mo walk toward camera · 12.75 BOOM behind him · 13.6– B&W, title rises from the smoke
 //
 // Render: node .claude/skills/text-to-3d-motion/scripts/render.mjs motion/stickman-moto-v2/scene.js --width 1080 --height 1920 --out moto-v2.mp4
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
@@ -26,14 +26,18 @@ const lerp = (a, b, k) => a + (b - a) * k;
 const sm = (a, b, x) => { const u = Math.min(1, Math.max(0, (x - a) / (b - a))); return u * u * (3 - 2 * u); };
 
 /* ───────────── timing & motion ───────────── */
-const V = 15, T_HIT = 6.6, Z_HIT = V * T_HIT;
+// four held billboard shots of 1.4 s each between the opening crane and the crash
+const BOARD_T0 = 3.2, BOARD_DT = 1.4, N_BOARDS = 4;
+const V = 15, T_HIT = BOARD_T0 + BOARD_DT * N_BOARDS + 0.6, Z_HIT = V * T_HIT, SHIFT = T_HIT - 6.6;
+const boardZ = n => V * (BOARD_T0 + BOARD_DT * (n + 0.62));          // he passes each sign just after mid-shot
+const boardCam = n => [4.0, 1.8, boardZ(n) + 16];
 const RV = { y: 7.0, z: 8.5 }, FEET0 = 0.03;                                      // launch off the bike
 const T_LAND = T_HIT + (RV.y + Math.sqrt(RV.y * RV.y + 2 * 9.81 * FEET0)) / 9.81;
 const R0Z = Z_HIT - 0.22, Z_LAND = R0Z + RV.z * (T_LAND - T_HIT);
-const T_GRAB = T_HIT + 0.85, T_GLASSES = 8.95, T_WALK = 9.35, WALK_V = 1.25;
-const T_BOOM = 9.95, T_TITLE = T_BOOM + 0.9, T_END = T_BOOM + 3.9;
+const T_GRAB = T_HIT + 0.85, T_GLASSES = 8.95 + SHIFT, T_WALK = 9.35 + SHIFT, WALK_V = 1.25;
+const T_BOOM = 9.95 + SHIFT, T_TITLE = T_BOOM + 0.9, T_END = T_BOOM + 3.9;
 // time remap: slow motion around the grab, then from the walk to the end
-const rate = tau => 1 - Math.max(0.55 * sm(T_GRAB - 0.3, T_GRAB - 0.1, tau) * (1 - sm(T_GRAB + 0.1, T_GRAB + 0.3, tau)), 0.6 * sm(9.0, 9.4, tau));
+const rate = tau => 1 - Math.max(0.55 * sm(T_GRAB - 0.3, T_GRAB - 0.1, tau) * (1 - sm(T_GRAB + 0.1, T_GRAB + 0.3, tau)), 0.6 * sm(9.0 + SHIFT, 9.4 + SHIFT, tau));
 const REMAP = (() => { const out = [0]; let tau = 0; const dt = 1 / 600; while (tau < T_END) { tau += rate(tau) * dt; out.push(tau); } return { out, dt }; })();
 const tauAt = t => { const f = t / REMAP.dt, i = Math.min(REMAP.out.length - 2, Math.floor(f)); return lerp(REMAP.out[i], REMAP.out[i + 1], f - i); };
 const REAL_END = (REMAP.out.length - 1) * REMAP.dt;
@@ -158,12 +162,14 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
   };
   for (let i = 0; i < 70; i++) {
     const side = rnd() < 0.5 ? -1 : 1, z = -30 + rnd() * 260, x = side * (4.5 + rnd() * 35);
+    if ([0, 1, 2, 3].some(n => z > boardZ(n) - 6 && z < boardZ(n) + 12 && x > -11 && x < 8)) continue;
     if ((Math.abs(z - BOOM.z) < 8 && Math.abs(x) < 9) || (Math.abs(x) < 11 && z > Z_HIT - 12 && z < Z_HIT + 45)) continue;   // keep the crash cameras clear
     const c = cactus(); c.position.set(x, 0, z); c.rotation.y = rnd() * 6; scene.add(c);
   }
   for (let i = 0; i < 90; i++) {
     const side = rnd() < 0.5 ? -1 : 1, r = 0.2 + rnd() * 0.9, rx = side * (3 + rnd() * 30), rz = -30 + rnd() * 260;
     if (Math.abs(rx) < 11 && rz > Z_HIT - 12 && rz < Z_HIT + 45) continue;
+    if ([0, 1, 2, 3].some(n => rz > boardZ(n) - 6 && rz < boardZ(n) + 12 && rx > -11 && rx < 8)) continue;
     const m = new THREE.Mesh(new THREE.DodecahedronGeometry(r, 0), rockMat);
     m.position.set(rx, r * 0.4, rz); m.rotation.set(rnd() * 3, rnd() * 3, 0); m.castShadow = true; scene.add(m);
   }
@@ -309,7 +315,7 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
 
   /* ── web-design context: billboards, tags, sunglasses ── */
   const tagFont = new FontFace('Tag', `url(${asset('ArchivoBlack.ttf')})`); await tagFont.load(); document.fonts.add(tagFont);
-  const BOARDS = [[-7.2, 44, 'Projektowanie', 'stron www'], [7.4, 58, 'Responsywny', 'design'], [-7.0, 72, 'Szybkie', 'ładowanie'], [-7.4, 86, 'Pozycjonowanie', 'SEO']];
+  const BOARDS = [['Projektowanie', 'stron www'], ['Responsywny', 'design'], ['Szybkie', 'ładowanie'], ['Pozycjonowanie', 'SEO']].map(([a, b], n) => [-4.5, boardZ(n), a, b]);
   BOARDS.forEach(([x, z, l1, l2], n) => {
     const c = document.createElement('canvas'); c.width = 1024; c.height = 512; const g = c.getContext('2d');
     g.fillStyle = '#14213d'; g.fillRect(0, 0, 1024, 512); g.strokeStyle = '#ffc23d'; g.lineWidth = 22; g.strokeRect(11, 11, 1002, 490);
@@ -319,7 +325,7 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
     }
     g.font = '44px Tag'; g.fillStyle = '#9fb3d9'; g.fillText('elvladislavo.com', 512, 440);
     const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; tx.anisotropy = 8;
-    const board = new THREE.Group(); board.position.set(x, 0, z); board.rotation.y = (x < 0 ? 1 : -1) * (Math.PI / 2 - 0.55); scene.add(board);
+    const board = new THREE.Group(); board.position.set(x, 0, z); board.rotation.y = Math.atan2(boardCam(n)[0] - x, boardCam(n)[2] - z); scene.add(board);   // faces its camera
     const panel = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 2.6), new THREE.MeshLambertMaterial({ map: tx })); panel.position.y = 4.1; board.add(panel);
     const back = new THREE.Mesh(new THREE.BoxGeometry(5.4, 2.8, 0.12), new THREE.MeshLambertMaterial({ color: 0x2a2a2e })); back.position.set(0, 4.1, -0.08); back.castShadow = true; board.add(back);
     for (const px of [-1.8, 1.8]) { const post = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 3.0, 8), new THREE.MeshLambertMaterial({ color: 0x3a3a40 })); post.position.set(px, 1.4, -0.12); post.castShadow = true; board.add(post); }
@@ -380,15 +386,16 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
       const look = shoe.clone().lerp(headW, u);
       return { pos: look.clone().add(new THREE.Vector3(lerp(1.05, 1.15, u), lerp(0.12, 0.15, u), lerp(-0.05, 0.95, u))), look };
     }],
-    [3.2, 4.9, t => ({ pos: com.clone().add(new THREE.Vector3(2.4, -0.4 + 0.2 * range(t, 3.2, 4.9), 5.0)), look: com.clone().add(new THREE.Vector3(0, -0.1, 0)) })],
-    [4.9, 6.45, t => { const a = lerp(1.35, 2.1, range(t, 4.9, 6.45));
-      return { pos: com.clone().add(new THREE.Vector3(Math.sin(a) * 6, 0.9, Math.cos(a) * 6)), look: com.clone().add(new THREE.Vector3(0, -0.2, -0.8)) }; }],
-    [6.45, 8.15, t => ({ pos: com.clone().add(new THREE.Vector3(6.2, 0.4, 1.4)), look: com.clone().add(new THREE.Vector3(0, 0.1, 0.3)) })],
-    [8.15, 9.3, t => ({ pos: new THREE.Vector3(0.7, 1.45, Z_LAND + 2.6), look: headW.clone().add(new THREE.Vector3(0, -0.45, 0)) })],
-    [9.3, T_END + 1, t => { const u = ease.inOutCubic(range(t, 9.3, T_END)), rz = com.z;
+    ...Array.from({ length: N_BOARDS }, (_, n) => [BOARD_T0 + BOARD_DT * n, BOARD_T0 + BOARD_DT * (n + 1), t => {   // held shot on billboard n as he rides past
+      const c = boardCam(n), u = range(t, BOARD_T0 + BOARD_DT * n, BOARD_T0 + BOARD_DT * (n + 1));
+      return { pos: new THREE.Vector3(c[0] - 0.4 * u, c[1], c[2]), look: new THREE.Vector3(-3.5, 2.5, boardZ(n) + 0.5) }; }]),
+    [BOARD_T0 + BOARD_DT * N_BOARDS, T_HIT - 0.15, t => ({ pos: com.clone().add(new THREE.Vector3(2.4, -0.3, 5.0)), look: com.clone().add(new THREE.Vector3(0, -0.1, 0)) })],
+    [T_HIT - 0.15, 8.15 + SHIFT, t => ({ pos: com.clone().add(new THREE.Vector3(6.2, 0.4, 1.4)), look: com.clone().add(new THREE.Vector3(0, 0.1, 0.3)) })],
+    [8.15 + SHIFT, 9.3 + SHIFT, t => ({ pos: new THREE.Vector3(0.7, 1.45, Z_LAND + 2.6), look: headW.clone().add(new THREE.Vector3(0, -0.45, 0)) })],
+    [9.3 + SHIFT, T_END + 1, t => { const u = ease.inOutCubic(range(t, 9.3 + SHIFT, T_END)), rz = com.z;
       return { pos: new THREE.Vector3(lerp(0.75, 0.5, u), lerp(1.25, 1.0, u), rz + lerp(3.0, 4.6, u)), look: new THREE.Vector3(0, lerp(1.45, 3.1, u), rz - 4) }; }],
   ];
-  const BLEND = 0.35;
+  const BLEND = 0.18;
 
   // two-bone IK: put each hand on its grip (shoulder → elbow 0.30, elbow → hand 0.29)
   const L1 = 0.3, L2 = 0.29, ik = { d: new THREE.Vector3(), u: new THREE.Vector3(), n: new THREE.Vector3(), f: new THREE.Vector3(),
@@ -553,7 +560,7 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
 
       /* Polish tags: the rock that wrecks him, then the old website that blows up */
       const rockP = new THREE.Vector3(0, 1.15, Z_HIT + WHEEL_Z + 0.35);
-      const visR = fitTag(rockTag, rockP, 0.55); rockTag.material.opacity = sm(5.3, 5.6, t) * (1 - sm(T_HIT + 0.5, T_HIT + 0.8, t)) * visR;
+      const visR = fitTag(rockTag, rockP, 0.55); rockTag.material.opacity = sm(T_HIT - 1.3, T_HIT - 1.0, t) * (1 - sm(T_HIT + 0.5, T_HIT + 0.8, t)) * visR;
       const bikeP = new THREE.Vector3(0, bs.y + 1.25, bs.z);
       const visB = fitTag(bikeTag, bikeP, 0.55); bikeTag.material.opacity = sm(T_LAND + 0.4, T_LAND + 0.7, t) * (1 - sm(T_BOOM - 0.05, T_BOOM + 0.05, t)) * visB;
     },
