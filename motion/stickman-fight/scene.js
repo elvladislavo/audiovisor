@@ -296,8 +296,8 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
       return { pos: look.clone().add(V(lerp(0.55, 0.75, u), lerp(0.08, 0.05, u), lerp(0.75, 1.25, u))), look }; }],
     [2.3, 3.2, tau => ({ pos: V(2.2, 1.5, 7.2), look: V(0, 1.0, -0.8) })],
     [3.2, 4.4, tau => ({ pos: V(lerp(-0.8, -1.6, range(tau, 3.2, 4.4)), 1.25, 3.6), look: V(lerp(-1.0, -2.6, E.inOutCubic(range(tau, 3.7, 4.4))), 1.15, 0.1) })],
-    [4.4, 5.7, tau => ({ pos: V(lerp(1.0, 2.0, range(tau, 4.4, 5.7)), 1.0, 3.6), look: V(lerp(0.8, 2.6, E.inOutCubic(range(tau, 4.9, 5.7))), 1.0, -0.1) })],
-    [5.7, 7.2, tau => ({ pos: V(lerp(4.6, 5.2, range(tau, 5.7, 7.2)), 1.25, lerp(-1.0, -2.6, range(tau, 5.7, 7.2))), look: V(0, 1.25, lerp(-1.3, -3.2, E.inOutCubic(range(tau, 6.0, 6.8)))) })],
+    [4.4, 5.7, tau => ({ pos: V(lerp(1.0, 2.0, range(tau, 4.4, 5.7)), 1.0, 3.6), look: V(lerp(0.8, 4.4, E.inOutCubic(range(tau, 4.95, 5.65))), lerp(1.0, 0.7, range(tau, 5.2, 5.7)), -0.2) })],
+    [5.7, 7.2, tau => ({ pos: V(lerp(4.6, 5.0, range(tau, 5.7, 7.2)), 1.25, lerp(-1.0, -3.4, E.inOutCubic(range(tau, 6.0, 7.0)))), look: V(0, lerp(1.25, 0.9, range(tau, 6.5, 7.1)), lerp(-1.3, -4.7, E.inOutCubic(range(tau, 6.05, 6.8)))) })],
     [7.2, 8.95, tau => ({ pos: V(0.2, 1.3, 3.2), look: V(lerp(-1.2, 0.5, E.inOutCubic(range(tau, 7.4, 8.7))), 1.05, -1.0) })],
     [8.95, 10.4, tau => ({ pos: head.clone().add(V(0.25, -0.05, lerp(1.4, 1.1, range(tau, 8.95, 10.4)))), look: head.clone().add(V(0, -0.12, 0)) })],
     [10.4, TAU_END + 1, tau => { const u = E.inOutCubic(range(tau, 10.4, 12.6));
