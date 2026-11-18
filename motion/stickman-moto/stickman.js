@@ -197,8 +197,10 @@ export function buildStickman({ seed = 7 } = {}) {
     const sh = joint('shoulder' + side, spine, sx * 0.15, 0.43, 0);
     part(ball(0.05), M.blazer, sh, [0, 0, 0], false);                          // padded blazer shoulder
     part(cap(0.037, 0.24), M.blazer, sh, [0, -0.15, 0]);
+    for (const dz of [-0.016, 0, 0.016]) part(box(0.006, 0.26, 0.008), M.stripe, sh, [sx * 0.038, -0.15, dz], false);   // three side stripes, as on the trousers
     const el = joint('elbow' + side, sh, 0, -0.3, 0);
     part(cap(0.034, 0.2), M.blazer, el, [0, -0.12, 0]);
+    for (const dz of [-0.016, 0, 0.016]) part(box(0.006, 0.2, 0.008), M.stripe, el, [sx * 0.035, -0.12, dz], false);
     part(new THREE.CylinderGeometry(0.033, 0.033, 0.035, 10), M.shirt, el, [0, -0.245, 0], false);   // shirt cuff
     part(ball(0.04), M.skin, el, [0, -0.29, 0]);
     const hp = joint('hip' + side, hips, sx * 0.075, -0.03, 0);
