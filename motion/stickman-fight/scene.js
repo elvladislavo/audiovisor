@@ -226,7 +226,7 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
       else if (m === M.stripe) o.material = acc;
       else if (m === M.shoe || m === M.sole) o.material = shoe;
       else if (m === M.hair || m === M.hairLight || m === M.beard) { o.visible = false; }
-      else if (m === M.skin && o.parent === g.J.head) o.material = maskM;
+      else if ((m === M.skin || m === M.earIn) && o.parent === g.J.head) o.material = maskM;
     });
     // hood + glowing eye slits
     const hoodMesh = new THREE.Mesh(new THREE.SphereGeometry(0.175, 20, 14, 0, PI * 2, 0, PI * 0.62), hood); hoodMesh.position.set(0, 0.16, -0.02); hoodMesh.rotation.x = -0.35;

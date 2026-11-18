@@ -70,7 +70,7 @@ export function buildStickman({ seed = 7 } = {}) {
   const M = {
     skin: toon(0xf1d0b2), blazer: toon(0x1b1a1f), trousers: toon(0x141418), stripe: toon(0xe4e4df),
     shirt: toon(0xdfe9f7), tie: toon(0xffffff, { map: tieTex }), tieKnot: toon(0xb0121c),
-    hair: toon(0x4b2a16), hairLight: toon(0x7d4521), beard: toon(0x6a3a1e),
+    hair: toon(0x4b2a16), hairLight: toon(0x7d4521), beard: toon(0x6a3a1e), earIn: toon(0xd9a687),
     dark: toon(0x0d0d10), belt: toon(0x111114), buckle: toon(0xc9ccd2), shoe: toon(0xffffff, { map: snakeTexture() }), sole: toon(0x2a0a0c),
   };
 
@@ -127,41 +127,67 @@ export function buildStickman({ seed = 7 } = {}) {
   }
   part(ball(0.02), M.skin, head, [0, 0.145, 0.15], true);                                                        // nose
   part(new THREE.TorusGeometry(0.024, 0.006, 6, 12, Math.PI), M.dark, head, [0, 0.092, 0.142], false).rotation.z = Math.PI;
+  // solid base layers under the curls, so no scalp or chin shows through the gaps
+  // (sphere param: x = -cos(phi)·sin(theta), y = cos(theta), z = sin(phi)·sin(theta); phi = π/2 faces front)
+  const shell = (r, phi0, phiLen, th0, thLen, mat, y = 0.15) => {
+    const m = new THREE.Mesh(new THREE.SphereGeometry(r, 32, 20, phi0, phiLen, th0, thLen), mat);
+    m.position.y = y; m.castShadow = true; head.add(m); return m;
+  };
+  shell(0.156, 0, Math.PI * 2, 0, 0.95, M.hair).rotation.x = -0.3;          // scalp cap, hairline lifted at the front
+  shell(0.158, Math.PI, Math.PI, 0.5, 1.95, M.hair);                          // back half, down to the nape (behind the ears)
+  shell(0.155, Math.PI * 0.62, Math.PI * 0.38, 0.55, 0.62, M.hair);           // temples above the ears
+  shell(0.155, 0, Math.PI * 0.38, 0.55, 0.62, M.hair);
+  shell(0.153, 0, Math.PI, 2.12, 0.72, M.beard);                              // chin + jaw, starting just under the mouth
+  shell(0.153, 0.02, 0.95, 1.7, 0.5, M.beard);                                // cheeks / sideburns down from the ears
+  shell(0.153, Math.PI - 0.97, 0.95, 1.7, 0.5, M.beard);
+
   const curls = [];
   const hairMat = () => (rnd() < 0.3 ? M.hairLight : M.hair);
-  for (let i = 0; i < 46; i++) {                                                                                // crown
-    const a = rnd() * Math.PI * 2, el = 0.35 + rnd() * 1.0;
+  for (let i = 0; i < 110; i++) {                                                                               // crown, dense
+    const a = rnd() * Math.PI * 2, el = 0.3 + rnd() * 1.25;
     const dir = new THREE.Vector3(Math.cos(a) * Math.cos(el), Math.sin(el), Math.sin(a) * Math.cos(el));
     if (dir.z > 0.55 && dir.y < 0.75) continue;
-    curls.push([dir.multiplyScalar(0.15 + 0.1 * Math.max(0, dir.y)).add(new THREE.Vector3(0, 0.16, 0)), 0.045 + rnd() * 0.025, hairMat()]);
+    if (Math.abs(dir.x) > 0.8 && dir.y < 0.45 && dir.z > -0.3) continue;                                       // keep the ears clear
+    curls.push([dir.multiplyScalar(0.152 + 0.1 * Math.max(0, dir.y)).add(new THREE.Vector3(0, 0.16, 0)), 0.045 + rnd() * 0.025, hairMat()]);
   }
-  for (let i = 0; i < 30; i++) {                                                                                // volume on top
-    const a = rnd() * Math.PI * 2, rr = Math.sqrt(rnd()) * 0.14, x = Math.cos(a) * rr, z = Math.sin(a) * rr * 0.9 - 0.01;
+  for (let i = 0; i < 60; i++) {                                                                                // volume on top
+    const a = rnd() * Math.PI * 2, rr = Math.sqrt(rnd()) * 0.15, x = Math.cos(a) * rr, z = Math.sin(a) * rr * 0.9 - 0.01;
     if (z > 0.1) continue;
-    curls.push([new THREE.Vector3(x, 0.34 + 0.09 * (1 - rr / 0.14) + rnd() * 0.03, z), 0.045 + rnd() * 0.022, hairMat()]);
+    curls.push([new THREE.Vector3(x, 0.32 + 0.1 * (1 - rr / 0.15) + rnd() * 0.035, z), 0.046 + rnd() * 0.022, hairMat()]);
   }
-  for (let i = 0; i < 24; i++) {                                                                                // bangs
+  for (let i = 0; i < 32; i++) {                                                                                // bangs, 4 rows into the crown
     const x = -0.095 + (i % 8) * 0.027 + (rnd() - 0.5) * 0.01, row = Math.floor(i / 8);
-    const y = [0.258, 0.288, 0.316][row] - Math.abs(x) * 0.25 + rnd() * 0.008;
-    curls.push([new THREE.Vector3(x, y, Math.sqrt(Math.max(0, 0.0225 - x * x - (y - 0.15) ** 2)) + 0.012), 0.026 + rnd() * 0.01, hairMat()]);
+    const y = [0.258, 0.284, 0.31, 0.336][row] - Math.abs(x) * 0.25 + rnd() * 0.008;
+    curls.push([new THREE.Vector3(x, y, Math.sqrt(Math.max(0, 0.0225 - x * x - (y - 0.15) ** 2)) + 0.012), 0.028 + rnd() * 0.01, hairMat()]);
   }
-  for (let i = 0; i < 36; i++) {                                                                                // curls framing the face, to the jaw
-    const sx = i % 2 ? 1 : -1, y = 0.03 + rnd() * 0.2, zz = -0.06 + rnd() * 0.1;
-    curls.push([new THREE.Vector3(sx * (0.145 + rnd() * 0.035), y, zz), 0.032 + rnd() * 0.02, hairMat()]);
+  for (let i = 0; i < 44; i++) {                                                                                // sides: behind the ears and down to the jaw
+    const sx = i % 2 ? 1 : -1, y = 0.02 + rnd() * 0.24, zz = -0.13 + rnd() * 0.09;
+    curls.push([new THREE.Vector3(sx * (0.135 + rnd() * 0.04), y, zz), 0.034 + rnd() * 0.02, hairMat()]);
   }
-  for (let i = 0; i < 40; i++) {                                                                                // back, down to the collar
-    const y = 0.16 - rnd() * 0.3, spread = 0.13 - Math.max(0, -y) * 0.15;
+  for (let i = 0; i < 14; i++) {                                                                                // temples, in front of and above the ears
+    const sx = i % 2 ? 1 : -1, y = 0.215 + rnd() * 0.06, zz = 0.0 + rnd() * 0.07;
+    curls.push([new THREE.Vector3(sx * (0.135 + rnd() * 0.02), y, zz), 0.03 + rnd() * 0.012, hairMat()]);
+  }
+  for (let i = 0; i < 75; i++) {                                                                                // back, down to the collar
+    const y = 0.18 - rnd() * 0.32, spread = 0.14 - Math.max(0, -y) * 0.15;
     curls.push([new THREE.Vector3((rnd() - 0.5) * 2 * spread, y, -0.11 - rnd() * 0.06 + Math.min(0, y) * 0.12), 0.036 + rnd() * 0.022, hairMat()]);
   }
-  for (let i = 0; i < 60; i++) {                                                                                // short beard
-    const a = -Math.PI * 0.88 + rnd() * Math.PI * 0.76, h = 0.03 + rnd() * 0.06;
-    const sr = Math.sqrt(Math.max(0, 0.0225 - (h - 0.15) ** 2)) + 0.004;
-    if (Math.abs(Math.cos(a)) < 0.3 && h > 0.065) continue;
-    curls.push([new THREE.Vector3(Math.cos(a) * sr, h, -Math.sin(a) * sr), 0.014 + rnd() * 0.006, M.beard]);
+  for (let i = 0; i < 150; i++) {                                                                               // short beard, dense
+    const a = -Math.PI * 0.94 + rnd() * Math.PI * 0.88, h = 0.015 + rnd() * 0.095;
+    const sr = Math.sqrt(Math.max(0, 0.0225 - (h - 0.15) ** 2)) + 0.006;
+    if (Math.abs(Math.cos(a)) < 0.38 && h > 0.062) continue;                                                   // mouth stays clear
+    if (Math.abs(Math.cos(a)) > 0.9 && h > 0.1) continue;                                                      // below the ears only
+    curls.push([new THREE.Vector3(Math.cos(a) * sr, h, -Math.sin(a) * sr), 0.016 + rnd() * 0.007, M.beard]);
   }
-  for (let i = 0; i < 7; i++) {                                                                                 // moustache
-    const x = -0.045 + i * 0.015, y = 0.112 - Math.abs(x) * 0.35;
-    curls.push([new THREE.Vector3(x, y, Math.sqrt(0.0225 - x * x - (y - 0.15) ** 2) + 0.004), 0.014, M.beard]);
+  for (let i = 0; i < 13; i++) {                                                                                // moustache, two rows
+    const x = -0.05 + (i % 7) * 0.0167, y = (i < 7 ? 0.111 : 0.12) - Math.abs(x) * 0.35;
+    curls.push([new THREE.Vector3(x, y, Math.sqrt(Math.max(0, 0.0225 - x * x - (y - 0.15) ** 2)) + 0.005), 0.015, M.beard]);
+  }
+  // ears: outer shell, inner fold, little lobe
+  for (const sx of [1, -1]) {
+    const ear = part(new THREE.SphereGeometry(1, 16, 12), M.skin, head, [sx * 0.15, 0.148, 0.005], true, [0.022, 0.042, 0.03]);
+    ear.rotation.y = sx * 0.35;
+    part(new THREE.SphereGeometry(1, 12, 10), M.earIn, head, [sx * 0.162, 0.15, 0.012], false, [0.008, 0.026, 0.017]).rotation.y = sx * 0.35;
   }
   const curlGeo = new THREE.IcosahedronGeometry(1, 1);
   for (const [p, r, mat] of curls) part(curlGeo, mat, head, [p.x, p.y, p.z], true, [r, r, r]);

@@ -314,7 +314,7 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
       else if (m === M.trousers) o.material = trou;
       else if (m === M.stripe) o.material = acc;
       else if (m === M.shoe || m === M.sole) o.material = shoe;
-      else if (m === M.skin && o.parent === g.J.head) o.material = maskM;
+      else if ((m === M.skin || m === M.earIn) && o.parent === g.J.head) o.material = maskM;
     });
     const hoodMesh = new THREE.Mesh(new THREE.SphereGeometry(0.175, 20, 14, 0, PI * 2, 0, PI * 0.62), hood); hoodMesh.position.set(0, 0.16, -0.02); hoodMesh.rotation.x = -0.35;
     hoodMesh.add(new THREE.Mesh(hoodMesh.geometry, g.outlineMat)); g.J.head.add(hoodMesh);
