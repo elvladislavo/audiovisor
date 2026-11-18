@@ -316,7 +316,7 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
     const kn = joint('knee' + s, hp, 0, -0.44, 0);
     part(cap(0.042, 0.34), M.suit, kn, [0, -0.2, 0]);
     stripes(kn, 0.34, -0.2, sx, 0.042);
-    part(new RoundedBoxGeometry(0.09, 0.06, 0.2, 3, 0.025), M.dark, kn, [0, -0.43, 0.04]);
+    part(new RoundedBoxGeometry(0.09, 0.06, 0.2, 3, 0.025), M.tie, kn, [0, -0.43, 0.04]);                 // red shoes
   }
   for (const n of JOINTS) J[n].userData.rest = J[n].position.clone();
 
