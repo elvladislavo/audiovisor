@@ -15,6 +15,7 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { ease, range, wiggle } from '/lib/motion.js';
 import { buildStickman } from '/assets/stickman.js';
@@ -64,7 +65,7 @@ function rider(t) {
 const P = {
   ride: t => {
     const b = 0.03 * Math.sin(t * 23);
-    return { hipsY: 0.95, spine: [0.36 + b, 0, 0], head: [-0.42, 0.06 * Math.sin(t * 0.9), 0],
+    return { hipsY: 0.95, spine: [0.42 + b, 0, 0], head: [-0.42, 0.06 * Math.sin(t * 0.9), 0],
       hipL: [-1.26, 0, 0.26], hipR: [-1.26, 0, -0.26], kneeL: [1.62, 0, -0.12], kneeR: [1.62, 0, 0.12],
       shoulderL: [-1.36, 0, 0.3], shoulderR: [-1.36, 0, -0.3], elbowL: [-0.25, 0, 0], elbowR: [-0.25, 0, 0] };
   },
@@ -302,6 +303,15 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
   composer.setPixelRatio(1); composer.setSize(width, height);
   composer.addPass(new RenderPass(scene, camera));
   composer.addPass(new UnrealBloomPass(new THREE.Vector2(width, height), 0.45, 0.45, 0.97));
+  const grade = new ShaderPass({            // fades the whole picture to black & white for the title
+    uniforms: { tDiffuse: { value: null }, sat: { value: 1 } },
+    vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+    fragmentShader: `uniform sampler2D tDiffuse; uniform float sat; varying vec2 vUv;
+      void main(){ vec4 c = texture2D(tDiffuse, vUv); float l = dot(c.rgb, vec3(0.299, 0.587, 0.114));
+        vec3 bw = (vec3(l) - 0.5) * mix(1.0, 1.18, 1.0 - sat) + 0.5;      // a touch more contrast in B&W
+        gl_FragColor = vec4(mix(bw, c.rgb, sat), c.a); }`,
+  });
+  composer.addPass(grade);
   composer.addPass(new OutputPass());
 
   /* ── camera: shot functions, crossfaded ── */
@@ -323,6 +333,27 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
   ];
   const BLEND = 0.35;
 
+  // two-bone IK: put each hand on its grip (shoulder → elbow 0.30, elbow → hand 0.29)
+  const L1 = 0.3, L2 = 0.29, ik = { d: new THREE.Vector3(), u: new THREE.Vector3(), n: new THREE.Vector3(), f: new THREE.Vector3(),
+    X: new THREE.Vector3(), Y: new THREE.Vector3(), Z: new THREE.Vector3(), m: new THREE.Matrix4(), tgt: new THREE.Vector3(), pole: new THREE.Vector3() };
+  function reach(side, sx) {
+    frame.localToWorld(ik.tgt.set(sx * 0.31, 1.15, 0.43));               // grip centre in world space
+    J.spine.worldToLocal(ik.tgt);                                         // → spine space (the shoulder's parent)
+    const sh = J['shoulder' + side], el = J['elbow' + side];
+    ik.d.copy(ik.tgt).sub(sh.position);
+    const dist = Math.min(ik.d.length(), (L1 + L2) * 0.999);
+    ik.d.normalize();
+    const a = Math.acos(THREE.MathUtils.clamp((L1 * L1 + dist * dist - L2 * L2) / (2 * L1 * dist), -1, 1));
+    ik.pole.set(sx, -0.4, -0.5);                                          // elbows out, a little down and back
+    ik.n.crossVectors(ik.d, ik.pole).normalize();
+    const perp = new THREE.Vector3().crossVectors(ik.n, ik.d).normalize();
+    ik.u.copy(ik.d).multiplyScalar(Math.cos(a)).addScaledVector(perp, Math.sin(a)).normalize();    // upper-arm direction
+    ik.X.copy(ik.n); ik.Y.copy(ik.u).negate(); ik.Z.crossVectors(ik.X, ik.Y).normalize(); ik.X.crossVectors(ik.Y, ik.Z).normalize();
+    sh.quaternion.setFromRotationMatrix(ik.m.makeBasis(ik.X, ik.Y, ik.Z));
+    ik.f.copy(ik.d).multiplyScalar(dist).addScaledVector(ik.u, -L1).normalize();                     // forearm direction
+    el.rotation.set(Math.atan2(-ik.f.dot(ik.Z), -ik.f.dot(ik.Y)), 0, 0);
+  }
+
   return {
     update(t) {
       /* bike */
@@ -340,6 +371,7 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
       man.body.rotation.set(r.pitch, 0, t > T_HIT && t < T_RLAND ? 0.25 * Math.sin((t - T_HIT) * 5) : 0);
       man.applyPose(KEYS, t);
       man.system.updateMatrixWorld(true);
+      if (t < T_HIT) { reach('L', 1); reach('R', -1); man.system.updateMatrixWorld(true); }
       com.set(0, 1, 0).applyMatrix4(man.system.matrixWorld);
       man.shoe('L', shoe); J.head.localToWorld(headW.set(0, 0.17, 0.05));
       bikeC.copy(bike.position);
@@ -421,6 +453,7 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
       /* title rises out of the fireball through the smoke, always facing camera */
       const ut = range(t, T_TITLE, T_TITLE + 2.6), e = ease.outCubic(ut);
       title.material.opacity = sm(T_TITLE, T_TITLE + 1.0, t);
+      grade.uniforms.sat.value = 1 - sm(T_TITLE - 0.2, T_TITLE + 1.0, t);
       title.scale.setScalar(Math.max(0.001, lerp(0.12, 1, e)));
       title.position.set(BOOM.x, lerp(1.4, portrait ? 5.0 : 4.4, e) + 0.08 * Math.sin(t * 1.6) * ut, BOOM.z + 1.5);
 
