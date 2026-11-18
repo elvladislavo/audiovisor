@@ -1,4 +1,4 @@
-// BRIEF: A stickman with a long curly mullet and a beard, in a black three-stripe tracksuit,
+// BRIEF: A stickman with a tall curly mullet and a short beard and moustache, in a black three-stripe tracksuit,
 // white shirt and big red tie, jumps off a snowy mountain, does a front flip, flies belly-down
 // for a moment, opens his parachute, then cuts away just above the ground and "lags" in mid-air
 // windmilling his arms and pedalling his legs like a GTA San Andreas fall, before slamming into
@@ -264,26 +264,39 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
   const head = joint('head', spine, 0, 0.52, 0);
   part(ball(0.15), M.skin, head, [0, 0.15, 0]);
   for (const sx of [1, -1]) part(ball(0.014), M.dark, head, [sx * 0.05, 0.18, 0.137], false);
-  part(new THREE.TorusGeometry(0.035, 0.008, 6, 12, Math.PI), M.dark, head, [0, 0.135, 0.14], false).rotation.z = 0; // brows-ish smile hidden by beard
+  part(new THREE.TorusGeometry(0.025, 0.007, 6, 12, Math.PI), M.dark, head, [0, 0.092, 0.142], false).rotation.z = Math.PI; // smile
   const curls = [];
   // hair: curly crown
   for (let i = 0; i < 46; i++) {
     const a = rnd() * Math.PI * 2, el = 0.35 + rnd() * 1.0;
     const dir = new THREE.Vector3(Math.cos(a) * Math.cos(el), Math.sin(el), Math.sin(a) * Math.cos(el));
     if (dir.z > 0.55 && dir.y < 0.75) continue;                      // keep the face clear
-    curls.push([dir.multiplyScalar(0.15).add(new THREE.Vector3(0, 0.16, 0)), 0.04 + rnd() * 0.02, M.hair]);
+    const lift = 0.15 + 0.11 * Math.max(0, dir.y);                    // taller the higher it sits
+    curls.push([dir.multiplyScalar(lift).add(new THREE.Vector3(0, 0.16, 0)), 0.045 + rnd() * 0.025, M.hair]);
+  }
+  // hair: a big curly top — a second, taller layer
+  for (let i = 0; i < 34; i++) {
+    const a = rnd() * Math.PI * 2, rr = Math.sqrt(rnd()) * 0.14;
+    const x = Math.cos(a) * rr, z = Math.sin(a) * rr * 0.9 - 0.01;
+    if (z > 0.1) continue;
+    curls.push([new THREE.Vector3(x, 0.35 + 0.1 * (1 - rr / 0.14) + rnd() * 0.035, z), 0.045 + rnd() * 0.025, M.hair]);
   }
   // hair: the mullet — long curly business at the back down past the shoulders
   for (let i = 0; i < 40; i++) {
     const y = 0.14 - rnd() * 0.36, spread = 0.12 - Math.max(0, -y) * 0.12;
     curls.push([new THREE.Vector3((rnd() - 0.5) * 2 * spread, y, -0.11 - rnd() * 0.06 + Math.min(0, y) * 0.15), 0.036 + rnd() * 0.022, M.hair]);
   }
-  // beard: jaw line + chin + moustache
-  for (let i = 0; i < 34; i++) {
-    const a = -Math.PI * 0.85 + rnd() * Math.PI * 0.7, h = 0.04 + rnd() * 0.08;
-    curls.push([new THREE.Vector3(Math.cos(a) * 0.13, h, -Math.sin(a) * 0.12 + 0.01), 0.032 + rnd() * 0.016, M.hair]);
+  // short beard: small curls hugging the jaw and chin, plus a trim moustache
+  for (let i = 0; i < 60; i++) {
+    const a = -Math.PI * 0.88 + rnd() * Math.PI * 0.76, h = 0.03 + rnd() * 0.06;
+    const sr = Math.sqrt(Math.max(0, 0.15 * 0.15 - (h - 0.15) * (h - 0.15))) + 0.004;   // sit on the head surface
+    if (Math.abs(Math.cos(a)) < 0.3 && h > 0.065) continue;                          // keep the mouth clear
+    curls.push([new THREE.Vector3(Math.cos(a) * sr, h, -Math.sin(a) * sr), 0.014 + rnd() * 0.006, M.hair]);
   }
-  for (let i = 0; i < 6; i++) curls.push([new THREE.Vector3(-0.05 + i * 0.02, 0.115, 0.14), 0.02, M.hair]);
+  for (let i = 0; i < 7; i++) {
+    const x = -0.045 + i * 0.015, y = 0.112 - Math.abs(x) * 0.35;
+    curls.push([new THREE.Vector3(x, y, Math.sqrt(0.15 * 0.15 - x * x - (y - 0.15) * (y - 0.15)) + 0.004), 0.014, M.hair]);
+  }
   const curlGeo = new THREE.IcosahedronGeometry(1, 1);
   for (const [p, r, mat] of curls) part(curlGeo, mat, head, [p.x, p.y, p.z], true, [r, r, r]);
 
@@ -363,19 +376,19 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
   composer.addPass(grade);
   composer.addPass(new OutputPass());
 
-  const font = new FontFace('Wasted', `url(${asset('UnifrakturCook.ttf')})`, { weight: '700' });
+  const font = new FontFace('Wasted', `url(${asset('PirataOne.ttf')})`);
   await font.load(); document.fonts.add(font);
   const tc = document.createElement('canvas'); tc.width = 2048; tc.height = 400;
   { const g = tc.getContext('2d');
     g.translate(1024, 205);
-    g.font = '700 220px Wasted';                      // gothic blackletter, white with a heavy black outline
+    g.font = '250px Wasted';                          // Pirata One: gothic but clean enough to read at a glance
     g.textAlign = 'center'; g.textBaseline = 'middle';
     const fit = Math.min(1, 1880 / g.measureText('elvladislavo.com').width); g.scale(fit, fit);
-    g.lineJoin = 'round'; g.lineWidth = 30; g.strokeStyle = '#050505'; g.strokeText('elvladislavo.com', 0, 0);
+    g.lineJoin = 'round'; g.lineWidth = 34; g.strokeStyle = '#050505'; g.strokeText('elvladislavo.com', 0, 0);
     g.fillStyle = '#f4f4f2'; g.fillText('elvladislavo.com', 0, 0); }
   const titleTex = new THREE.CanvasTexture(tc); titleTex.colorSpace = THREE.SRGBColorSpace;
   const overlay = new THREE.Scene(), ortho = new THREE.OrthographicCamera(-width / 2, width / 2, height / 2, -height / 2, -1, 1);
-  const tw = width * 0.72, title = new THREE.Mesh(new THREE.PlaneGeometry(tw, tw * 400 / 2048), new THREE.MeshBasicMaterial({ map: titleTex, transparent: true, toneMapped: false, opacity: 0 }));
+  const tw = width * 0.9, title = new THREE.Mesh(new THREE.PlaneGeometry(tw, tw * 400 / 2048), new THREE.MeshBasicMaterial({ map: titleTex, transparent: true, toneMapped: false, opacity: 0 }));
   overlay.add(title);
 
   // check the jump clears the mountain slope
@@ -409,12 +422,12 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
 
   // camera keys: [t, offset from COM, look offset]
   const CAM = [
-    [0, [6.5, 2.2, 7.5], [0, 0.6, 0]], [0.9, [4.5, 1.2, 4.6], [0, 0.4, 0]],
-    [1.4, [6.2, 0.4, 0.6], [0, 0, 0]], [2.2, [6.4, 0.2, 1.2], [0, 0, 0]],
-    [2.9, [1.6, -1.2, 6.2], [0, 0, 0]], [3.5, [2.2, -0.8, 6.0], [0, 0.2, 0]],
-    [4.3, [9.5, 1.2, 8.5], [0, 2.6, 0]], [T_CUT - 0.4, [8.5, 2.2, 9.5], [0, 2.4, 0]],
-    [T_CUT + 0.6, [3.8, 0.6, 5.0], [0, 0.1, 0]], [T_DROP, [4.0, 0.2, 5.2], [0, 0, 0]],
-    [T_IMPACT, [4.3, 1.4, 5.0], [0, 0, 0]],
+    [0, [1.25, 0.55, 1.7], [0, 0.72, 0]], [0.75, [1.7, 0.45, 2.1], [0, 0.6, 0]],
+    [1.4, [4.34, 0.28, 0.42], [0, 0, 0]], [2.2, [4.48, 0.14, 0.84], [0, 0, 0]],
+    [2.9, [1.12, -0.84, 4.34], [0, 0, 0]], [3.5, [1.54, -0.56, 4.20], [0, 0.2, 0]],
+    [4.3, [12.5, 1.6, 11.0], [0, 2.9, 0]], [T_CUT - 0.4, [11.0, 2.6, 12.5], [0, 2.7, 0]],
+    [T_CUT + 0.6, [2.66, 0.42, 3.50], [0, 0.1, 0]], [T_DROP, [2.80, 0.14, 3.64], [0, 0, 0]],
+    [T_IMPACT, [3.01, 0.98, 3.50], [0, 0, 0]],
   ];
   const off = new THREE.Vector3(), look = new THREE.Vector3();
 
@@ -492,9 +505,9 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
       // wasted: rise and slowly circle above the body
       if (t > T_IMPACT) {
         const k = range(t, T_WASTED, T_END), e = ease.inOutQuad(k);
-        const a0 = Math.atan2(4.3, 5.0), r0 = Math.hypot(4.3, 5.0);
+        const a0 = Math.atan2(3.01, 3.5), r0 = Math.hypot(3.01, 3.5);
         const a = a0 + (t > T_WASTED ? (t - T_WASTED) * 0.22 : 0);
-        const r = lerp(r0, 4.2, e), h = lerp(1.4, 6.0, e);
+        const r = lerp(r0, 3.2, e), h = lerp(0.98, 4.4, e);
         off.set(Math.sin(a) * r, h, Math.cos(a) * r);
       }
       camera.position.copy(com).add(off);
