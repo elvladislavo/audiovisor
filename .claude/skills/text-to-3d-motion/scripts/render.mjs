@@ -51,7 +51,7 @@ const width = +opt('width', 1920), height = +opt('height', 1080);
 const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: 1 });
 const errors = [];
 page.on('pageerror', e => errors.push(e.message));
-page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); else if (m.text().startsWith('[scene]')) console.log(m.text()); });
 await page.goto(base + `?w=${width}&h=${height}`);
 try { await page.waitForFunction(() => window.__ready || window.__error, null, { timeout: 60000 }); }
 catch { errors.push('scene setup timed out after 60 s'); }
