@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Flip &amp; Chute</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500;62..125,700;62..125,800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout: one wide sky viewport with an altimeter HUD, transport controls, and a jump timeline split into phases. */
+:root{
+  --bg:#edf1f5; --panel:#ffffff; --sunk:#e0e6ed; --line:#c9d2dc;
+  --fg:#111720; --dim:#566273;
+  --accent:#c97700; --accent-soft:#c9770029; --on-accent:#1a1004;
+  --hud-bg:rgba(9,14,22,.58); --hud-fg:#f3f6fa; --hud-dim:#b9c4d2; --hud-accent:#ffb53a;
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0d1218; --panel:#141b24; --sunk:#0a0e13; --line:#253040;
+  --fg:#e5eaf0; --dim:#8794a5;
+  --accent:#f4a51c; --accent-soft:#f4a51c24; --on-accent:#1a1004;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0d1218; --panel:#141b24; --sunk:#0a0e13; --line:#253040;
+  --fg:#e5eaf0; --dim:#8794a5;
+  --accent:#f4a51c; --accent-soft:#f4a51c24; --on-accent:#1a1004;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{
+  margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 var(--display);font-stretch:100%;
+  padding-block:20px 40px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px}
+.top h1{margin:0;font-weight:800;font-stretch:72%;font-size:30px;line-height:1;letter-spacing:-.01em;text-transform:uppercase}
+.top p{margin:0;color:var(--dim);max-width:64ch}
+
+.view{position:relative;width:100%;max-width:100%;aspect-ratio:4/5;max-height:78vh;border-radius:8px;overflow:hidden;background:#9cc4e6;border:1px solid var(--line)}
+@media (min-width:640px){.view{aspect-ratio:16/9}}
+.view canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.hud{position:absolute;left:10px;top:10px;right:10px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;pointer-events:none}
+.chip{background:var(--hud-bg);color:var(--hud-fg);border-radius:6px;padding:7px 10px;font:12px/1.35 var(--mono);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.chip b{font:800 13px/1 var(--display);font-stretch:80%;letter-spacing:.06em;text-transform:uppercase;color:var(--hud-accent)}
+.alt{display:grid;gap:2px;text-align:right;min-width:128px}
+.alt .big{font:500 26px/1 var(--mono);font-variant-numeric:tabular-nums}
+.alt .big small{font-size:12px;color:var(--hud-dim);margin-left:3px}
+.alt span{color:var(--hud-dim);font-variant-numeric:tabular-nums}
+.hint{position:absolute;left:10px;bottom:10px;pointer-events:none}
+
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;cursor:pointer;background:var(--panel);border:1px solid var(--line);border-radius:5px;font-weight:500;font-size:14px}
+.btn:hover{border-color:var(--dim)}
+.btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.play{min-width:84px;justify-content:center}
+.field{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--dim)}
+.field output{font:12px var(--mono);color:var(--fg);min-width:4ch}
+input[type=range]{accent-color:var(--accent);width:120px}
+
+.timeline{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px 12px;display:grid;gap:8px}
+.tl-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;font:12px var(--mono);color:var(--dim)}
+.tl-head b{color:var(--fg);font-weight:500}
+.track{position:relative;height:38px;background:var(--sunk);border-radius:4px;cursor:ew-resize;touch-action:none;overflow:hidden}
+.seg{position:absolute;top:0;bottom:0;border-right:1px solid var(--line);display:flex;align-items:flex-end;padding:0 6px 5px;font:500 11px/1 var(--display);font-stretch:85%;letter-spacing:.04em;text-transform:uppercase;color:var(--dim);white-space:nowrap;overflow:hidden}
+.seg.on{background:var(--accent-soft);color:var(--fg)}
+.head{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:var(--fg);left:0}
+.notes{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr))}
+.note{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 14px;min-width:0}
+.note h2{margin:0 0 4px;font-weight:700;font-stretch:85%;font-size:13px;letter-spacing:.06em;text-transform:uppercase}
+.note p{margin:0;color:var(--dim);font-size:14px}
+.note code{font:12px var(--mono);color:var(--fg)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Flip &amp; Chute</h1>
+    <p>A cartoon skydiver built in three.js runs off a cliff, does a front flip, falls belly-down, pulls its ripcord and lands under a round canopy.</p>
+  </header>
+
+  <div class="view" id="view">
+    <div class="hud">
+      <div class="chip" id="phaseChip"><b id="phase">Run-up</b><br><span id="clock">t 0.0 s</span></div>
+      <div class="chip alt"><div class="big" id="alt">0<small>m</small></div><span id="vs">↓ 0.0 m/s</span><span id="fwd">→ 0.0 m/s</span></div>
+    </div>
+    <div class="chip hint" id="hint">Drag to look around · the camera keeps following</div>
+  </div>
+
+  <div class="bar">
+    <button class="btn play" id="play" aria-pressed="true">Pause</button>
+    <button class="btn" id="replay">Replay</button>
+    <label class="field" for="speed">Speed <input id="speed" type="range" min="0.1" max="1.5" step="0.05" value="1"><output id="speedOut">1.00×</output></label>
+    <button class="btn" id="cam" aria-pressed="true">Cinematic camera</button>
+    <button class="btn" id="loop" aria-pressed="true">Loop</button>
+  </div>
+
+  <div class="timeline">
+    <div class="tl-head"><span>Phase <b id="tlPhase">Run-up</b></span><span id="tlTime">frame 000 / 000 @ 30 fps</span></div>
+    <div class="track" id="track" role="slider" tabindex="0" aria-label="Jump time" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div id="segs"></div>
+      <div class="head" id="playhead"></div>
+    </div>
+  </div>
+
+  <section class="notes" aria-label="How it works">
+    <div class="note"><h2>Pose keys</h2><p>The jumper is spheres and capsules with flat toon shading, on 11 joints. Each joint's rotation comes from named poses: run, crouch, tuck, arch, pull, hang, flare, land. These are blended with smoothstep between key times.</p></div>
+    <div class="note"><h2>Flip</h2><p>The body group spins 2.5 turns' worth of π about its centre of mass, <code>0 → 5π/2</code>. That is one full front flip, then a quarter turn more to end belly-down.</p></div>
+    <div class="note"><h2>Physics</h2><p>Height and speed are integrated at 240 Hz with drag. The terminal velocity drops from 26 m/s to 5 m/s as the canopy opens, then to 1.8 m/s in the flare.</p></div>
+    <div class="note"><h2>Canopy</h2><p>A 24-gore dome with a crumpled morph target. It inflates from 1 to 0 crumple. The 24 lines are rebuilt every frame from the rim to the jumper's shoulders.</p></div>
+  </section>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+const $ = id => document.getElementById(id);
+const FPS = 30;
+const smooth = (a, b, x) => { const t = THREE.MathUtils.clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+const lerp = THREE.MathUtils.lerp;
+
+/* ───────── physics: integrate the jump once, then look it up by time ───────── */
+const G = 9.81, T_TAKEOFF = 1.74, Z_EDGE = 0;
+const DEPLOY0 = 6.3, DEPLOY1 = 7.1;               // canopy line-stretch → fully open
+const SIM_DT = 1 / 240, FLARE_ALT = 5;
+
+function terminal(t, y) {
+  let vt = lerp(26, 5.0, smooth(DEPLOY0, DEPLOY1, t));
+  if (t > DEPLOY1 && y < FLARE_ALT) vt = lerp(5.0, 1.8, smooth(FLARE_ALT, 1.2, y));
+  return vt;
+}
+function simulate(H) {
+  const ys = [], zs = [], vys = [], vzs = [];
+  let t = T_TAKEOFF, y = H, z = Z_EDGE, vy = 5.2, vz = 3.2;
+  while (t < 60) {
+    const vt = terminal(t, y), k = G / (vt * vt);
+    vy += (-G - k * vy * Math.abs(vy)) * SIM_DT;
+    const open = smooth(DEPLOY0, DEPLOY1 + 0.6, t);
+    const glide = t > DEPLOY1 && y < FLARE_ALT ? lerp(3.8, 1.0, smooth(FLARE_ALT, 1, y)) : 3.8;
+    vz += (lerp(-0.3 * vz, (glide - vz) * 1.6, open)) * SIM_DT;
+    y += vy * SIM_DT; z += vz * SIM_DT; t += SIM_DT;
+    ys.push(y); zs.push(z); vys.push(vy); vzs.push(vz);
+    if (y <= 0) break;
+  }
+  return { ys, zs, vys, vzs, tLand: t, zLand: z, vzLand: vz };
+}
+// Pick the cliff height so the canopy ride lasts long enough to enjoy: aim for touchdown near 13 s.
+let H = 110, sim;
+for (let i = 0; i < 6; i++) { sim = simulate(H); H += (13.0 - sim.tLand) * 5.0; }
+sim = simulate(H);
+const T_LAND = sim.tLand, T_END = T_LAND + 3.6;
+
+// Feet position (system origin) and velocity at time t
+function motion(t, out) {
+  if (t < T_TAKEOFF) {
+    let z;
+    if (t < 0.45) z = -6.2;
+    else if (t < 1.45) z = -6.2 + 5.7 * Math.pow((t - 0.45) / 1.0, 1.3);
+    else z = -0.5 + 0.5 * smooth(1.45, T_TAKEOFF, t);
+    const vz = t > 0.45 && t < 1.45 ? 7.4 * Math.pow((t - 0.45), 0.3) : 0;
+    return out.set(0, H, z, 0, vz);
+  }
+  if (t >= T_LAND) {
+    const u = t - T_LAND;
+    return out.set(0, 0, sim.zLand + sim.vzLand * (1 - Math.exp(-4 * u)) / 4, 0, sim.vzLand * Math.exp(-4 * u));
+  }
+  const f = (t - T_TAKEOFF) / SIM_DT, i = Math.min(Math.floor(f), sim.ys.length - 2), a = f - i;
+  return out.set(0, lerp(sim.ys[i], sim.ys[i + 1], a), lerp(sim.zs[i], sim.zs[i + 1], a), lerp(sim.vys[i], sim.vys[i + 1], a), lerp(sim.vzs[i], sim.vzs[i + 1], a));
+}
+const M = { x: 0, y: 0, z: 0, vy: 0, vz: 0, set(x, y, z, vy, vz) { this.x = x; this.y = y; this.z = z; this.vy = vy; this.vz = vz; return this; } };
+
+// Whole-body pitch about the centre of mass: flip → belly-down → swing upright under canopy
+function bodyPitch(t) {
+  if (t < 1.76) return 0;
+  if (t < 3.55) { const u = (t - 1.76) / (3.55 - 1.76); const e = u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2; return e * 2.5 * Math.PI; }
+  if (t < DEPLOY0) return 2.5 * Math.PI + 0.06 * Math.sin(3 * (t - 3.55)) * (1 - smooth(5.6, DEPLOY0, t));
+  const u = t - DEPLOY0;
+  const swing = (Math.PI / 2) * Math.exp(-3.0 * u) * Math.cos(4.6 * u);
+  const sway = 0.07 * Math.sin(1.3 * u) * smooth(8, 9, t) * (1 - smooth(T_LAND - 1.6, T_LAND - 0.5, t));
+  return 2 * Math.PI + swing + sway;
+}
+function bodyRoll(t) { return t > 3.55 && t < DEPLOY0 ? 0.08 * Math.sin(2.1 * t) : 0; }
+
+/* ───────── poses ───────── */
+const JOINTS = ['hips', 'spine', 'head', 'shoulderL', 'shoulderR', 'elbowL', 'elbowR', 'hipL', 'hipR', 'kneeL', 'kneeR'];
+const pose = o => () => o;
+const P = {
+  stand: pose({ shoulderL: [0, 0, 0.1], shoulderR: [0, 0, -0.1], elbowL: [-0.15, 0, 0], elbowR: [-0.15, 0, 0] }),
+  run: t => {
+    const p = t * 2.8 * Math.PI * 2, s = Math.sin(p);
+    return {
+      hipsY: 0.97 + 0.05 * Math.abs(Math.cos(p)),
+      spine: [0.25, 0.08 * s, 0], head: [-0.18, 0, 0],
+      hipL: [-0.8 * s, 0, 0], hipR: [0.8 * s, 0, 0],
+      kneeL: [0.3 + 0.9 * Math.max(0, Math.sin(p - 1.2)), 0, 0], kneeR: [0.3 + 0.9 * Math.max(0, Math.sin(p + Math.PI - 1.2)), 0, 0],
+      shoulderL: [0.75 * s, 0, 0.12], shoulderR: [-0.75 * s, 0, -0.12],
+      elbowL: [-1.3, 0, 0], elbowR: [-1.3, 0, 0],
+    };
+  },
+  crouch: pose({ hipsY: 0.74, spine: [0.5, 0, 0], head: [-0.35, 0, 0], hipL: [-0.9, 0, 0], hipR: [-0.9, 0, 0], kneeL: [1.6, 0, 0], kneeR: [1.6, 0, 0], shoulderL: [0.9, 0, 0.12], shoulderR: [0.9, 0, -0.12], elbowL: [-0.2, 0, 0], elbowR: [-0.2, 0, 0] }),
+  extend: pose({ spine: [-0.15, 0, 0], head: [-0.1, 0, 0], hipL: [0.2, 0, 0], hipR: [0.2, 0, 0], kneeL: [0.05, 0, 0], kneeR: [0.05, 0, 0], shoulderL: [-2.9, 0, 0.15], shoulderR: [-2.9, 0, -0.15], elbowL: [-0.1, 0, 0], elbowR: [-0.1, 0, 0] }),
+  tuck: pose({ spine: [0.6, 0, 0], head: [0.35, 0, 0], hipL: [-2.2, 0, 0.1], hipR: [-2.2, 0, -0.1], kneeL: [2.3, 0, 0], kneeR: [2.3, 0, 0], shoulderL: [-1.0, 0, 0.2], shoulderR: [-1.0, 0, -0.2], elbowL: [-1.4, 0, 0], elbowR: [-1.4, 0, 0] }),
+  open: pose({ spine: [0, 0, 0], head: [-0.2, 0, 0], hipL: [-0.3, 0, 0.3], hipR: [-0.3, 0, -0.3], kneeL: [0.5, 0, 0], kneeR: [0.5, 0, 0], shoulderL: [-0.3, 0, 1.4], shoulderR: [-0.3, 0, -1.4], elbowL: [0, 0, 0.6], elbowR: [0, 0, -0.6] }),
+  arch: t => {
+    const w = 0.05 * Math.sin(t * 5);
+    return { spine: [-0.3, 0, 0], head: [-0.55, 0, 0], hipL: [0.15, 0, 0.35], hipR: [0.15, 0, -0.35], kneeL: [1.2 + w, 0, 0], kneeR: [1.2 - w, 0, 0], shoulderL: [0, 0, 1.6 + w], shoulderR: [0, 0, -1.6 + w], elbowL: [0, 0, 1.3], elbowR: [0, 0, -1.3] };
+  },
+  pull: pose({ spine: [-0.25, -0.15, 0], head: [-0.5, 0, 0], hipL: [0.15, 0, 0.35], hipR: [0.15, 0, -0.35], kneeL: [1.2, 0, 0], kneeR: [1.2, 0, 0], shoulderL: [0, 0, 2.3], shoulderR: [0.9, 0, -0.5], elbowL: [0, 0, 0.6], elbowR: [-1.4, 0, 0] }),
+  reach: pose({ spine: [0, 0, 0], head: [-0.2, 0, 0], hipL: [-0.1, 0, 0.15], hipR: [-0.1, 0, -0.15], kneeL: [0.6, 0, 0], kneeR: [0.6, 0, 0], shoulderL: [0, 0, 2.3], shoulderR: [0, 0, -2.3], elbowL: [0, 0, 0.5], elbowR: [0, 0, -0.5] }),
+  hang: t => {
+    const k = 0.08 * Math.sin(t * 1.7);
+    return { head: [0.2, 0.25 * Math.sin(t * 0.6), 0], hipL: [-0.15 + k, 0, 0.06], hipR: [-0.15 - k, 0, -0.06], kneeL: [0.3 + k, 0, 0], kneeR: [0.3 - k, 0, 0], shoulderL: [-0.15, 0, 2.75], shoulderR: [-0.15, 0, -2.75], elbowL: [0, 0, 0.45], elbowR: [0, 0, -0.45] };
+  },
+  flare: pose({ spine: [0.1, 0, 0], head: [0.25, 0, 0], hipL: [-0.55, 0, 0.05], hipR: [-0.55, 0, -0.05], kneeL: [0.45, 0, 0], kneeR: [0.45, 0, 0], shoulderL: [-0.6, 0, 0.9], shoulderR: [-0.6, 0, -0.9], elbowL: [-0.8, 0, 0], elbowR: [-0.8, 0, 0] }),
+  land: pose({ hipsY: 0.76, spine: [0.4, 0, 0], head: [-0.3, 0, 0], hipL: [-0.9, 0, 0.08], hipR: [-0.9, 0, -0.08], kneeL: [1.5, 0, 0], kneeR: [1.5, 0, 0], shoulderL: [-0.7, 0, 0.35], shoulderR: [-0.7, 0, -0.35], elbowL: [-0.5, 0, 0], elbowR: [-0.5, 0, 0] }),
+  wave: t => ({ head: [0.05, -0.2, 0.15], spine: [0, 0, 0.06], shoulderL: [0, 0, 0.12], shoulderR: [0, 0, -2.5], elbowL: [-0.2, 0, 0], elbowR: [0, 0, -0.55 + 0.9 * (0.5 + 0.5 * Math.sin(t * 7))] }),
+};
+const KEYS = [
+  [0, P.stand], [0.35, P.stand], [0.6, P.run], [1.42, P.run], [1.58, P.crouch], [1.74, P.extend], [1.92, P.tuck], [2.75, P.tuck],
+  [3.15, P.open], [3.6, P.arch], [5.45, P.arch], [5.65, P.pull], [5.95, P.pull], [6.35, P.reach], [7.0, P.hang],
+  [T_LAND - 0.9, P.hang], [T_LAND - 0.25, P.flare], [T_LAND, P.flare], [T_LAND + 0.18, P.land], [T_LAND + 0.75, P.land],
+  [T_LAND + 1.3, P.stand], [T_LAND + 1.6, P.wave], [T_END + 1, P.wave],
+];
+const ZERO = [0, 0, 0];
+function applyPose(t, joints, hipsJoint) {
+  let i = 0;
+  while (i < KEYS.length - 2 && KEYS[i + 1][0] <= t) i++;
+  const [t0, pa] = KEYS[i], [t1, pb] = KEYS[i + 1];
+  const w = smooth(t0, t1, t), A = pa(t), B = pb(t);
+  for (const j of JOINTS) {
+    const a = A[j] || ZERO, b = B[j] || ZERO;
+    joints[j].rotation.set(lerp(a[0], b[0], w), lerp(a[1], b[1], w), lerp(a[2], b[2], w));
+  }
+  hipsJoint.position.y = lerp(A.hipsY ?? 1, B.hipsY ?? 1, w);
+}
+
+const PHASES = [
+  ['Run-up', 0, T_TAKEOFF], ['Flip', T_TAKEOFF, 3.55], ['Freefall', 3.55, 5.5], ['Deploy', 5.5, DEPLOY1 + 0.2],
+  ['Canopy', DEPLOY1 + 0.2, T_LAND - 0.9], ['Landing', T_LAND - 0.9, T_END],
+];
+const phaseAt = t => PHASES.find(p => t < p[2]) || PHASES[PHASES.length - 1];
+
+/* ───────── renderer & world ───────── */
+const view = $('view');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+view.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+const HORIZON = new THREE.Color(0xd3e5f3);
+{
+  const c = document.createElement('canvas'); c.width = 4; c.height = 256;
+  const g = c.getContext('2d'), gr = g.createLinearGradient(0, 0, 0, 256);
+  gr.addColorStop(0, '#3f7fc4'); gr.addColorStop(0.55, '#8fbde6'); gr.addColorStop(1, '#d9e9f5');
+  g.fillStyle = gr; g.fillRect(0, 0, 4, 256);
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+  scene.background = tex;
+}
+scene.fog = new THREE.Fog(HORIZON, 120, 900);
+
+const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 2000);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.enabled = false; controls.minDistance = 3; controls.maxDistance = 60;
+
+scene.add(new THREE.HemisphereLight(0xcfe6ff, 0x6b7f4a, 1.1));
+const sun = new THREE.DirectionalLight(0xfff1dc, 2.6);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -12, right: 12, top: 12, bottom: -12, near: 1, far: 140 });
+sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.03;
+scene.add(sun, sun.target);
+const SUN_DIR = new THREE.Vector3(30, 60, 22).normalize();
+
+// ground: patchwork fields
+{
+  const c = document.createElement('canvas'); c.width = c.height = 512;
+  const g = c.getContext('2d');
+  const fills = ['#7aa35a', '#8fb465', '#6b934d', '#b9ae6c', '#a6b86a', '#5f8746', '#c5b77a'];
+  let s = 7; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  g.fillStyle = '#76a057'; g.fillRect(0, 0, 512, 512);
+  for (let y = 0; y < 512; y += 64) for (let x = 0; x < 512; x += 64) {
+    const w = 64 * (1 + Math.floor(rnd() * 2)), h = 64;
+    g.fillStyle = fills[Math.floor(rnd() * fills.length)]; g.fillRect(x + 1, y + 1, w - 2, h - 2);
+    g.strokeStyle = 'rgba(0,0,0,.05)'; for (let k = 4; k < h; k += 6) { g.beginPath(); g.moveTo(x, y + k); g.lineTo(x + w, y + k); g.stroke(); }
+  }
+  g.fillStyle = '#d8cfb0'; g.fillRect(0, 252, 512, 6); g.fillRect(318, 0, 5, 512);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace; tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(40, 40);
+  tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(3000, 3000), new THREE.MeshStandardMaterial({ map: tex, roughness: 1 }));
+  ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true;
+  scene.add(ground);
+}
+// landing target
+{
+  const c = document.createElement('canvas'); c.width = c.height = 256;
+  const g = c.getContext('2d');
+  [[128, '#f2f2ee'], [104, '#e8890c'], [80, '#f2f2ee'], [56, '#e8890c'], [32, '#f2f2ee'], [12, '#e8890c']].forEach(([r, col]) => { g.fillStyle = col; g.beginPath(); g.arc(128, 128, r, 0, Math.PI * 2); g.fill(); });
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+  const target = new THREE.Mesh(new THREE.CircleGeometry(5, 48), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.9 }));
+  target.rotation.x = -Math.PI / 2; target.position.set(0, 0.03, sim.zLand + 0.6); target.receiveShadow = true;
+  scene.add(target);
+}
+// cliff (mesa) with a flat top whose front edge sits at z = 0
+{
+  const R = 7, geo = new THREE.CylinderGeometry(R, R + 3, H, 28, 18);
+  const p = geo.attributes.position, v = new THREE.Vector3();
+  for (let i = 0; i < p.count; i++) {
+    v.fromBufferAttribute(p, i);
+    const rr = Math.hypot(v.x, v.z); if (rr < 0.01) continue;
+    const a = Math.atan2(v.z, v.x), h = v.y / H + 0.5;
+    const n = 0.9 * Math.sin(a * 5 + h * 9) + 0.6 * Math.sin(a * 11 - h * 23) + 0.4 * Math.sin(h * 41);
+    const k = 1 + (n * 0.12) * (1 - smooth(0.9, 1, h));
+    v.x *= k; v.z *= k; p.setXYZ(i, v.x, v.y, v.z);
+  }
+  geo.computeVertexNormals();
+  const mesa = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0xb98559, roughness: 0.95, flatShading: true }));
+  mesa.position.set(0, H / 2, -R); mesa.castShadow = mesa.receiveShadow = true;
+  scene.add(mesa);
+  const lip = new THREE.Mesh(new THREE.CylinderGeometry(R + 0.05, R + 0.05, 0.25, 28), new THREE.MeshStandardMaterial({ color: 0x7f9a52, roughness: 1 }));
+  lip.position.set(0, H - 0.1, -R); lip.receiveShadow = true; scene.add(lip);
+}
+// trees
+{
+  const N = 160, cone = new THREE.ConeGeometry(1.4, 4, 7), trunk = new THREE.CylinderGeometry(0.22, 0.28, 1.2, 6);
+  cone.translate(0, 3.1, 0); trunk.translate(0, 0.6, 0);
+  const crowns = new THREE.InstancedMesh(cone, new THREE.MeshStandardMaterial({ color: 0x2f6a3b, roughness: 1, flatShading: true }), N);
+  const trunks = new THREE.InstancedMesh(trunk, new THREE.MeshStandardMaterial({ color: 0x5b4330, roughness: 1 }), N);
+  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3();
+  let seed = 3; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  let n = 0;
+  while (n < N) {
+    const a = rnd() * Math.PI * 2, r = 12 + rnd() * 140;
+    p.set(Math.cos(a) * r, 0, sim.zLand + Math.sin(a) * r);
+    if (Math.hypot(p.x, p.z + 7) < 14 || Math.hypot(p.x, p.z - sim.zLand) < 11 || (Math.abs(p.x) < 6 && p.z > 0 && p.z < sim.zLand)) continue;
+    const k = 0.7 + rnd() * 0.8; s.set(k, k * (0.8 + rnd() * 0.5), k);
+    m.compose(p, q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), rnd() * 6), s);
+    crowns.setMatrixAt(n, m); trunks.setMatrixAt(n, m); n++;
+  }
+  crowns.castShadow = true; scene.add(crowns, trunks);
+}
+// clouds
+{
+  const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, emissive: 0xdfe9f4, emissiveIntensity: 0.35 });
+  const ball = new THREE.IcosahedronGeometry(1, 3);
+  let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 26; i++) {
+    const g = new THREE.Group();
+    const side = rnd() < 0.5 ? -1 : 1;
+    g.position.set(side * (9 + rnd() * 45), H * (0.3 + rnd() * 0.85), -60 + rnd() * 130);
+    const puffs = 4 + Math.floor(rnd() * 5);
+    for (let k = 0; k < puffs; k++) {
+      const m = new THREE.Mesh(ball, mat);
+      const r = 2.5 + rnd() * 3.5;
+      m.scale.set(r * 1.4, r * 0.8, r);
+      m.position.set((k - puffs / 2) * 3 + rnd() * 2, rnd() * 1.5, rnd() * 3);
+      g.add(m);
+    }
+    scene.add(g);
+  }
+}
+
+/* ───────── the skydiver (stylized person, toon-shaded) ───────── */
+const system = new THREE.Group();          // origin = feet reference, follows the physics
+const body = new THREE.Group();            // pivot at the centre of mass, takes flip pitch
+body.position.y = 1.0;
+system.add(body);
+scene.add(system);
+
+const joints = {};
+let pack, handR;
+{
+  // 3-step toon ramp: flat bands of light instead of realistic shading
+  const ramp = new THREE.DataTexture(new Uint8Array([90, 90, 90, 255, 175, 175, 175, 255, 255, 255, 255, 255]), 3, 1);
+  ramp.minFilter = ramp.magFilter = THREE.NearestFilter; ramp.needsUpdate = true;
+  const toon = color => new THREE.MeshToonMaterial({ color, gradientMap: ramp });
+  const skin = toon(0xd29a6c), suit = toon(0xe0533d), stripe = toon(0x1f3a66), glove = toon(0x2a2d33);
+  const helmet = toon(0xf4f1ea), lens = toon(0x26c2d9), dark = toon(0x1b1d22), shoe = toon(0xf4f1ea), hair = toon(0x3b2416);
+  const navy = toon(0x1f3a66);
+  const cap = (r, len) => new THREE.CapsuleGeometry(r, len, 6, 14);
+  const ball = r => new THREE.SphereGeometry(r, 22, 16);
+  const part = (geo, mat, parent, y = 0, x = 0, z = 0, sx = 1, sy = 1, sz = 1) => {
+    const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.scale.set(sx, sy, sz); m.castShadow = true; parent.add(m); return m;
+  };
+  const joint = (name, parent, x, y, z) => { const g = new THREE.Group(); g.name = name; g.position.set(x, y, z); parent.add(g); joints[name] = g; return g; };
+
+  const rig = new THREE.Group(); rig.position.y = -1.0; body.add(rig);
+  const hips = joint('hips', rig, 0, 1.0, 0);
+  part(ball(0.16), suit, hips, 0, 0, 0, 1.15, 0.75, 0.8);                       // pelvis
+  const spine = joint('spine', hips, 0, 0.06, 0);
+  part(cap(0.165, 0.28), suit, spine, 0.27, 0, 0, 1.25, 1, 0.78);               // torso
+  part(cap(0.03, 0.42), stripe, spine, 0.27, 0.205, 0, 1, 1, 1);               // side stripes
+  part(cap(0.03, 0.42), stripe, spine, 0.27, -0.205, 0, 1, 1, 1);
+  part(new THREE.TorusGeometry(0.17, 0.022, 8, 24), dark, spine, 0.05, 0, 0, 1.25, 0.78, 1).rotation.x = Math.PI / 2; // harness belt
+  pack = part(new THREE.BoxGeometry(0.34, 0.42, 0.13), navy, spine, 0.3, 0, -0.17);
+  part(new THREE.BoxGeometry(0.06, 0.06, 0.03), toon(0xf2a516), pack, -0.17, 0.12, 0.05); // ripcord handle
+  part(new THREE.CylinderGeometry(0.05, 0.055, 0.08, 12), skin, spine, 0.53);  // neck
+
+  const head = joint('head', spine, 0, 0.58, 0);
+  part(ball(0.13), skin, head, 0.13, 0, 0, 1, 1.12, 1.02);                      // face
+  part(ball(0.142, 0), helmet, head, 0.17, 0, -0.01, 1, 1, 1.05).geometry = new THREE.SphereGeometry(0.142, 22, 12, 0, Math.PI * 2, 0, 1.75);
+  part(new THREE.TorusGeometry(0.135, 0.022, 8, 28), dark, head, 0.2, 0, 0.0, 1, 1, 1.05).rotation.x = Math.PI / 2 - 0.25; // goggle strap
+  part(new THREE.BoxGeometry(0.17, 0.055, 0.04), lens, head, 0.205, 0, 0.13);   // goggles on the forehead
+  part(ball(0.017), dark, head, 0.125, 0.045, 0.125);                           // eyes
+  part(ball(0.017), dark, head, 0.125, -0.045, 0.125);
+  part(ball(0.022), skin, head, 0.09, 0, 0.14);                                // nose
+  part(new THREE.TorusGeometry(0.03, 0.007, 6, 12, Math.PI), dark, head, 0.05, 0, 0.122).rotation.z = Math.PI; // smile
+  part(ball(0.028), skin, head, 0.13, 0.13, 0);                                // ears
+  part(ball(0.028), skin, head, 0.13, -0.13, 0);
+  part(ball(0.05), hair, head, 0.06, 0, -0.1, 1.6, 0.9, 0.8);                  // hair at the nape
+
+  for (const [s, sx] of [['L', 1], ['R', -1]]) {
+    const sh = joint('shoulder' + s, spine, 0.2 * sx, 0.46, 0);
+    part(ball(0.07), suit, sh);
+    part(cap(0.058, 0.2), suit, sh, -0.15);
+    const el = joint('elbow' + s, sh, 0, -0.3, 0);
+    part(cap(0.05, 0.18), suit, el, -0.12);
+    part(cap(0.054, 0.03), glove, el, -0.23);                                  // cuff
+    const hand = part(ball(0.058), glove, el, -0.3, 0, 0, 0.9, 1.1, 0.8);
+    if (s === 'R') handR = hand;
+    const hp = joint('hip' + s, hips, 0.1 * sx, -0.04, 0);
+    part(cap(0.08, 0.27), suit, hp, -0.21);
+    const kn = joint('knee' + s, hp, 0, -0.45, 0);
+    part(ball(0.07), suit, kn);
+    part(cap(0.065, 0.27), suit, kn, -0.2);
+    part(new THREE.CapsuleGeometry(0.06, 0.12, 4, 10), shoe, kn, -0.45, 0, 0.05, 1.05, 0.8, 1).rotation.x = Math.PI / 2;
+  }
+}
+
+/* ───────── parachute ───────── */
+const CANOPY_R = 3.6, THETA0 = 0.14, THETA1 = 1.26, CANOPY_SY = 0.62, GORES = 24;
+const canopy = new THREE.Group();
+let canopyMesh;
+{
+  const geo = new THREE.SphereGeometry(CANOPY_R, 96, 16, 0, Math.PI * 2, THETA0, THETA1 - THETA0);
+  const p = geo.attributes.position, colors = [], c = new THREE.Color();
+  const amber = new THREE.Color(0xf2a516), cream = new THREE.Color(0xf5f0e6), navy = new THREE.Color(0x24467a);
+  const crumple = p.clone(), v = new THREE.Vector3();
+  for (let i = 0; i < p.count; i++) {
+    v.fromBufferAttribute(p, i);
+    const phi = (Math.atan2(v.z, v.x) + Math.PI * 2) % (Math.PI * 2);
+    const gore = Math.floor(phi / (Math.PI * 2 / GORES));
+    c.copy(gore % 6 === 0 ? navy : gore % 2 ? cream : amber);
+    colors.push(c.r, c.g, c.b);
+    const th = Math.acos(THREE.MathUtils.clamp(v.y / CANOPY_R, -1, 1));
+    const n = Math.sin(phi * 9) * Math.cos(th * 11) + 0.5 * Math.sin(phi * 23 + th * 5);
+    const pinch = 0.22 + 0.08 * n;
+    crumple.setXYZ(i, v.x * pinch, v.y * 1.2 + 1.2 * n * 0.25 - th * 1.6, v.z * pinch);
+  }
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  crumple.name = 'crumple';
+  const tmp = new THREE.BufferGeometry(); tmp.setIndex(geo.index); tmp.setAttribute('position', crumple); tmp.computeVertexNormals();
+  const cn = tmp.attributes.normal; cn.name = 'crumple';
+  geo.morphAttributes.position = [crumple];
+  geo.morphAttributes.normal = [cn];
+  canopyMesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide, roughness: 0.75 }));
+  canopyMesh.updateMorphTargets();
+  canopyMesh.castShadow = true;
+  canopyMesh.scale.y = CANOPY_SY;
+  canopy.add(canopyMesh);
+  scene.add(canopy);
+}
+const pilot = new THREE.Mesh(new THREE.SphereGeometry(0.45, 20, 8, 0, Math.PI * 2, 0, 1.3),
+  new THREE.MeshStandardMaterial({ color: 0xf2a516, side: THREE.DoubleSide, roughness: 0.8 }));
+pilot.scale.y = 0.7; pilot.castShadow = true; scene.add(pilot);
+
+const LINES = 24;
+const lineGeo = new THREE.BufferGeometry();
+lineGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array((LINES * 2 + 2) * 3), 3).setUsage(THREE.DynamicDrawUsage));
+const lines = new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({ color: 0x3a3f47, transparent: true, opacity: 0.85 }));
+lines.frustumCulled = false; scene.add(lines);
+const rimLocal = [...Array(LINES)].map((_, i) => {
+  const phi = i / LINES * Math.PI * 2;
+  return new THREE.Vector3(CANOPY_R * Math.sin(THETA1) * Math.cos(phi), CANOPY_R * Math.cos(THETA1) * CANOPY_SY, CANOPY_R * Math.sin(THETA1) * Math.sin(phi));
+});
+const APEX_LOCAL = new THREE.Vector3(0, CANOPY_R * Math.cos(THETA0) * CANOPY_SY, 0);
+
+// freefall wind streaks
+const STREAKS = 70;
+const streakGeo = new THREE.BufferGeometry();
+streakGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(STREAKS * 6), 3).setUsage(THREE.DynamicDrawUsage));
+const streaks = new THREE.LineSegments(streakGeo, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0 }));
+streaks.frustumCulled = false; scene.add(streaks);
+const streakOff = [...Array(STREAKS)].map(() => new THREE.Vector3((Math.random() - 0.5) * 14, (Math.random() - 0.5) * 18, (Math.random() - 0.5) * 14));
+
+/* ───────── per-frame scene state from time t ───────── */
+const com = new THREE.Vector3(), tmpV = new THREE.Vector3(), tmpV2 = new THREE.Vector3(), packW = new THREE.Vector3(), handW = new THREE.Vector3();
+const shL = new THREE.Vector3(), shR = new THREE.Vector3(), apexW = new THREE.Vector3();
+const pitchAxis = new THREE.Vector3(1, 0, 0);
+let lastT = 0;
+
+function setScene(t) {
+  motion(t, M);
+  system.position.set(M.x, M.y, M.z);
+  const pitch = bodyPitch(t);
+  body.rotation.set(pitch, 0, bodyRoll(t));
+  applyPose(t, joints, joints.hips);
+  system.updateMatrixWorld(true);
+  com.set(0, 1, 0).applyMatrix4(system.matrixWorld);
+
+  // canopy
+  const out = t > DEPLOY0 - 0.15;
+  canopy.visible = out;
+  const u = (t - (DEPLOY0 - 0.15)) / (DEPLOY1 + 0.25 - (DEPLOY0 - 0.15));
+  const ext = smooth(0, 0.55, u), inf = smooth(0.4, 1, u);
+  const collapse = smooth(T_LAND + 0.1, T_LAND + 1.7, t);
+  pack.getWorldPosition(packW);
+  const swing = (pitch - 2 * Math.PI) * inf;
+  const deployed = tmpV.set(0, 5.6, 0).applyAxisAngle(pitchAxis, swing).add(com);
+  canopy.position.copy(packW).lerp(deployed, ext);
+  const landed = tmpV2.set(com.x - 5.2, 0.35, com.z - 1.0);   // drops off to the jumper's right, out of the final shot
+  canopy.position.lerp(landed, collapse);
+  canopy.rotation.set(swing * (1 - collapse), 0, collapse * 1.35);
+  const sxz = 0.1 + 0.9 * inf, sy = 0.25 + 0.75 * inf;
+  canopy.scale.set(sxz * (1 + 0.15 * collapse), sy * (1 - 0.7 * collapse), sxz * (1 + 0.15 * collapse));
+  canopyMesh.morphTargetInfluences[0] = Math.max(1 - inf, collapse * 0.85);
+  canopy.updateMatrixWorld(true);
+
+  // pilot chute + bridle
+  const pilotOut = t > 5.85;
+  pilot.visible = pilotOut;
+  handR.getWorldPosition(handW);
+  apexW.copy(APEX_LOCAL); canopy.localToWorld(apexW);
+  if (pilotOut) {
+    const early = tmpV.copy(handW).lerp(tmpV2.copy(com).add(new THREE.Vector3(0, 4.2, 0)), smooth(5.85, 6.15, t));
+    const late = tmpV2.copy(apexW).add(new THREE.Vector3(-1.2 * collapse, 1.8 * (1 - collapse), 0));
+    pilot.position.copy(early).lerp(late, out ? smooth(DEPLOY0 - 0.15, DEPLOY0 + 0.35, t) : 0);
+    pilot.rotation.copy(canopy.rotation);
+  }
+
+  // suspension lines (rim → shoulders) and bridle (pack/apex → pilot)
+  const arr = lineGeo.attributes.position.array;
+  joints.shoulderL.getWorldPosition(shL); joints.shoulderR.getWorldPosition(shR);
+  for (let i = 0; i < LINES; i++) {
+    tmpV.copy(rimLocal[i]); canopy.localToWorld(tmpV);
+    const s = rimLocal[i].x >= 0 ? shL : shR;
+    arr.set([tmpV.x, tmpV.y, tmpV.z, s.x, s.y + 0.1, s.z], i * 6);
+  }
+  const bridleFrom = out ? apexW : packW;
+  arr.set([bridleFrom.x, bridleFrom.y, bridleFrom.z, pilot.position.x, pilot.position.y, pilot.position.z], LINES * 6);
+  lineGeo.attributes.position.needsUpdate = true;
+  lines.visible = out && collapse < 0.99;
+  lines.material.opacity = 0.85 * (1 - collapse);
+  lineGeo.setDrawRange(0, pilotOut ? LINES * 2 + 2 : LINES * 2);
+  if (!out && pilotOut) { lines.visible = true; lineGeo.setDrawRange(LINES * 2, 2); }
+
+  // sun & shadow follow the jumper
+  sun.target.position.copy(com);
+  sun.position.copy(com).addScaledVector(SUN_DIR, 60);
+
+  // wind streaks while falling fast
+  const speed = Math.abs(M.vy);
+  streaks.material.opacity = 0.55 * smooth(8, 22, speed);
+  const sa = streakGeo.attributes.position.array, len = speed * 0.07;
+  const dt = t - lastT;
+  for (let i = 0; i < STREAKS; i++) {
+    const o = streakOff[i];
+    o.y += speed * Math.max(dt, 0) * 0.35;
+    o.y = ((o.y + 9) % 18 + 18) % 18 - 9;
+    sa.set([com.x + o.x, com.y + o.y, com.z + o.z, com.x + o.x, com.y + o.y + len, com.z + o.z], i * 6);
+  }
+  streakGeo.attributes.position.needsUpdate = true;
+  lastT = t;
+}
+
+/* ───────── camera ───────── */
+// [time, offset from centre of mass, look offset]
+const CAM = [
+  [0, [7.5, 2.4, 3.5], [0, 0.2, 0]],
+  [1.3, [8, 1.6, 2.5], [0, 0.3, 0]],
+  [2.0, [6.8, 0.6, 0.8], [0, 0, 0]],
+  [3.4, [7.2, 0.8, 0.8], [0, 0, 0]],
+  [4.2, [5.5, 5.5, -4.5], [0, -0.5, 0]],
+  [5.6, [6.5, 4.5, -3], [0, 0.5, 0]],
+  [6.6, [12, 1.5, 7], [0, 3, 0]],
+  [9.5, [13, 4, 13], [0, 3.2, 0]],
+  [T_LAND - 1.2, [8, 1.4, 11], [0, 2, 0]],
+  [T_LAND + 1.2, [4.5, 1.0, 7.5], [0, 0.6, 0]],
+  [T_END, [3.2, 0.7, 5.6], [0, 0.6, 0]],
+];
+const camOff = new THREE.Vector3(), camLook = new THREE.Vector3();
+function cinematic(t) {
+  let i = 0; while (i < CAM.length - 2 && CAM[i + 1][0] <= t) i++;
+  const [t0, o0, l0] = CAM[i], [t1, o1, l1] = CAM[i + 1];
+  const w = smooth(t0, t1, t);
+  camOff.set(lerp(o0[0], o1[0], w), lerp(o0[1], o1[1], w), lerp(o0[2], o1[2], w));
+  camLook.set(lerp(l0[0], l1[0], w), lerp(l0[1], l1[1], w), lerp(l0[2], l1[2], w)).add(com);
+  camera.position.copy(com).add(camOff);
+  if (camera.position.y < 0.6) camera.position.y = 0.6;
+  camera.lookAt(camLook);
+}
+
+let cineOn = true;
+const followTarget = new THREE.Vector3();
+function setCinematic(on) {
+  cineOn = on;
+  controls.enabled = !on;
+  $('cam').setAttribute('aria-pressed', String(on));
+  $('hint').textContent = on ? 'Drag to look around · the camera keeps following' : 'Free camera · drag to orbit, scroll to zoom';
+  if (!on) { controls.target.copy(camLook); followTarget.copy(com); }
+}
+renderer.domElement.addEventListener('pointerdown', () => { if (cineOn) setCinematic(false); });
+$('cam').onclick = () => setCinematic(!cineOn);
+
+/* ───────── transport & timeline ───────── */
+let t = 0, playing = true, speed = 1, looping = true;
+const setPlaying = on => { playing = on; $('play').textContent = on ? 'Pause' : 'Play'; $('play').setAttribute('aria-pressed', String(on)); };
+$('play').onclick = () => { if (!playing && t >= T_END) t = 0; setPlaying(!playing); };
+$('replay').onclick = () => { t = 0; setPlaying(true); setCinematic(true); };
+$('speed').oninput = e => { speed = +e.target.value; $('speedOut').textContent = speed.toFixed(2) + '×'; };
+$('loop').onclick = e => { looping = !looping; e.currentTarget.setAttribute('aria-pressed', String(looping)); };
+
+const segs = $('segs');
+segs.innerHTML = PHASES.map(([n, a, b]) => `<div class="seg" data-n="${n}" style="left:${a / T_END * 100}%;width:${(Math.min(b, T_END) - a) / T_END * 100}%">${n}</div>`).join('');
+const track = $('track');
+const fracAt = e => { const r = track.getBoundingClientRect(); return THREE.MathUtils.clamp((e.clientX - r.left) / r.width, 0, 1); };
+let scrubbing = false;
+track.addEventListener('pointerdown', e => { scrubbing = true; track.setPointerCapture(e.pointerId); setPlaying(false); t = fracAt(e) * T_END; });
+track.addEventListener('pointermove', e => { if (scrubbing) t = fracAt(e) * T_END; });
+track.addEventListener('pointerup', () => { scrubbing = false; });
+track.addEventListener('keydown', e => {
+  const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (!d) return;
+  e.preventDefault(); setPlaying(false);
+  t = THREE.MathUtils.clamp(t + d * (e.shiftKey ? 1 : 1 / FPS), 0, T_END);
+});
+
+function resize() {
+  const w = view.clientWidth, h = view.clientHeight;
+  renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(view); resize();
+
+let lastPhase = '';
+function hud() {
+  const [name] = phaseAt(t);
+  if (name !== lastPhase) {
+    lastPhase = name;
+    $('phase').textContent = name; $('tlPhase').textContent = name;
+    for (const s of segs.children) s.classList.toggle('on', s.dataset.n === name);
+  }
+  $('clock').textContent = `t ${t.toFixed(1)} s`;
+  $('alt').innerHTML = `${Math.max(0, M.y).toFixed(0)}<small>m</small>`;
+  $('vs').textContent = `${M.vy < -0.05 ? '↓' : M.vy > 0.05 ? '↑' : '·'} ${Math.abs(M.vy).toFixed(1)} m/s`;
+  $('fwd').textContent = `→ ${Math.abs(M.vz).toFixed(1)} m/s`;
+  $('playhead').style.left = (t / T_END * 100) + '%';
+  $('tlTime').textContent = `frame ${String(Math.round(t * FPS)).padStart(3, '0')} / ${Math.round(T_END * FPS)} @ ${FPS} fps`;
+  track.setAttribute('aria-valuenow', String(Math.round(t / T_END * 100)));
+}
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const dt = Math.min(clock.getDelta(), 1 / 20);
+  if (playing) {
+    t += dt * speed;
+    if (t >= T_END) { if (looping) t = 0; else { t = T_END; setPlaying(false); } }
+  }
+  setScene(t);
+  if (cineOn) cinematic(t);
+  else {
+    // keep the user's orbit, but carry it along with the jumper
+    tmpV.copy(com).sub(followTarget);
+    camera.position.add(tmpV); controls.target.add(tmpV); followTarget.copy(com);
+    controls.update(dt);
+    if (camera.position.y < 0.5) camera.position.y = 0.5;
+  }
+  renderer.render(scene, camera);
+  hud();
+});
+
+window.__jump = { get t() { return t; }, set t(v) { t = v; }, H, T_LAND, T_END, M, canopy, canopyMesh, body, setPlaying };
+</script>
+</body>
+</html>
