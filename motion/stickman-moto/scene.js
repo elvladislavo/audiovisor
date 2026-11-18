@@ -407,7 +407,7 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
       }
 
       /* lights, debris, shockwave */
-      fireLight.position.set(0, bs.y + 0.2, bs.z); fireLight.intensity = t < T_BOOM ? 3 + 0.8 * Math.sin(t * 31) : 0;
+      fireLight.position.set(0, 0.25, bs.z - WHEEL_Z); fireLight.intensity = t < T_BOOM ? 0.6 + 0.15 * Math.sin(t * 31) : 0;
       boomLight.intensity = ub < 0 ? 0 : 160 * Math.exp(-2.2 * ub) + 12 * (0.8 + 0.2 * Math.sin(t * 17));
       ring.material.opacity = ub < 0 ? 0 : 0.9 * (1 - sm(0, 0.7, ub)); ring.scale.setScalar(ub < 0 ? 0.01 : 0.5 + 18 * ease.outCubic(range(ub, 0, 0.8)));
       scorch.material.opacity = ub < 0 ? 0 : 0.75 * sm(0, 0.4, ub);
