@@ -153,6 +153,9 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
     ray.set(V3(Math.sin(th) * 30, y, Math.cos(th) * 30), V3(-Math.sin(th), 0, -Math.cos(th)));
     const hit = ray.intersectObject(mountain, false)[0]; return hit ? 30 - hit.distance : Rs(y);
   };
+  // colour of the rock face at (angle, height) — read from the hit face's vertex colour
+  const surfColor = (th, y) => { ray.set(V3(Math.sin(th) * 30, Math.min(y, M_TOP - 0.05), Math.cos(th) * 30), V3(-Math.sin(th), 0, -Math.cos(th)));
+    const hit = ray.intersectObject(mountain, false)[0], c = mountain.geometry.attributes.color; return hit ? new THREE.Color(c.getX(hit.face.a), c.getY(hit.face.a), c.getZ(hit.face.a)) : new THREE.Color(0x8a6fb0); };
   const out = th => V3(Math.sin(th), 0, Math.cos(th)), tang = th => V3(Math.cos(th), 0, -Math.sin(th));
   const onRock = (th, y, off) => out(th).multiplyScalar(surfR(th, y) + off).setY(y);
 
@@ -256,7 +259,7 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
       const list = [{ t0: -1, t1: s.cs - 0.01, ...holdPoint(s, name, s.f0 - (L.hand ? 0.15 : 0.0)) }];
       for (let c = 0; c < s.N; c++) { const t0 = s.cs + (c + L.ph) * CYC, t1 = t0 + L.dur * CYC; list.push({ t0, t1, ...holdPoint(s, name, lerp(s.f0, s.f1, (c + 1) / s.N)) }); }
       s.moves[name] = list;
-      list.forEach((m, i) => { if (m.top) return; const hm = new THREE.Mesh(holdGeo, holdMats[Math.floor(rnd() * 3)]); hm.castShadow = hm.receiveShadow = true; scene.add(hm);
+      list.forEach((m, i) => { if (m.top) return; const fc = surfColor(m.th, m.p.y), hm = new THREE.Mesh(holdGeo, new THREE.MeshToonMaterial({ color: fc.clone().multiplyScalar(0.92 + rnd() * 0.12), gradientMap: ramp, flatShading: true })); hm.castShadow = hm.receiveShadow = true; scene.add(hm);
         hm.scale.set(0.075, 0.05, 0.065); hm.position.copy(m.p).addScaledVector(out(m.th), 0.015); hm.rotation.set(rnd() * 0.6, m.th + rnd() * 0.8, rnd() * 0.6); holdMeshes.push(hm); });
     }
   });
