@@ -8,7 +8,9 @@
 // POLISH TEXT (checked): Droga na szczyt · Szkic (sketch) · Siatka (grid) · Typografia · Kolory (colours) ·
 //   Efekty dla efektu ✗ (effects for effect's sake) · Prostota ✓ (simplicity) · Testy ✓ (tests) ·
 //   Krok po kroku na szczyt. (step by step to the top) · elvladislavo.com (neon, also on the flag)
-// BEATS (computed from the stop table below; ≈ 36 s)
+// BEATS (computed from the stop table below; ≈ 45 s). Climbing rhythm per move: right hand, left hand, high-step
+//   right foot, left foot, stand up on the legs; hips shift over the stepping foot, head follows the reaching hand.
+//   Holds are knobs of the mountain stone (same palette, flat-shaded).
 //   0–4.3   drone swoop down to him at the foot; he looks up
 //   then    per ledge: step to the wall · climb 3 moves · step across onto the next ledge · tag ✓ · pose
 //   trap    glitter ledge shakes; he grabs the wall, it crumbles away under him
@@ -34,7 +36,7 @@ const M_BOT = -3, M_TOP = 9.2, R_BOT = 5.6, R_TOP = 1.3;
 const Rs = y => R_BOT - (R_BOT - R_TOP) * (y - M_BOT) / (M_TOP - M_BOT);       // nominal surface radius at height y
 const SLAB = { w: 1.3, h: 0.25, d: 1.7 }, TOPY = SLAB.h / 2;
 const ARC = 2.6;                                                                    // arc distance between ledge centres
-const CYC = 0.46, RISE = 0.4, T_OUT = 0.42, T_IN = 0.5, T_MANTLE = 0.75, STAND = 1.5;
+const CYC = 0.68, RISE = 0.42, T_OUT = 0.42, T_IN = 0.5, T_MANTLE = 0.75, STAND = 1.4;
 const STOP_DEF = [
   { y: 0.0, top: 'rock', pose: 'look' },
   { y: 1.1, top: 'sketch', pose: 'thumbs', name: 'Szkic' },
@@ -53,7 +55,7 @@ const STOPS = []; {
     const s = { ...d, k };
     if (k > 0) { const prev = STOPS[k - 1];
       a += ARC / (Rs(prev.y) + 0.75); s.a = d.summit ? a : a;
-      prev.colA = prev.a + (a - prev.a) / 2;                                          // the climbing line, halfway between the ledges
+      prev.colA = prev.a + (a - prev.a) * 0.44;                                          // the climbing line, halfway between the ledges
       const f0 = prev.y + TOPY, f1 = d.summit ? M_TOP - 0.55 : d.y + TOPY;
       prev.N = Math.max(2, Math.ceil((f1 - f0) / RISE)); prev.f0 = f0; prev.f1 = f1;
       prev.cs = prev.leave + T_OUT; prev.ce = prev.cs + prev.N * CYC;
@@ -80,7 +82,7 @@ const P = {
     return { hipsY: 0.9, head: [0.15, 0.2 * Math.sin(t * 9), 0], spine: [0.1 * Math.sin(t * 7), 0, 0.1 * Math.sin(t * 5)], shoulderL: [Math.sin(w) * 2.2 - 1.2, 0, 0.7], shoulderR: [Math.sin(w + PI) * 2.2 - 1.2, 0, -0.7],
       elbowL: [-0.4, 0, 0], elbowR: [-0.4, 0, 0], hipL: [-0.3, 0, 0.15], kneeL: [0.4, 0, 0], hipR: [-0.1, 0, -0.15], kneeR: [0.3, 0, 0] }; },
   climb: t => ({ hipsY: 0.95, spine: [0.12, 0, 0], head: [-0.4, 0, 0], shoulderL: [-2.2, 0, 0.3], elbowL: [-0.6, 0, 0], shoulderR: [-2.2, 0, -0.3], elbowR: [-0.6, 0, 0],
-    hipL: [-0.6, 0, 0.3], kneeL: [1.0, 0, 0], hipR: [-0.6, 0, -0.3], kneeR: [1.0, 0, 0] }),
+    hipL: [-0.6, 0, 0.08], kneeL: [1.0, 0, 0], hipR: [-0.6, 0, -0.08], kneeR: [1.0, 0, 0] }),
   raise: t => ({ head: [-0.2, 0, 0], spine: [-0.05, 0, 0], shoulderL: [-3.0, 0, 0.15], elbowL: [-0.2, 0, 0], shoulderR: [0, 0, -0.25], elbowR: [-0.3, 0, 0] }),
   plant: t => ({ hipsY: 0.88, spine: [0.15, 0, 0], head: [0.1, 0, 0], shoulderL: [-0.7, 0, 0.45], elbowL: [-0.3, 0, 0], shoulderR: [0, 0, -0.3], elbowR: [-0.3, 0, 0], hipR: [-0.3, 0, 0], kneeR: [0.4, 0, 0] }),
   flex: t => { const b = Math.max(0, Math.sin((t - SUM.land - 1.6) * 2 * PI)) * sm(SUM.land + 1.6, SUM.land + 1.9, t);    // the photo pose
@@ -226,35 +228,43 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
     s.userData = { off: V3((rnd() - 0.5) * 1.6, 0.15 + rnd() * 1.4, 0.2 + rnd() * 0.7), ph: rnd() * 6 }; scene.add(s); return s; });
 
   /* climbing: per pitch, four limbs step hold to hold (RH, LF, LH, RF), the body rises in surges */
-  const LIMBS = { RH: { lat: 1, up: 1.68, ph: 0, hand: true }, LF: { lat: -1, up: 0.42, ph: 0.25 }, LH: { lat: -1, up: 1.68, ph: 0.5, hand: true }, RF: { lat: 1, up: 0.42, ph: 0.75 } };
-  const sBody = (s, t) => { const u = Math.min(s.N, Math.max(0, (t - s.cs) / CYC)), c = Math.floor(Math.min(u, s.N - 1e-6)), f = u - c;
-    return Math.min(1, (c + 0.35 * f + 0.65 * sm(0.15, 0.95, f)) / s.N); };
+  // a human rhythm per move: reach right hand, reach left hand, high-step right foot, step left foot,
+  // then stand up on the legs (most of the rise comes from the leg push, a little from the pull)
+  const LIMBS = { RH: { lat: 1, up: 1.52, ph: 0.0, dur: 0.2, hand: true }, LH: { lat: -1, up: 1.52, ph: 0.22, dur: 0.2, hand: true },
+    RF: { lat: 1, up: 0.03, ph: 0.46, dur: 0.17 }, LF: { lat: -1, up: 0.03, ph: 0.66, dur: 0.17 } };
+  const cyc = (s, t) => { const u = Math.min(s.N, Math.max(0, (t - s.cs) / CYC)), c = Math.floor(Math.min(u, s.N - 1e-6)); return { c, f: u - c, u }; };
+  const sBody = (s, t) => { const { c, f } = cyc(s, t); if (t >= s.ce) return 1;
+    return Math.min(1, (c + 0.15 * sm(0.05, 0.42, f) + 0.85 * sm(0.58, 0.98, f)) / s.N); };
+  const bmp = (a, b, x) => Math.sin(PI * Math.min(1, Math.max(0, (x - a) / (b - a))));
+  // hips shift over the foot that is stepping up / pushing (his right = +tangent while he faces the rock)
+  const sway = (s, t) => { if (t < s.cs || t > s.ce) return 0; const { f } = cyc(s, t); return 0.075 * bmp(0.42, 0.72, f) - 0.075 * bmp(0.62, 0.98, f); };
   const feetAt = (s, t) => lerp(s.f0, s.f1, sBody(s, t));
   // body on the wall: hips 0.27 m off the rock at chest height, leaning in to match the slope
-  const LEAN = 0.3, WALL_OFF = 0.38;
-  const bodyOnWall = (s, f) => onRock(s.colA, f + 1.0, WALL_OFF).sub(V3(0, 1, 0));
+  const LEAN = 0.16, WALL_OFF = 0.58;
+  const bodyOnWall = (s, f, t = -1) => onRock(s.colA, f + 1.0, WALL_OFF).sub(V3(0, 1, 0)).addScaledVector(tang(s.colA), sway(s, t));
   const holdPoint = (s, limb, f) => {                                            // the hold itself, on the rock
-    const L = LIMBS[limb], h = f + L.up, lat = L.lat * (L.hand ? 0.24 : 0.15);
+    const L = LIMBS[limb], h = f + L.up, lat = L.lat * (L.hand ? 0.26 : 0.14);
     if (h > M_TOP - 0.05) { const th = s.colA + lat / R_TOP; return { p: out(th).multiplyScalar(R_TOP - 0.04).setY(M_TOP + 0.02), top: true }; }
     const th = s.colA + lat / Math.max(0.8, surfR(s.colA, h)); return { p: onRock(th, h, 0.0), th, top: false };
   };
-  const holdMeshes = [], holdCols = [0xffd05a, 0x5aa9ff, 0xff5c8a, 0x7fe0a8, 0xffffff];
+  // holds: little knobs of the same stone as the mountain (same palette, flat-shaded, no ink line)
+  const holdMeshes = [], holdMats = [0x8a6fb0, 0x7b62a2, 0x6f5896].map(c => new THREE.MeshToonMaterial({ color: c, gradientMap: ramp, flatShading: true })), holdGeo = new THREE.IcosahedronGeometry(1, 0);
   STOPS.forEach(s => {
     if (s.N == null) return;
     s.moves = {};
     for (const [name, L] of Object.entries(LIMBS)) {
-      const list = [{ t0: -1, t1: s.cs - 0.01, ...holdPoint(s, name, s.f0 - (L.hand ? 0.25 : 0.32)) }];
-      for (let c = 0; c < s.N; c++) { const t0 = s.cs + (c + L.ph) * CYC, t1 = t0 + 0.25 * CYC; list.push({ t0, t1, ...holdPoint(s, name, feetAt(s, t1 + 0.6 * CYC)) }); }
+      const list = [{ t0: -1, t1: s.cs - 0.01, ...holdPoint(s, name, s.f0 - (L.hand ? 0.15 : 0.0)) }];
+      for (let c = 0; c < s.N; c++) { const t0 = s.cs + (c + L.ph) * CYC, t1 = t0 + L.dur * CYC; list.push({ t0, t1, ...holdPoint(s, name, lerp(s.f0, s.f1, (c + 1) / s.N)) }); }
       s.moves[name] = list;
-      list.forEach((m, i) => { if (m.top) return; const hm = inked(new RoundedBoxGeometry(0.11, 0.07, 0.08, 2, 0.025), toon(holdCols[(i + (L.hand ? 0 : 2)) % holdCols.length]), [0, 0, 0]);
-        hm.position.copy(m.p).addScaledVector(out(m.th), 0.02); hm.rotation.y = m.th; holdMeshes.push(hm); });
+      list.forEach((m, i) => { if (m.top) return; const hm = new THREE.Mesh(holdGeo, holdMats[Math.floor(rnd() * 3)]); hm.castShadow = hm.receiveShadow = true; scene.add(hm);
+        hm.scale.set(0.075, 0.05, 0.065); hm.position.copy(m.p).addScaledVector(out(m.th), 0.015); hm.rotation.set(rnd() * 0.6, m.th + rnd() * 0.8, rnd() * 0.6); holdMeshes.push(hm); });
     }
   });
   const limbTarget = (s, name, t) => {
     const list = s.moves[name], L = LIMBS[name]; let i = 0; while (i < list.length - 1 && list[i + 1].t0 <= t) i++;
     const cur = list[i], nx = list[i + 1];
     const grip = m => m.p.clone().addScaledVector(m.top ? UP : out(m.th), m.top ? 0.05 : (L.hand ? 0.1 : 0.2)).add(V3(0, L.hand ? 0.0 : 0.06, 0));
-    if (nx && t > nx.t0 && t < nx.t1) { const u = sm(nx.t0, nx.t1, t); return grip(cur).lerp(grip(nx), u).addScaledVector(out(s.colA), 0.2 * Math.sin(PI * u)); }
+    if (nx && t > nx.t0 && t < nx.t1) { const u = sm(nx.t0, nx.t1, t); return grip(cur).lerp(grip(nx), u).addScaledVector(out(s.colA), (L.hand ? 0.07 : 0.1) * Math.sin(PI * u)); }
     return grip(nx && t >= nx.t1 ? nx : cur);
   };
 
@@ -272,7 +282,7 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
         if (t < prev.cs) { const u = sm(prev.leave, prev.cs, t), to = bodyOnWall(prev, prev.f0);
           const from = SP[k - 1].clone(); if (prev.fake) from.y -= fakeDrop(prev.leave);
           return { pos: from.lerp(to, u).add(V3(0, 0.12 * Math.sin(PI * u), 0)).addScaledVector(out(prev.colA), 0.25 * Math.sin(PI * u)), yaw: lerp(prev.face, prev.climbYaw, u), lean: LEAN * u, ik: u, pitch: prev }; }
-        if (t < prev.ce) return { pos: bodyOnWall(prev, feetAt(prev, t)), yaw: prev.climbYaw, lean: LEAN, ik: 1, pitch: prev };
+        if (t < prev.ce) return { pos: bodyOnWall(prev, feetAt(prev, t), t), yaw: prev.climbYaw, lean: LEAN, ik: 1, pitch: prev };
         const dur = s.land - prev.ce, u = sm(prev.ce, s.land, t), from = bodyOnWall(prev, prev.f1);
         return { pos: from.lerp(SP[k], u).add(V3(0, (s.summit ? 0.5 : 0.22) * Math.sin(PI * u), 0)).addScaledVector(out(prev.colA), (s.summit ? 0 : 0.25) * Math.sin(PI * u)), yaw: lerp(prev.climbYaw, s.face, sm(prev.ce + dur * 0.35, s.land + 0.25, t)), lean: LEAN * (1 - u), ik: 1 - sm(prev.ce, prev.ce + dur * 0.8, t), pitch: prev };
       }
@@ -394,11 +404,17 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
     man.system.position.copy(st.pos); man.system.rotation.set(0, st.yaw, 0);
     man.applyPose(KEYS, t); man.body.rotation.x = st.lean; man.system.updateMatrixWorld(true);
     if (st.pitch && st.ik > 0) {
-      const s = st.pitch, inw = out(s.colA).negate(), lat = tang(s.colA);                       // his right = +tangent while facing the rock
-      reach('shoulderR', 'elbowR', J.spine, 0.3, 0.3, limbTarget(s, 'RH', t), out(s.colA).multiplyScalar(0.6).add(V3(0, -1, 0)).addScaledVector(lat, 0.7), st.ik);
-      reach('shoulderL', 'elbowL', J.spine, 0.3, 0.3, limbTarget(s, 'LH', t), out(s.colA).multiplyScalar(0.6).add(V3(0, -1, 0)).addScaledVector(lat, -0.7), st.ik);
-      reach('hipR', 'kneeR', J.hips, 0.44, 0.43, limbTarget(s, 'RF', t), out(s.colA).multiplyScalar(0.35).addScaledVector(lat, 1), st.ik);
-      reach('hipL', 'kneeL', J.hips, 0.44, 0.43, limbTarget(s, 'LF', t), out(s.colA).multiplyScalar(0.35).addScaledVector(lat, -1), st.ik);
+      const s = st.pitch, inw = out(s.colA).negate(), lat = tang(s.colA);
+      if (t > s.cs && t < s.ce) { const { f } = cyc(s, t); J.hips.rotation.z += st.ik * (0.06 * bmp(0.42, 0.72, f) - 0.06 * bmp(0.62, 0.98, f)); man.system.updateMatrixWorld(true); }                       // his right = +tangent while facing the rock
+      reach('shoulderR', 'elbowR', J.spine, 0.3, 0.3, limbTarget(s, 'RH', t), out(s.colA).multiplyScalar(0.3).add(V3(0, -1, 0)).addScaledVector(lat, 0.3), st.ik);
+      reach('shoulderL', 'elbowL', J.spine, 0.3, 0.3, limbTarget(s, 'LH', t), out(s.colA).multiplyScalar(0.3).add(V3(0, -1, 0)).addScaledVector(lat, -0.3), st.ik);
+      reach('hipR', 'kneeR', J.hips, 0.44, 0.43, limbTarget(s, 'RF', t), inw.clone().add(V3(0, -0.25, 0)).addScaledVector(lat, 0.22), st.ik);
+      reach('hipL', 'kneeL', J.hips, 0.44, 0.43, limbTarget(s, 'LF', t), inw.clone().add(V3(0, -0.25, 0)).addScaledVector(lat, -0.22), st.ik);
+      // head follows the reaching hand, glances down at each step; hips tilt a little with the weight shift
+      if (t > s.cs && t < s.ce) { const { f } = cyc(s, t);
+        J.head.rotation.y += st.ik * (-0.35 * bmp(0.0, 0.24, f) + 0.35 * bmp(0.2, 0.46, f));
+        J.head.rotation.x += st.ik * (0.55 * bmp(0.44, 0.86, f) - 0.15 * bmp(0.0, 0.44, f));
+        J.head.updateMatrixWorld(true); }
     }
 
     /* fake ledge: shake, then crumble into the clouds */
