@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Фазенда — усадьба для праздников и отдыха под Брестом</title>
+<meta name="description" content="Свадебный зал у озера на 30–200 гостей, площадка в саду до 400, банный дом и два дома из сруба норвежской рубки. В 5 км от Бреста.">
+<meta name="theme-color" content="#ece6da">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Manrope:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bone:#ece6da;--bone2:#e3dccd;--paper:#f4f0e8;--ink:#1d1a16;--ink2:#2b2722;
+  --moss:#3d4636;--clay:#8c3a26;--muted:#7a7266;--line:rgba(29,26,22,.16);--lineL:rgba(236,230,218,.2);
+  --ease:cubic-bezier(.19,1,.22,1);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bone);color:var(--ink);font:300 17px/1.7 Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:clip}
+a{color:inherit;text-decoration:none}
+img{display:block;width:100%;height:100%;object-fit:cover}
+picture{display:block;height:100%;background-size:cover;overflow:hidden}
+picture img{opacity:0;transition:opacity 1.2s var(--ease)}picture.is-loaded img{opacity:1}
+.serif{font-family:Cormorant,Georgia,serif;font-weight:300}
+.label{font:500 11px/1 Manrope;letter-spacing:.28em;text-transform:uppercase}
+.wrap{max-width:1440px;margin:0 auto;padding:0 clamp(16px,4vw,56px)}
+::selection{background:var(--clay);color:var(--bone)}
+
+/* плёночное зерно */
+.grain{position:fixed;inset:-100%;z-index:90;pointer-events:none;opacity:.075;animation:grain 1.2s steps(6) infinite;
+ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+@keyframes grain{0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}40%{transform:translate(2%,-4%)}60%{transform:translate(-4%,1%)}80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}}
+
+/* появление */
+[data-reveal]{opacity:0;transform:translateY(36px);transition:opacity 1.4s var(--ease) var(--d,0ms),transform 1.6s var(--ease) var(--d,0ms)}
+[data-reveal].in{opacity:1;transform:none}
+.wipe{clip-path:inset(100% 0 0 0);transition:clip-path 1.8s var(--ease) var(--d,0ms)}
+.wipe.in{clip-path:inset(0 0 0 0)}
+.wipe picture{transform:scale(1.18);transition:transform 2.4s var(--ease) var(--d,0ms)}
+.wipe.in picture{transform:scale(1)}
+.lines .ln{display:block;overflow:hidden}
+.lines .ln>span{display:inline-block;transform:translateY(105%);transition:transform 1.4s var(--ease)}
+.lines.in .ln>span{transform:none}
+.lines.in .ln:nth-child(2)>span{transition-delay:.08s}.lines.in .ln:nth-child(3)>span{transition-delay:.16s}.lines.in .ln:nth-child(4)>span{transition-delay:.24s}.lines.in .ln:nth-child(5)>span{transition-delay:.32s}
+
+/* заставка */
+.curtain{position:fixed;inset:0;z-index:100;background:var(--ink);color:var(--bone);display:grid;place-items:center;transition:transform 1.4s var(--ease) .2s}
+.curtain.up{transform:translateY(-100%)}
+.curtain .word{font:300 clamp(56px,11vw,180px)/1 Cormorant;letter-spacing:.02em;display:flex;overflow:hidden}
+.curtain .word span{display:inline-block;transform:translateY(110%);animation:rise 1.1s var(--ease) forwards}
+@keyframes rise{to{transform:none}}
+.curtain .label{position:absolute;bottom:40px;left:0;right:0;text-align:center;opacity:.6}
+
+/* навигация */
+.nav{position:fixed;top:0;left:0;right:0;z-index:50;color:var(--bone);mix-blend-mode:difference}
+.nav .wrap{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:84px}
+.nav .logo{font:400 26px Cormorant;letter-spacing:.3em;text-transform:uppercase;margin-right:-.3em}
+.nav .links{display:flex;gap:34px}
+.nav .links a,.nav .r a{position:relative;font:400 12px Manrope;letter-spacing:.22em;text-transform:uppercase}
+.nav .links a::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:1px;background:currentColor;transform:scaleX(0);transform-origin:right;transition:transform .7s var(--ease)}
+.nav .links a:hover::after{transform:scaleX(1);transform-origin:left}
+.nav .r{display:flex;justify-content:flex-end}
+.nav .r a{border:1px solid currentColor;border-radius:999px;padding:12px 22px}
+
+/* hero */
+.hero{position:relative;height:100svh;min-height:640px;overflow:hidden;color:var(--bone)}
+.hero .bg{position:absolute;inset:-6% 0;will-change:transform}
+.hero .bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,17,14,.35),rgba(20,17,14,.1) 35%,rgba(20,17,14,.55) 78%,rgba(20,17,14,.8))}
+.hero .title{position:absolute;left:0;right:0;bottom:-.14em;text-align:center;font:300 clamp(96px,23vw,400px)/.8 Cormorant;letter-spacing:-.02em;white-space:nowrap}
+.hero .title span{display:inline-block;transform:translateY(100%);transition:transform 1.8s var(--ease)}
+.loaded .hero .title span{transform:none}
+.hero .title span:nth-child(2){transition-delay:.05s}.hero .title span:nth-child(3){transition-delay:.1s}.hero .title span:nth-child(4){transition-delay:.15s}.hero .title span:nth-child(5){transition-delay:.2s}.hero .title span:nth-child(6){transition-delay:.25s}.hero .title span:nth-child(7){transition-delay:.3s}
+.hero .meta{position:absolute;left:0;right:0;top:34%;display:flex;justify-content:space-between;align-items:flex-end;gap:40px}
+.hero .meta h1{font:300 clamp(30px,3.2vw,52px)/1.08 Cormorant;margin:0;max-width:13em}
+.hero .meta h1 em{font-style:italic}
+.hero .meta p{max-width:24em;margin:0;font-size:15px;opacity:.85}
+.hero .side{position:absolute;right:clamp(16px,4vw,56px);top:50%;transform:rotate(90deg) translateX(50%);transform-origin:right top;opacity:.7}
+.scrollcue{position:absolute;left:50%;top:calc(34% + 150px);width:1px;height:70px;background:linear-gradient(var(--bone),transparent);animation:cue 2.4s var(--ease) infinite}
+@keyframes cue{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* манифест */
+.manifest{padding:clamp(110px,16vw,220px) 0 clamp(90px,12vw,160px)}
+.manifest .label{color:var(--muted);display:flex;gap:18px;align-items:center;margin-bottom:46px}
+.manifest .label::before{content:"";width:46px;height:1px;background:currentColor}
+.manifest .big{font:300 clamp(36px,5.6vw,92px)/1.06 Cormorant;letter-spacing:-.01em;margin:0;max-width:16.5em}
+.manifest .big em{font-style:italic;color:var(--moss)}
+.inl{display:inline-block;vertical-align:middle;width:1.9em;height:.9em;border-radius:999px;overflow:hidden;margin:-.1em .12em 0;transform:translateY(-.04em)}
+.inl.c{width:.9em}
+.manifest .cols{display:grid;grid-template-columns:repeat(12,1fr);gap:24px;margin-top:80px}
+.manifest .cols p{grid-column:7/11;margin:0 0 18px;color:#3c372f}
+.manifest .cols .sig{grid-column:2/5;grid-row:1/3;font:italic 300 22px/1.4 Cormorant;color:var(--muted)}
+
+/* цифры */
+.figures{border-top:1px solid var(--line)}
+.figures .row{display:grid;grid-template-columns:repeat(4,1fr)}
+.fig{padding:44px 24px 50px 0;border-right:1px solid var(--line)}
+.fig+.fig{padding-left:28px}
+.fig:last-child{border-right:0}
+.fig b{display:block;font:300 clamp(54px,6vw,104px)/.9 Cormorant;letter-spacing:-.02em}
+.fig b small{font-size:.38em;letter-spacing:0;margin-left:6px}
+.fig span{display:block;margin-top:16px;font-size:14px;color:var(--muted);max-width:14em}
+
+/* площадки — горизонтальный скролл */
+.venues{position:relative;background:var(--ink);color:var(--bone)}
+.venues .pin{position:sticky;top:0;height:100svh;overflow:hidden;display:flex;flex-direction:column}
+.venues .top{display:flex;justify-content:space-between;align-items:flex-end;padding-top:110px;padding-bottom:30px}
+.venues .top h2{font:300 clamp(44px,6vw,100px)/.9 Cormorant;margin:14px 0 0}
+.venues .top h2 em{font-style:italic;color:#c9b99a}
+.venues .count{font:300 22px Cormorant;opacity:.7}
+.track{display:flex;gap:clamp(24px,4vw,64px);padding:0 clamp(16px,4vw,56px);flex:1;align-items:center;will-change:transform}
+.panel{flex:0 0 auto;width:min(78vw,1080px);display:grid;grid-template-columns:1.35fr 1fr;gap:clamp(24px,3vw,48px);align-items:end}
+.panel .ph{height:min(62vh,620px);position:relative}
+.panel .ph .cap{position:absolute;left:18px;top:16px;z-index:2;color:var(--bone)}
+.panel .num{font:300 120px/1 Cormorant;opacity:.18;margin-bottom:-16px}
+.panel h3{font:300 clamp(36px,3.6vw,60px)/1 Cormorant;margin:0 0 16px}
+.panel .cap2{display:inline-block;border:1px solid var(--lineL);border-radius:999px;padding:8px 16px;font-size:13px;letter-spacing:.06em;margin-bottom:20px;color:#d9cfbd}
+.panel p{margin:0;color:#c7bfb1;max-width:26em}
+.venues .bar{height:1px;background:var(--lineL);margin:0 clamp(16px,4vw,56px) 40px;position:relative}
+.venues .bar i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--bone)}
+.venues .note{padding:0 clamp(16px,4vw,56px) 34px;color:#a39a8b;font-size:14px}
+
+/* услуги – список с превью */
+.services{padding:clamp(110px,14vw,200px) 0}
+.services .head{display:grid;grid-template-columns:repeat(12,1fr);gap:24px;margin-bottom:70px;align-items:end}
+.services h2{grid-column:1/8;font:300 clamp(44px,6vw,100px)/.92 Cormorant;margin:14px 0 0}
+.services h2 em{font-style:italic;color:var(--clay)}
+.services .head p{grid-column:9/13;margin:0;color:var(--muted)}
+.list{border-top:1px solid var(--ink)}
+.item{display:grid;grid-template-columns:80px 1.1fr 1fr 40px;gap:24px;align-items:baseline;padding:34px 0;border-bottom:1px solid var(--line);position:relative;cursor:default}
+.item .n{font:400 13px Manrope;color:var(--muted)}
+.item h3{font:300 clamp(30px,3.4vw,54px)/1 Cormorant;margin:0;transition:transform .8s var(--ease),color .5s}
+.item p{margin:0;color:#4a443b;font-size:16px;max-width:30em}
+.item .arr{font:300 30px Cormorant;transition:transform .8s var(--ease)}
+.item:hover h3{transform:translateX(18px);color:var(--clay)}
+.item:hover .arr{transform:translateX(8px) rotate(-45deg)}
+.item .mthumb{display:none}
+.preview{position:fixed;left:0;top:0;width:300px;height:380px;pointer-events:none;z-index:40;border-radius:4px;overflow:hidden;opacity:0;transform:translate(-50%,-50%) scale(.8);transition:opacity .5s var(--ease),transform .7s var(--ease)}
+.preview.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.preview>div{position:absolute;inset:0;opacity:0;transition:opacity .5s}
+.preview>div.cur{opacity:1}
+
+/* банный дом */
+.banya{background:var(--bone2);padding:clamp(100px,12vw,180px) 0}
+.banya .grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(40px,6vw,110px);align-items:start}
+.banya .stick{position:sticky;top:110px}
+.banya .stick .ph{aspect-ratio:4/5;border-radius:300px 300px 0 0;overflow:hidden}
+.banya h2{font:300 clamp(44px,5.4vw,88px)/.95 Cormorant;margin:14px 0 30px}
+.banya h2 em{font-style:italic;color:var(--moss)}
+.banya .lead{font:300 clamp(22px,2vw,30px)/1.35 Cormorant;margin:0 0 50px;max-width:22em}
+.floors{border-top:1px solid var(--ink)}
+.floor{display:grid;grid-template-columns:110px 1fr;gap:20px;padding:30px 0;border-bottom:1px solid var(--line)}
+.floor .lvl{font:300 64px/.9 Cormorant}
+.floor .lvl small{display:block;font:500 10px Manrope;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+.floor h4{font:400 26px/1.1 Cormorant;margin:4px 0 8px}
+.floor p{margin:0;color:#4a443b}
+.banya .extra{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:50px}
+.banya .extra div{padding:24px;border:1px solid var(--line);border-radius:4px}
+.banya .extra b{display:block;font:400 22px Cormorant;margin-bottom:6px}
+.banya .extra span{font-size:15px;color:#4a443b}
+.banya .small{margin-top:60px;aspect-ratio:16/10}
+
+/* сезоны – аккордеон */
+.seasons{padding:clamp(110px,14vw,200px) 0 0}
+.seasons .head{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;margin-bottom:50px;flex-wrap:wrap}
+.seasons h2{font:300 clamp(44px,6vw,100px)/.92 Cormorant;margin:14px 0 0}
+.seasons h2 em{font-style:italic;color:var(--moss)}
+.acc{display:flex;gap:8px;height:min(78vh,720px)}
+.sea{position:relative;flex:1;overflow:hidden;transition:flex 1.2s var(--ease);color:var(--bone);min-width:0}
+.sea:hover,.sea.open{flex:3.2}
+.sea .ph{position:absolute;inset:0}
+.sea::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05) 40%,rgba(0,0,0,.7))}
+.sea .t{position:absolute;left:24px;right:24px;bottom:26px;z-index:2}
+.sea .t b{display:block;font:300 clamp(34px,3.2vw,56px)/1 Cormorant;white-space:nowrap}
+.sea .t p{margin:12px 0 0;max-width:24em;font-size:15px;opacity:0;transform:translateY(12px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.sea:hover .t p,.sea.open .t p{opacity:.92;transform:none;transition-delay:.3s}
+.sea .k{position:absolute;top:22px;left:24px;z-index:2;opacity:.75}
+
+/* галерея */
+.gal{padding:clamp(110px,14vw,200px) 0}
+.gal .head{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;flex-wrap:wrap;margin-bottom:46px}
+.gal h2{font:300 clamp(44px,6vw,100px)/.92 Cormorant;margin:14px 0 0}
+.filters{display:flex;flex-wrap:wrap;gap:6px 26px}
+.filters button{font:400 12px Manrope;letter-spacing:.22em;text-transform:uppercase;background:none;border:0;padding:8px 0;color:var(--muted);cursor:pointer;position:relative}
+.filters button::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--ink);transform:scaleX(0);transition:transform .7s var(--ease)}
+.filters button[aria-pressed=true]{color:var(--ink)}
+.filters button[aria-pressed=true]::after{transform:scaleX(1)}
+.gallery{columns:3 320px;column-gap:14px}
+.g-item{margin:0 0 14px;break-inside:avoid;position:relative;cursor:zoom-in;overflow:hidden;animation:gin 1.2s var(--ease) both}
+@keyframes gin{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.g-item picture,.g-item img{height:auto}
+.g-item img{transition:transform 1.6s var(--ease),opacity 1.2s var(--ease)}
+.g-item:hover img{transform:scale(1.04)}
+.g-item figcaption{position:absolute;left:16px;bottom:14px;color:var(--bone);font:italic 300 22px Cormorant;opacity:0;transform:translateY(8px);transition:.7s var(--ease)}
+.g-item:hover figcaption{opacity:1;transform:none}
+.lb{position:fixed;inset:0;z-index:95;background:rgba(20,17,14,.96);display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .6s var(--ease);cursor:zoom-out;padding:5vh 5vw}
+.lb.on{opacity:1;pointer-events:auto}
+.lb img{max-height:90vh;width:auto;max-width:100%;object-fit:contain}
+
+/* финал */
+.final{background:var(--ink);color:var(--bone);padding:clamp(100px,12vw,170px) 0 34px;overflow:hidden}
+.final .lead{display:grid;grid-template-columns:repeat(12,1fr);gap:24px;align-items:end}
+.final h2{grid-column:1/9;font:300 clamp(52px,8vw,140px)/.88 Cormorant;margin:16px 0 0}
+.final h2 em{font-style:italic;color:#c9b99a}
+.final .lead p{grid-column:9/13;margin:0;color:#b9b0a1}
+.cta{display:inline-flex;align-items:center;gap:16px;margin-top:28px;padding:20px 34px;border-radius:999px;background:var(--bone);color:var(--ink);font:500 13px Manrope;letter-spacing:.2em;text-transform:uppercase;transition:background .5s,color .5s}
+.cta:hover{background:var(--clay);color:var(--bone)}
+.contacts{display:grid;grid-template-columns:repeat(4,1fr);margin-top:100px;border-top:1px solid var(--lineL)}
+.contacts a,.contacts div{padding:30px 20px 30px 0;border-right:1px solid var(--lineL);display:block}
+.contacts>*+*{padding-left:24px!important}
+.contacts>*:last-child{border-right:0}
+.contacts small{display:block;color:#8f8676;margin-bottom:10px}
+.contacts span{font:300 clamp(22px,1.9vw,30px)/1.2 Cormorant;transition:color .4s}
+.contacts a:hover span{color:#e2b8a4}
+.giant{margin-top:90px;font:300 clamp(80px,21vw,360px)/.78 Cormorant;letter-spacing:-.03em;text-align:center;white-space:nowrap;color:transparent;-webkit-text-stroke:1px rgba(236,230,218,.35);user-select:none}
+.giant em{font-style:italic}
+.fine{display:flex;justify-content:space-between;gap:20px;margin-top:30px;font-size:12px;color:#7d7466;letter-spacing:.08em;flex-wrap:wrap}
+
+/* курсор */
+.cursor{position:fixed;left:0;top:0;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:var(--bone);mix-blend-mode:difference;pointer-events:none;z-index:99;transition:width .4s var(--ease),height .4s var(--ease),margin .4s var(--ease)}
+.cursor.big{width:64px;height:64px;margin:-32px 0 0 -32px}
+@media (hover:none),(pointer:coarse){.cursor,.preview{display:none}}
+
+@media (max-width:1000px){
+  .nav .links{display:none}.nav .wrap{grid-template-columns:1fr auto}.nav .logo{justify-self:start}
+  .hero .meta{flex-direction:column;align-items:flex-start;top:auto;bottom:30%}.hero .side,.scrollcue{display:none}
+  .manifest .cols{display:block}.manifest .cols .sig{margin-bottom:24px}
+  .figures .row{grid-template-columns:1fr 1fr}.fig:nth-child(2){border-right:0}.fig:nth-child(-n+2){border-bottom:1px solid var(--line)}.fig:nth-child(3){padding-left:0}
+  .venues .pin{position:relative;height:auto}.track{flex-direction:column;transform:none!important;padding-bottom:60px}
+  .panel{width:100%;grid-template-columns:1fr}.panel .ph{height:56vw}.venues .bar{display:none}.venues{height:auto!important}
+  .services .head{display:block}.services .head p{margin-top:20px}
+  .item{grid-template-columns:1fr;gap:10px}.item .arr,.item .n{display:none}.item .mthumb{display:block;aspect-ratio:16/10;margin-bottom:10px}
+  .banya .grid{grid-template-columns:1fr}.banya .stick{position:relative;top:0}
+  .acc{flex-direction:column;height:auto}.sea{flex:none!important;height:300px}.sea .t p{opacity:.92;transform:none}
+  .final .lead{display:block}.final .lead p{margin-top:24px}.contacts{grid-template-columns:1fr 1fr}.contacts>*{padding-left:0!important;border-right:0;border-bottom:1px solid var(--lineL)}
+}
+@media (max-width:560px){.figures .row{grid-template-columns:1fr}.fig{border-right:0;padding-left:0!important;border-bottom:1px solid var(--line)}.banya .extra{grid-template-columns:1fr}.contacts{grid-template-columns:1fr}.floor{grid-template-columns:76px 1fr}.floor .lvl{font-size:48px}}
+@media (prefers-reduced-motion:reduce){
+  .grain,.scrollcue{animation:none}.curtain{display:none}
+  [data-reveal],.wipe,.wipe picture,.lines .ln>span,.hero .title span{transition:none!important;opacity:1!important;transform:none!important;clip-path:none!important}
+}
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+<div class="cursor" aria-hidden="true"></div>
+<div class="curtain" aria-hidden="true"><div class="word"><span>Ф</span><span style="animation-delay:.05s">а</span><span style="animation-delay:.1s">з</span><span style="animation-delay:.15s">е</span><span style="animation-delay:.2s">н</span><span style="animation-delay:.25s">д</span><span style="animation-delay:.3s">а</span></div><div class="label">Усадьба · Брест</div></div>
+
+<nav class="nav"><div class="wrap">
+  <div class="links"><a href="#venues">Площадки</a><a href="#services">Услуги</a><a href="#banya">Банный дом</a><a href="#gallery">Фото</a></div>
+  <a class="logo" href="#">Фазенда</a>
+  <div class="r"><a href="#contact" data-cursor>Забронировать</a></div>
+</div></nav>
+
+<header class="hero">
+  <div class="bg" id="heroBg" data-photo="usadba-svadba-vecher" data-sizes="100vw" data-eager aria-label="Свадьба вечером на усадьбе"></div>
+  <div class="wrap meta">
+    <h1>Ваш праздник под ключ <em>рядом с&nbsp;Брестом</em></h1>
+    <p>Свадебный зал у озера, площадка в саду, банный дом и дома из сруба норвежской рубки. Всё на одной территории, вдали от соседей и дорог.</p>
+  </div>
+  <div class="scrollcue" aria-hidden="true"></div>
+  <div class="side label">Брест · 5 км</div>
+  <div class="title serif" aria-hidden="true"><span>Ф</span><span>а</span><span>з</span><span>е</span><span>н</span><span>д</span><span>а</span></div>
+</header>
+
+<main>
+<section class="manifest"><div class="wrap">
+  <div class="label">Об усадьбе</div>
+  <p class="big lines" data-reveal>
+    <span class="ln"><span>Близко к городу,</span></span>
+    <span class="ln"><span><em>далеко от суеты.</em> Пять</span></span>
+    <span class="ln"><span>километров от Бреста <span class="inl" data-photo="priroda-yablonevyj-sad" data-sizes="160px" aria-label="Сад"></span> и ни</span></span>
+    <span class="ln"><span>одного соседа. Только сад <span class="inl c" data-photo="torty-medovik-sad" data-sizes="80px" aria-label="Торт"></span></span></span>
+    <span class="ln"><span>и тёплое дерево.</span></span>
+  </p>
+  <div class="cols">
+    <div class="sig" data-reveal>Свадьбы, праздники<br>и отдых<br>в Брестском районе</div>
+    <p data-reveal>Наша усадьба находится всего в 5 км от Бреста. Локация очень удобная: к нам ходят даже городские маршрутки.</p>
+    <p data-reveal="100">При этом место вдали от людей: рядом нет ни соседей, ни дорог. Территорию окружает яблоневый и грушевый сад. Все дома у нас из сруба норвежской рубки.</p>
+  </div>
+</div></section>
+
+<section class="figures"><div class="wrap row">
+  <div class="fig" data-reveal><b><span data-count="5">5</span><small>км</small></b><span>от Бреста, ходят городские маршрутки</span></div>
+  <div class="fig" data-reveal="100"><b>30–<span data-count="200">200</span></b><span>гостей в свадебном зале у озера</span></div>
+  <div class="fig" data-reveal="200"><b><span data-count="400">400</span></b><span>гостей на площадке в саду</span></div>
+  <div class="fig" data-reveal="300"><b><span data-count="16">16</span></b><span>гостей в двух домах под сдачу</span></div>
+</div></section>
+
+<section class="venues" id="venues">
+  <div class="pin">
+    <div class="wrap top"><div><div class="label" style="opacity:.6">Площадки для мероприятий</div><h2>Три пространства, <em>один праздник</em></h2></div><div class="count" id="vcount">01 / 03</div></div>
+    <div class="track" id="track">
+      <article class="panel">
+        <div class="ph wipe" data-reveal><div style="height:100%" data-photo="eda-banketnyj-stol" data-sizes="(max-width:1000px) 100vw, 50vw" aria-label="Свадебный зал"></div></div>
+        <div><div class="num">01</div><h3>Свадебный зал</h3><div class="cap2">30–200 гостей</div><p>Большой зал у озера, рядом с садом. Подходит для свадеб, юбилеев и любых праздников в любое время года.</p></div>
+      </article>
+      <article class="panel">
+        <div class="ph wipe" data-reveal><div style="height:100%" data-photo="dekor-svadebnyj-stol" data-sizes="(max-width:1000px) 100vw, 50vw" aria-label="Площадка в саду"></div></div>
+        <div><div class="num">02</div><h3>Площадка в саду</h3><div class="cap2">до 400 гостей</div><p>Праздник под открытым небом для любого количества гостей. Весной среди цветущих яблонь, летом в зелени.</p></div>
+      </article>
+      <article class="panel">
+        <div class="ph wipe" data-reveal><div style="height:100%" data-photo="dekor-osen-stol" data-sizes="(max-width:1000px) 100vw, 50vw" aria-label="Холл банного дома"></div></div>
+        <div><div class="num">03</div><h3>Холл банного дома</h3><div class="cap2">до 20 гостей</div><p>Камерное пространство на первом этаже банного дома для небольших встреч и семейных праздников.</p></div>
+      </article>
+    </div>
+    <div class="note">На всех площадках полное обслуживание под ключ.</div>
+    <div class="bar"><i id="vbar"></i></div>
+  </div>
+</section>
+
+<section class="services" id="services"><div class="wrap">
+  <div class="head"><div style="grid-column:1/8"><div class="label" style="color:var(--muted)">Услуги</div><h2>Всё под ключ, <em>своими руками</em></h2></div><p>Берём на себя кухню, декор, торт и обслуживание. Вам остаётся только приехать.</p></div>
+  <div class="list">
+    <div class="item" data-preview="usadba-zhenih"><div class="mthumb" data-photo="usadba-zhenih" data-sizes="100vw"></div><span class="n">01</span><h3>Мероприятия под ключ</h3><p>Свадьбы, юбилеи, дни рождения и корпоративы, с полным обслуживанием от встречи гостей до торта.</p><span class="arr">→</span></div>
+    <div class="item" data-preview="priroda-semya"><div class="mthumb" data-photo="priroda-semya" data-sizes="100vw"></div><span class="n">02</span><h3>Банный дом</h3><p>Баня на дровах и отличный пар. Купание в собственном озере, зимой ныряние в прорубь.</p><span class="arr">→</span></div>
+    <div class="item" data-preview="priroda-yablonevyj-sad"><div class="mthumb" data-photo="priroda-yablonevyj-sad" data-sizes="100vw"></div><span class="n">03</span><h3>Проживание</h3><p>Два дома из сруба норвежской рубки под сдачу, вместе до 16 гостей. Для отдыхающих готовим завтраки.</p><span class="arr">→</span></div>
+    <div class="item" data-preview="eda-banketnyj-stol"><div class="mthumb" data-photo="eda-banketnyj-stol" data-sizes="100vw"></div><span class="n">04</span><h3>Кухня из тандыра</h3><p>Все блюда готовим в тандыре на фруктовых дровах, по нашему меню или по вашим пожеланиям.</p><span class="arr">→</span></div>
+    <div class="item" data-preview="dekor-welcome"><div class="mthumb" data-photo="dekor-welcome" data-sizes="100vw"></div><span class="n">05</span><h3>Свой декоратор</h3><p>Сделаем любую картинку под ваш запрос, от welcome-зоны до сервировки стола.</p><span class="arr">→</span></div>
+    <div class="item" data-preview="torty-medovik-sad"><div class="mthumb" data-photo="torty-medovik-sad" data-sizes="100vw"></div><span class="n">06</span><h3>Свой кондитер</h3><p>Торт приготовим здесь же: без доставки, аренды подставки и забот о том, кто вынесет и разрежет его.</p><span class="arr">→</span></div>
+  </div>
+</div></section>
+<div class="preview" id="preview" aria-hidden="true"></div>
+
+<section class="banya" id="banya"><div class="wrap grid">
+  <div class="stick"><div class="ph wipe" data-reveal><div style="height:100%" data-photo="priroda-semya" data-sizes="(max-width:1000px) 100vw, 45vw" aria-label="Банный дом"></div></div></div>
+  <div>
+    <div class="label" style="color:var(--muted)">Банный дом</div>
+    <h2 data-reveal>Пар на дровах, <em>своё озеро</em> и прорубь</h2>
+    <p class="lead" data-reveal="100">Баня на дровах и отличный пар. Купание в собственном озере летом, ныряние в прорубь зимой.</p>
+    <div class="floors">
+      <div class="floor" data-reveal><div class="lvl">I<small>этаж</small></div><div><h4>Холл</h4><p>Здесь можно провести любое мероприятие до 20 человек.</p></div></div>
+      <div class="floor" data-reveal="100"><div class="lvl">II<small>этаж</small></div><div><h4>Комнаты для отдыха</h4><p>Тихие комнаты до 8 человек, чтобы остаться на ночь после бани.</p></div></div>
+    </div>
+    <div class="extra">
+      <div data-reveal><b>Баня на дровах</b><span>Настоящий жар и мягкий пар</span></div>
+      <div data-reveal="100"><b>Своё озеро</b><span>Летом купание, зимой прорубь</span></div>
+    </div>
+    <div class="small wipe" data-reveal><div style="height:100%" data-photo="priroda-yablonevyj-sad" data-sizes="(max-width:1000px) 100vw, 45vw" aria-label="Территория"></div></div>
+  </div>
+</div></section>
+
+<section class="seasons"><div class="wrap">
+  <div class="head"><div><div class="label" style="color:var(--muted)">Круглый год</div><h2>Четыре сезона <em>усадьбы</em></h2></div></div>
+  <div class="acc">
+    <div class="sea open"><div class="ph" data-photo="dekor-svadebnyj-stol" data-sizes="(max-width:1000px) 100vw, 60vw" aria-label="Весна"></div><span class="k label">I</span><div class="t"><b>Весна</b><p>Свадьба в зале или среди цветущих яблонь.</p></div></div>
+    <div class="sea"><div class="ph" data-photo="usadba-zhenih" data-sizes="(max-width:1000px) 100vw, 60vw" aria-label="Лето"></div><span class="k label">II</span><div class="t"><b>Лето</b><p>Любые мероприятия как в зале, так и в саду под открытым небом. Купание в озере.</p></div></div>
+    <div class="sea"><div class="ph" data-photo="dekor-osen-stol" data-sizes="(max-width:1000px) 100vw, 60vw" aria-label="Осень"></div><span class="k label">III</span><div class="t"><b>Осень</b><p>Праздник в тёплом зале у озера.</p></div></div>
+    <div class="sea"><div class="ph" data-photo="usadba-svadba-vecher" data-sizes="(max-width:1000px) 100vw, 60vw" aria-label="Зима"></div><span class="k label">IV</span><div class="t"><b>Зима</b><p>Баня на дровах и прорубь.</p></div></div>
+  </div>
+</div></section>
+
+<section class="gal" id="gallery"><div class="wrap">
+  <div class="head"><div><div class="label" style="color:var(--muted)">Галерея</div><h2>Фотографии</h2></div><nav class="filters" data-filters aria-label="Категории фото"></nav></div>
+  <div class="gallery" data-gallery data-sizes="(max-width:700px) 100vw, (max-width:1100px) 50vw, 33vw"></div>
+</div></section>
+<div class="lb" id="lb"><img alt=""></div>
+
+<footer class="final" id="contact"><div class="wrap">
+  <div class="lead">
+    <div style="grid-column:1/9"><div class="label" style="color:#8f8676">Контакты</div><h2>Ждём вас <em>в гости</em></h2></div>
+    <div style="grid-column:9/13"><p>Расскажите, какой праздник задумали, и мы подберём площадку, дату, меню, декор и торт.</p><a class="cta" href="tel:+375292172921" data-cursor>Позвонить <span>→</span></a></div>
+  </div>
+  <div class="contacts">
+    <a href="tel:+375292172921" data-cursor><small class="label">Телефон</small><span>+375 (29) 217-29-21</span></a>
+    <a href="https://t.me/Keitering_Fazenda_Brest" target="_blank" rel="noopener" data-cursor><small class="label">Telegram</small><span>@Keitering_Fazenda_Brest</span></a>
+    <a href="https://instagram.com/fazenda.brest" target="_blank" rel="noopener" data-cursor><small class="label">Instagram</small><span>@fazenda.brest</span></a>
+    <div><small class="label">Адрес</small><span>Брестский район,<br>5 км от Бреста</span></div>
+  </div>
+  <div class="giant" aria-hidden="true">Фазен<em>да</em></div>
+  <div class="fine"><span>© Фазенда · усадьба для свадеб, мероприятий и отдыха</span><a href="https://www.tiktok.com/@_kutman4" target="_blank" rel="noopener">TikTok · @_kutman4</a></div>
+</div></footer>
+</main>
+
+<script src="photos/manifest.js"></script>
+<script src="assets/photos.js"></script>
+<script src="assets/fx.js"></script>
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var fine=matchMedia('(hover:hover) and (pointer:fine)').matches;
+
+  // заставка
+  var cur=document.querySelector('.curtain');
+  function done(){document.documentElement.classList.add('loaded');cur&&cur.classList.add('up')}
+  if(reduce){done()}else{addEventListener('load',function(){setTimeout(done,700)});setTimeout(done,2600)}
+
+  // параллакс hero
+  var bg=document.getElementById('heroBg');
+  // горизонтальные площадки
+  var sec=document.getElementById('venues'),track=document.getElementById('track'),bar=document.getElementById('vbar'),cnt=document.getElementById('vcount');
+  function sizeVenues(){
+    if(innerWidth<=1000){sec.style.height='';return}
+    var extra=track.scrollWidth-innerWidth;sec.style.height=(innerHeight+Math.max(0,extra))+'px';
+  }
+  function onScroll(){
+    var y=scrollY;
+    if(!reduce&&bg)bg.style.transform='translate3d(0,'+(y*.25)+'px,0) scale('+(1+y*.0002)+')';
+    if(innerWidth>1000){
+      var r=sec.getBoundingClientRect(),max=sec.offsetHeight-innerHeight,p=Math.min(1,Math.max(0,-r.top/max||0));
+      var extra=track.scrollWidth-innerWidth;track.style.transform='translate3d('+(-p*extra)+'px,0,0)';
+      bar.style.width=(p*100)+'%';cnt.textContent='0'+Math.min(3,1+Math.floor(p*2.999))+' / 03';
+    }
+  }
+  sizeVenues();onScroll();
+  addEventListener('resize',function(){sizeVenues();onScroll()});
+  addEventListener('scroll',function(){requestAnimationFrame(onScroll)},{passive:true});
+  addEventListener('load',sizeVenues);
+
+  // превью услуг за курсором
+  var c=document.querySelector('.cursor'),cx=0,cy=0;
+  var pv=document.getElementById('preview'),items=document.querySelectorAll('.item[data-preview]'),layers={};
+  if(fine){
+    items.forEach(function(it){var n=it.dataset.preview;if(layers[n])return;var d=document.createElement('div');d.innerHTML=window.fzPicture(n,'300px','');pv.appendChild(d);layers[n]=d;
+      var img=d.querySelector('img');img&&img.addEventListener('load',function(){img.parentNode.classList.add('is-loaded')})});
+    var px=0,py=0,tx=0,ty=0;
+    items.forEach(function(it){
+      it.addEventListener('mouseenter',function(){pv.classList.add('on');for(var k in layers)layers[k].classList.toggle('cur',k===it.dataset.preview)});
+      it.addEventListener('mouseleave',function(){pv.classList.remove('on')});
+    });
+    addEventListener('mousemove',function(e){tx=e.clientX;ty=e.clientY});
+    (function loop(){px+=(tx-px)*.12;py+=(ty-py)*.12;pv.style.left=px+'px';pv.style.top=py+'px';c.style.transform='translate3d('+cx+'px,'+cy+'px,0)';cx+=(tx-cx)*.35;cy+=(ty-cy)*.35;requestAnimationFrame(loop)})();
+  }
+  // курсор
+  document.querySelectorAll('a,button,[data-cursor],.g-item,.sea').forEach(function(el){
+    el.addEventListener('mouseenter',function(){c.classList.add('big')});el.addEventListener('mouseleave',function(){c.classList.remove('big')});
+  });
+
+  // сезоны: на касание
+  document.querySelectorAll('.sea').forEach(function(s){s.addEventListener('click',function(){document.querySelectorAll('.sea').forEach(function(o){o.classList.toggle('open',o===s)})})});
+
+  // лайтбокс
+  var lb=document.getElementById('lb');
+  document.querySelector('[data-gallery]').addEventListener('click',function(e){var i=e.target.closest('img');if(!i)return;lb.firstChild.src=i.currentSrc||i.src;lb.classList.add('on')});
+  lb.addEventListener('click',function(){lb.classList.remove('on')});
+  addEventListener('keydown',function(e){if(e.key==='Escape')lb.classList.remove('on')});
+})();
+</script>
+</body>
+</html>
