@@ -2,6 +2,41 @@
 import math
 
 
+def lerp(a, b, u): return a + (b - a) * max(0, min(1, u))
+def smooth(u): u = max(0, min(1, u)); return u * u * (3 - 2 * u)
+
+
+def make_cat(prefix, t0, t1, path, color="#141414", step=0.04):
+    """A small walking cat (body, head, ears, eyes, tail, four legs) following path(t)."""
+    parts = {  # id: (shape, local x, local y, z)
+        "tail": (dict(type="line", points=[[0, 0], [-6, -7], [-7, -17]], stroke=color, stroke_width=3), -12, -10, 5.0),
+        "legB1": (dict(type="rect", w=3, h=9, fill=color), -8, -4, 5.0), "legB2": (dict(type="rect", w=3, h=9, fill=color), 7, -4, 5.0),
+        "body": (dict(type="ellipse", rx=13, ry=7, fill=color), 0, -10, 5.1),
+        "legF1": (dict(type="rect", w=3, h=9, fill=color), -5, -4, 5.2), "legF2": (dict(type="rect", w=3, h=9, fill=color), 10, -4, 5.2),
+        "head": (dict(type="circle", r=6, fill=color), 13, -16, 5.3),
+        "ear1": (dict(type="polygon", points=[[-3, 0], [3, 0], [0, -6]], fill=color), 10, -21, 5.3),
+        "ear2": (dict(type="polygon", points=[[-3, 0], [3, 0], [0, -6]], fill=color), 16, -21, 5.3),
+        "eye": (dict(type="circle", r=1.3, fill="#c8f04a"), 16, -17, 5.4),
+    }
+    out = {k: dict(id=f"{prefix}_{k}", start=t0, end=t1, z=v[3], flat=True, keys=[], **v[0]) for k, v in parts.items()}
+    n = int((t1 - t0) / step) + 1
+    for i in range(n):
+        t = t0 + i * step
+        c = path(t); ph = t * 2 * math.pi * 2.6
+        for k, (shape, lx, ly, z) in parts.items():
+            key = dict(t=round(t, 4), x=c["x"] + lx * c["dir"] * c["s"], y=c["y"] + ly * c["s"],
+                       scale=c["s"], opacity=c["op"], ease="linear")
+            if k.startswith("leg"):
+                sgn = 1 if k in ("legB1", "legF2") else -1
+                key["rotation"] = 28 * sgn * math.sin(ph) * c["walk"] * c["dir"]
+            if k == "tail":
+                key["rotation"] = 12 * math.sin(t * 5) * c["dir"]; key["sx"] = c["dir"]
+            if k == "body":
+                key["y"] += -1.2 * abs(math.sin(ph)) * c["walk"]
+            out[k]["keys"].append(key)
+    return list(out.values())
+
+
 def add_details(objs, rect, circ, text, S1, S2, S3, DUR, GROUND):
     def o(**kw): objs.append(kw)
 
@@ -27,16 +62,6 @@ def add_details(objs, rect, circ, text, S1, S2, S3, DUR, GROUND):
     objs += [rect("lamppost", 600, 240, 6, 180, "#2b2b2f", S1, S2, 3),
              rect("lamphead", 600, 148, 26, 12, "#2b2b2f", S1, S2, 3),
              circ("bulb", 600, 156, 6, "#ffe9a8", S1, S2, 3.1)]
-    # car passing far in background (headlights)
-    car = [{"t": 0.5, "x": 720}, {"t": 3.0, "x": -120, "ease": "linear"}]
-    o(id="carbody", type="rect", w=110, h=28, fill="#7a1f2b", y=300, x=720, start=S1, end=S2, z=2.2, keys=car)
-    o(id="cartop", type="rect", w=60, h=20, fill="#7a1f2b", y=280, x=720, start=S1, end=S2, z=2.2,
-      keys=[dict(k, x=k["x"] + 5) for k in car])
-    for j, dx in enumerate((-35, 35)):
-        o(id=f"wheel{j}", type="circle", r=9, fill="#111", y=314, x=720 + dx, start=S1, end=S2, z=2.3,
-          keys=[dict(k, x=k["x"] + dx) for k in car])
-    o(id="headlight", type="ellipse", rx=30, ry=6, fill="#fff3b055", y=302, x=660, start=S1, end=S2, z=2.25,
-      keys=[dict(k, x=k["x"] - 70) for k in car])
     # pavement details: kerb, cracks, bin, cat
     objs += [rect("kerb", 320, 314, 640, 4, "#575350", S1, S2, 2.4),
              rect("crack1", 90, 340, 30, 2, "#252321", S1, S2, 2.5, rotation=10),
@@ -47,21 +72,12 @@ def add_details(objs, rect, circ, text, S1, S2, S3, DUR, GROUND):
              circ("apple1", 522, 268, 6, "#d6332b", S1, S2, 3.5),
              circ("apple2", 536, 268, 6, "#e85d2a", S1, S2, 3.5),
              circ("apple3", 529, 258, 6, "#c9a24a", S1, S2, 3.5)]
-    # a cat strolls past, stops, tail swish
-    cat = [{"t": 0, "x": 650}, {"t": 2.2, "x": 300, "ease": "linear"}, {"t": 4.5, "x": 300}]
-    o(id="catbody", type="ellipse", rx=13, ry=7, fill="#111", y=306, x=650, start=S1, end=S2, z=5, keys=cat)
-    o(id="cathead", type="circle", r=6, fill="#111", y=299, x=640, start=S1, end=S2, z=5,
-      keys=[dict(k, x=k["x"] - 13) for k in cat])
-    for j, dx in enumerate((-16, -10)):
-        o(id=f"catear{j}", type="polygon", points=[[-3, 0], [3, 0], [0, -6]], fill="#111", y=294, start=S1, end=S2,
-          z=5, x=650 + dx, keys=[dict(k, x=k["x"] + dx) for k in cat])
-    o(id="cattail", type="line", points=[[0, 0], [8, -6], [12, -16]], stroke="#111", stroke_width=3, y=304,
-      start=S1, end=S2, z=5, x=663,
-      keys=[dict(k, x=k["x"] + 13, rotation=15 * math.sin(i * 0.8), ease="linear") for i, k in enumerate(
-          [{"t": t * 0.25, "x": (650 - 350 / 2.2 * t * 0.25) if t * 0.25 < 2.2 else 300} for t in range(19)])])
-    for j, dx in enumerate((-8, 8)):
-        o(id=f"cateye{j}", type="circle", r=1.5, fill="#c8f04a", y=298, start=S1 + 2.2, end=S2, z=5.1,
-          x=300 - 13 + dx / 3)
+    # the cat walks along the pavement and slips in through the shop door
+    def street_cat(t):
+        if t < 1.9: return dict(x=lerp(650, 470, t / 1.9), y=310, dir=-1, s=1, op=1, walk=1)
+        u = (t - 1.9) / 0.45
+        return dict(x=lerp(470, 456, u), y=lerp(310, 300, u), dir=-1, s=lerp(1, 0.7, u), op=1 - smooth(u), walk=1)
+    objs.extend(make_cat("cat", S1, S1 + 2.4, street_cat))
     # falling leaves
     for i in range(5):
         x0, t0 = 80 + i * 130, 0.2 + i * 0.7
@@ -70,6 +86,24 @@ def add_details(objs, rect, circ, text, S1, S2, S3, DUR, GROUND):
                  "rotation": j * 50, "ease": "linear"} for j in range(11)])
 
     # ================= shop =================
+    # the cat trots in... and turns into her (poof)
+    def shop_cat(t):
+        lt = t - S2
+        if lt < 0.95: return dict(x=lerp(-20, 112, (lt - 0.3) / 0.65), y=316, dir=1, s=1, op=1 if lt > 0.3 else 0, walk=1)
+        u = (lt - 0.95) / 0.15
+        return dict(x=112, y=316, dir=1, s=lerp(1, 0.2, u), op=1 - u, walk=0)
+    objs.extend(make_cat("scat", S2 + 0.3, S2 + 1.1, shop_cat))
+    T = S2 + 0.98
+    o(id="poof", type="circle", r=30, fill="#ffffffdd", x=118, y=270, start=T, end=T + 0.5, z=21, blur=3, flat=True,
+      keys=[{"t": T, "scale": 0.2, "opacity": 1}, {"t": T + 0.15, "scale": 1.6, "opacity": 0.95, "ease": "out"},
+            {"t": T + 0.5, "scale": 2.4, "opacity": 0, "ease": "out"}])
+    for i in range(10):
+        ang = i / 10 * 2 * math.pi
+        o(id=f"magic{i}", type="star", points=4, r=7, inner=2, fill=("#ffd34d", "#ffffff", "#f7a8d8")[i % 3],
+          start=T, end=T + 0.7, z=21.1, flat=True,
+          keys=[{"t": T, "x": 118, "y": 260, "scale": 0.2, "rotation": 0},
+                {"t": T + 0.5, "x": 118 + 60 * math.cos(ang), "y": 260 + 50 * math.sin(ang), "scale": 1.2, "rotation": 180, "ease": "out"},
+                {"t": T + 0.7, "x": 118 + 66 * math.cos(ang), "y": 260 + 55 * math.sin(ang), "scale": 0, "opacity": 0}])
     for c in range(16):  # checkered floor
         objs.append(rect(f"tile{c}", 20 + c * 40, 340, 40, 40, ("#d9c49a", "#b8a27a")[c % 2], S2, S3, 1.1))
     # wall clock, poster, ceiling lamp
@@ -151,9 +185,9 @@ def add_details(objs, rect, circ, text, S1, S2, S3, DUR, GROUND):
     for i in range(6):
         t0 = S3 + 1.2 + i * 0.45
         objs.append(text(f"note{i}", 0, 0, "♪" if i % 2 else "♫", 18, "#2f3c4a", t0, t0 + 1.2, 28,
-                         keys=[{"t": t0, "x": 228, "y": 150, "opacity": 0},
-                               {"t": t0 + 0.2, "x": 220 - 6 * (i % 3), "y": 135, "opacity": 1},
-                               {"t": t0 + 1.2, "x": 205 + 14 * math.sin(i), "y": 85, "opacity": 0, "ease": "out"}]))
+                         keys=[{"t": t0, "x": 362, "y": 150, "opacity": 0},
+                               {"t": t0 + 0.2, "x": 370 + 6 * (i % 3), "y": 135, "opacity": 1},
+                               {"t": t0 + 1.2, "x": 385 + 14 * math.sin(i), "y": 85, "opacity": 0, "ease": "out"}]))
     # pan sizzle sparks
     for i in range(8):
         t0 = S3 + 1.1 + i * 0.35
@@ -161,16 +195,10 @@ def add_details(objs, rect, circ, text, S1, S2, S3, DUR, GROUND):
                          keys=[{"t": t0, "x": 300 + 12 * ((i % 3) - 1), "y": 222},
                                {"t": t0 + 0.3, "x": 300 + 30 * ((i % 3) - 1), "y": 198, "ease": "out", "opacity": 0}]))
     # ending: table candle, kitchen cat jumps on counter, heart above his head
-    o(id="candleglow", type="circle", r=28, fill="#ffd27a44", x=560, y=205, start=S3 + 4.4, end=DUR, z=5,
+    o(id="candleglow", type="circle", r=28, fill="#ffd27a44", x=610, y=205, start=S3 + 4.4, end=DUR, z=5,
       keys=[{"t": S3 + 4.4 + i * 0.12, "scale": 0.9 + 0.15 * (i % 2)} for i in range(5)])
-    objs += [rect("candle", 560, 226, 8, 20, "#fff4dc", S3 + 4.4, DUR, 5.1),
-             dict(id="flame2", type="ellipse", rx=3, ry=6, fill="#ffb347", x=560, y=211, start=S3 + 4.4, end=DUR, z=5.2)]
-    o(id="kcat", type="ellipse", rx=14, ry=8, fill="#e08a3a", start=S3 + 3.8, end=DUR, z=5.4,
-      keys=[{"t": S3 + 3.8, "x": 660, "y": 300}, {"t": S3 + 4.3, "x": 600, "y": 300},
-            {"t": S3 + 4.55, "x": 585, "y": 200, "ease": "out"}, {"t": S3 + 4.75, "x": 580, "y": 228, "ease": "in"}])
-    o(id="kcathead", type="circle", r=7, fill="#e08a3a", start=S3 + 3.8, end=DUR, z=5.5,
-      keys=[{"t": S3 + 3.8, "x": 647, "y": 293}, {"t": S3 + 4.3, "x": 587, "y": 293},
-            {"t": S3 + 4.55, "x": 572, "y": 193, "ease": "out"}, {"t": S3 + 4.75, "x": 567, "y": 221, "ease": "in"}])
+    objs += [rect("candle", 610, 226, 8, 20, "#fff4dc", S3 + 4.4, DUR, 5.1),
+             dict(id="flame2", type="ellipse", rx=3, ry=6, fill="#ffb347", x=610, y=211, start=S3 + 4.4, end=DUR, z=5.2)]
     o(id="heart", type="text", text="♥", size=30, fill="#e0303a", start=S3 + 4.6, end=DUR, z=31,
-      keys=[{"t": S3 + 4.6, "x": 240, "y": 120, "scale": 0}, {"t": S3 + 4.9, "x": 240, "y": 105, "scale": 1.2, "ease": "back"},
-            {"t": DUR, "x": 240, "y": 95, "scale": 1}])
+      keys=[{"t": S3 + 4.6, "x": 360, "y": 120, "scale": 0}, {"t": S3 + 4.9, "x": 360, "y": 105, "scale": 1.2, "ease": "back"},
+            {"t": DUR, "x": 360, "y": 95, "scale": 1}])

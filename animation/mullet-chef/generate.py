@@ -50,14 +50,14 @@ def pose(t, rt):
         p["y"] = GROUND[2]
     else:          # kitchen
         lt = t - S3
-        if lt < 0.9:
-            p.update(x=lerp(-30, 240, lt / 0.9), walk=1, phase=rt * 2 * math.pi * 1.6)
-        elif lt < 4.0:   # stir the pan with a wooden spoon, other hand on hip
-            p.update(x=240, spoon=1, bob=1.2 * math.sin(rt * 7),
-                     armF=("scr", 290 + 12 * math.cos(rt * 7), 205 + 4 * math.sin(rt * 7)),
+        if lt < 1.1:     # walks in past the stove to its far side
+            p.update(x=lerp(-30, 362, lt / 1.1), walk=1, phase=rt * 2 * math.pi * 1.6)
+        elif lt < 4.0:   # turns to face the pan; stirs with a wooden spoon, other hand on hip
+            p.update(x=362, d=-1, spoon=1, bob=1.2 * math.sin(rt * 7),
+                     armF=("scr", 308 + 11 * math.cos(rt * 7), 206 + 4 * math.sin(rt * 7)),
                      armB=("tgt", -21, -76))
         else:            # proud pose: fist in the air, hand on hip
-            p.update(x=240, armF=("ang", -168, -176), armB=("tgt", -21, -76))
+            p.update(x=362, d=-1, armF=("ang", -168, -176), armB=("tgt", -21, -76))
         p["y"] = GROUND[3]
     return p
 
@@ -237,8 +237,8 @@ for i, (col, kind) in enumerate((("#d6332b", "circle"), ("#f2c94c", "rect"), ("#
     t0 = S3 + 1.0 + i * 0.35
     objs.append(dict(id=f"ingr{i}", type=kind, fill=col, start=t0, end=S3 + 4.1, z=3.5,
                      **({"r": 9} if kind == "circle" else {"w": 14, "h": 20}),
-                     keys=[{"t": t0, "x": 220, "y": 230, "scale": 0.6},
-                           {"t": t0 + 0.2, "x": 260, "y": 170, "ease": "out", "scale": 1, "rotation": 120},
+                     keys=[{"t": t0, "x": 384, "y": 238, "scale": 0.6},
+                           {"t": t0 + 0.2, "x": 345, "y": 170, "ease": "out", "scale": 1, "rotation": 120},
                            {"t": t0 + 0.4, "x": PAN_X - 10 + 10 * i, "y": PAN_Y - 6, "ease": "in", "scale": 0.8, "rotation": 260},
                            {"t": S3 + 4.0, "x": PAN_X - 10 + 10 * i, "y": PAN_Y - 6, "rotation": 260 + 360 * 3}]))
 for i in range(6):  # steam puffs
@@ -247,7 +247,7 @@ for i in range(6):  # steam puffs
                      keys=[{"t": t0, "x": PAN_X - 15 + 10 * (i % 3), "y": PAN_Y - 12, "scale": 0.4, "opacity": 0.9},
                            {"t": t0 + 1.4, "x": PAN_X - 25 + 22 * (i % 3), "y": PAN_Y - 90, "scale": 1.8, "opacity": 0, "ease": "out"}]))
 # final plate pops in
-PLATE = dict(x=430, y=232)
+PLATE = dict(x=470, y=232)
 objs += [dict(id="plate", type="ellipse", rx=46, ry=11, fill="#ffffff", stroke="#c9d3da", stroke_width=2,
               start=S3 + 4.0, end=DUR, z=5,
               keys=[{"t": S3 + 4.0, **PLATE, "scale": 0}, {"t": S3 + 4.35, **PLATE, "scale": 1, "ease": "back"}]),
@@ -264,9 +264,9 @@ objs += [dict(id="plate", type="ellipse", rx=46, ry=11, fill="#ffffff", stroke="
 for i in range(5):  # sparkles
     t0 = S3 + 4.6 + i * 0.15
     objs.append(dict(id=f"spark{i}", type="star", points=4, r=8, inner=2, fill="#ffd34d", start=t0, end=DUR, z=29,
-                     keys=[{"t": t0, "x": 380 + 25 * i, "y": 200 - 18 * (i % 2), "scale": 0},
-                           {"t": t0 + 0.3, "x": 380 + 25 * i, "y": 200 - 18 * (i % 2), "scale": 1, "ease": "back"},
-                           {"t": DUR, "x": 380 + 25 * i, "y": 200 - 18 * (i % 2), "scale": 0.7, "rotation": 180}]))
+                     keys=[{"t": t0, "x": 420 + 25 * i, "y": 200 - 18 * (i % 2), "scale": 0},
+                           {"t": t0 + 0.3, "x": 420 + 25 * i, "y": 200 - 18 * (i % 2), "scale": 1, "ease": "back"},
+                           {"t": DUR, "x": 420 + 25 * i, "y": 200 - 18 * (i % 2), "scale": 0.7, "rotation": 180}]))
 
 # ---- character: sample rig once per frame
 from details import add_details

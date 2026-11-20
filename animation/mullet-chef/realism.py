@@ -4,7 +4,6 @@ ambient occlusion. Works on the finished object list (times already in real seco
 # far background -> blurred (px at 640x360 scale)
 BLUR = {
     "sky": 2, "moon": 2.5, "roofline": 1.2, "kmoon": 2, "window": 0.8,
-    "carbody": 1.6, "cartop": 1.6, "wheel0": 1.6, "wheel1": 1.6, "headlight": 4,
     "lampglow": 10, "lightcone": 6, "candleglow": 8,
     "shopbg": 0.6, "kitbg": 0.6, "tiles": 0.5, "poster": 0.4, "promo": 0.4, "promo2": 0.4,
 }
