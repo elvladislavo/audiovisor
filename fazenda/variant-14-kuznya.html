@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Фазенда — кованая усадьба под Брестом</title>
+<meta name="description" content="Усадьба «Фазенда» в 5 км от Бреста: свадьбы под ключ, баня на дровах и своё озеро, дома из сруба, тандыр на фруктовых дровах, свой декоратор и кондитер.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@500;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--iron:#17171a;--iron2:#222226;--steel:#3b3c42;--steel2:#6d6f78;--silver:#b9bcc4;--ember:#ff7a1a;--ember2:#ffb347;--rust:#8f3b1b;--text:#e9e5de;--muted:#9a978f;--line:rgba(185,188,196,.18)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;color:var(--text);font:400 19px/1.7 "Cormorant Garamond",Georgia,serif;background:var(--iron)}
+a{color:inherit}img{display:block;width:100%;height:100%;object-fit:cover}
+picture{display:block;height:100%;background-size:cover;overflow:hidden}
+picture img{opacity:0;transition:opacity .9s}picture.is-loaded img{opacity:1}
+.wrap{max-width:1240px;margin:0 auto;padding:0 28px;position:relative}
+.sc{font-family:"Cormorant SC",serif;font-weight:700}
+.os{font:600 12px Oswald;letter-spacing:.34em;text-transform:uppercase;color:var(--ember)}
+[data-reveal]{opacity:0;transform:translateY(30px);transition:opacity 1s var(--d,0ms),transform 1.1s cubic-bezier(.2,.7,.2,1) var(--d,0ms)}
+[data-reveal].in{opacity:1;transform:none}
+/* кованый металл: рельеф через освещение шума */
+.hammered{background-color:var(--iron2);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='h'%3E%3CfeTurbulence type='turbulence' baseFrequency='.035' numOctaves='2' seed='4'/%3E%3CfeDiffuseLighting lighting-color='%23888' surfaceScale='2.4'%3E%3CfeDistantLight azimuth='225' elevation='38'/%3E%3C/feDiffuseLighting%3E%3CfeColorMatrix values='.33 0 0 0 0 0 .33 0 0 0 0 0 .35 0 0 0 0 0 0 .55'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23h)'/%3E%3C/svg%3E")}
+.metaltx{background:linear-gradient(180deg,#f3f3f5 0%,#b9bcc4 45%,#6d6f78 52%,#d8dade 70%,#8d9098 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 0 rgba(0,0,0,.6))}
+.hot{background:linear-gradient(180deg,#fff1c1,#ffb347 35%,#ff7a1a 65%,#c2410c);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(255,122,26,.45))}
+.rivet{position:absolute;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e6e7ea,#6d6f78 45%,#232327 80%);box-shadow:0 2px 3px rgba(0,0,0,.7)}
+.plate{position:relative;background:linear-gradient(160deg,#2c2d32,#1c1c20);border:1px solid #45464d;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),inset 0 -2px 0 rgba(0,0,0,.6),0 24px 40px -20px rgba(0,0,0,.9)}
+.plate>.rivet:nth-of-type(1){top:12px;left:12px}.plate>.rivet:nth-of-type(2){top:12px;right:12px}.plate>.rivet:nth-of-type(3){bottom:12px;left:12px}.plate>.rivet:nth-of-type(4){bottom:12px;right:12px}
+
+/* шапка */
+header{position:absolute;top:0;left:0;right:0;z-index:10}
+header .wrap{display:flex;justify-content:space-between;align-items:center;height:84px}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none;font:700 28px "Cormorant SC";letter-spacing:.14em}
+.logo svg{width:44px;color:var(--silver)}
+header nav a{margin-left:28px;text-decoration:none;font:400 13px Oswald;letter-spacing:.24em;text-transform:uppercase;color:var(--silver)}
+header nav a:hover{color:var(--ember2)}
+
+/* hero – кованые ворота */
+.hero{position:relative;min-height:100vh;overflow:hidden;display:grid;align-items:center;padding:110px 0 60px}
+.hero .bg{position:absolute;inset:0}
+.hero .bg::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 110%,rgba(255,122,26,.42),transparent 55%),linear-gradient(180deg,rgba(23,23,26,.82),rgba(23,23,26,.55) 40%,rgba(23,23,26,.95))}
+#sparks{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+.gate{position:absolute;inset:0;z-index:1;color:#0d0d0f;opacity:.9;width:100%;height:100%}
+.hero .inner{position:relative;z-index:3;text-align:center}
+.hero h1{font:700 clamp(56px,9vw,150px)/.9 "Cormorant SC";letter-spacing:.04em;margin:18px 0 10px}
+.hero .sub{font:italic 400 clamp(22px,2.4vw,32px) "Cormorant Garamond";color:#d9d3c8;margin:0 auto 34px;max-width:30em}
+.btn{display:inline-flex;align-items:center;gap:12px;position:relative;padding:18px 36px;text-decoration:none;font:600 14px Oswald;letter-spacing:.24em;text-transform:uppercase;color:#1b0e05;
+ background:linear-gradient(180deg,#ffd08a,#ff9a3c 45%,#e2600f);box-shadow:inset 0 1px 0 #fff3d6,inset 0 -3px 0 rgba(0,0,0,.25),0 0 30px rgba(255,122,26,.45);transition:box-shadow .3s,transform .2s}
+.btn:hover{box-shadow:inset 0 1px 0 #fff3d6,inset 0 -3px 0 rgba(0,0,0,.25),0 0 50px rgba(255,122,26,.75);transform:translateY(-2px)}
+.btn.steel{color:var(--text);background:linear-gradient(180deg,#4a4b52,#2a2b30);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 -2px 0 rgba(0,0,0,.6),0 10px 20px -10px #000}
+.btn.steel:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 0 24px rgba(185,188,196,.25)}
+.btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+
+/* кованый разделитель */
+.rail{display:block;width:100%;height:70px;color:#0b0b0d}
+.rail.lite{color:var(--steel)}
+
+/* табличка-факты */
+.facts{padding:90px 0}
+.facts .row{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.fact{padding:36px 20px 30px;text-align:center}
+.fact b{display:block;font:700 54px/1 "Cormorant SC"}
+.fact>span{font-size:17px;color:var(--muted)}
+
+/* о месте */
+.about{padding:100px 0}
+.about .grid{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}
+.about h2{font:700 clamp(38px,4.4vw,62px)/1.02 "Cormorant SC";margin:14px 0 24px}
+.about p{margin:0 0 16px;color:#d6d1c7}
+.lantern{position:relative;max-width:440px;margin:0 auto}
+.lantern .cap{display:block;width:60%;margin:0 auto;color:#0d0d0f}
+.lantern .body{position:relative;padding:14px;background:#0d0d0f;clip-path:polygon(8% 0,92% 0,100% 100%,0 100%);}
+.lantern .body .ph{aspect-ratio:3/4;clip-path:polygon(8% 0,92% 0,100% 100%,0 100%);filter:sepia(.25) saturate(1.1)}
+.lantern .body::after{content:"";position:absolute;inset:14px;clip-path:polygon(8% 0,92% 0,100% 100%,0 100%);background:linear-gradient(90deg,transparent 32%,#0d0d0f 32% 34%,transparent 34% 66%,#0d0d0f 66% 68%,transparent 68%),radial-gradient(ellipse at 50% 60%,rgba(255,160,60,.35),transparent 60%);pointer-events:none}
+.lantern .foot{height:24px;margin:0 -4%;background:#0d0d0f;clip-path:polygon(0 0,100% 0,90% 100%,10% 100%)}
+.lantern .hook{display:block;width:90px;margin:0 auto -4px;color:#0d0d0f}
+
+/* услуги – кованые клейма */
+.svc{padding:110px 0}
+.head{text-align:center;margin-bottom:64px}
+.head h2{font:700 clamp(42px,5vw,74px)/1 "Cormorant SC";margin:14px 0 0}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:34px}
+.card{padding:22px 22px 30px;transition:transform .4s,box-shadow .4s}
+.card:hover{transform:translateY(-6px);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 0 1px rgba(255,122,26,.5),0 30px 50px -20px rgba(0,0,0,.9),0 0 40px -10px rgba(255,122,26,.5)}
+.card .ph{aspect-ratio:4/3;margin:10px 0 0;box-shadow:0 0 0 3px #0d0d0f,0 0 0 5px #45464d;filter:grayscale(.35);transition:filter .5s}
+.card:hover .ph{filter:none}
+.card .brand{width:64px;height:64px;margin:-34px auto 0;position:relative;z-index:2;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#ffd08a,#ff7a1a 50%,#8f3b1b);box-shadow:0 0 0 4px #1c1c20,0 0 0 6px #45464d,0 0 24px rgba(255,122,26,.5);color:#1b0e05;font:700 26px "Cormorant SC"}
+.card h3{font:700 27px/1.1 "Cormorant SC";text-align:center;margin:16px 0 8px}
+.card p{margin:0;text-align:center;font-size:17.5px;color:#cfcac0}
+
+/* горн – тандыр */
+.forge{position:relative;padding:130px 0;overflow:hidden;text-align:center;background:radial-gradient(ellipse at 50% 100%,#7a2e0c 0%,#3a1608 30%,var(--iron) 65%)}
+.forge h2{font:700 clamp(42px,6vw,96px)/1 "Cormorant SC";margin:14px 0 22px}
+.forge p{max-width:36em;margin:0 auto;color:#e4cfb8;font-size:21px}
+.forge .embers{position:absolute;left:0;right:0;bottom:0;height:120px;background:radial-gradient(circle at 10% 100%,#ffb347 0 3px,transparent 4px),radial-gradient(circle at 30% 90%,#ff7a1a 0 2px,transparent 3px),radial-gradient(circle at 55% 100%,#ffd08a 0 3px,transparent 4px),radial-gradient(circle at 75% 95%,#ff7a1a 0 2px,transparent 3px),radial-gradient(circle at 92% 100%,#ffb347 0 3px,transparent 4px);filter:blur(.5px);opacity:.9}
+#sparks2{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+
+/* галерея – кованые рамы */
+.gal{padding:110px 0}
+.filters{display:flex;justify-content:center;flex-wrap:wrap;gap:12px;margin-bottom:56px}
+.filters button{font:600 12px Oswald;letter-spacing:.24em;text-transform:uppercase;padding:13px 22px;cursor:pointer;color:var(--silver);border:1px solid #45464d;background:linear-gradient(180deg,#2c2d32,#1c1c20);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.filters button[aria-pressed=true]{color:#1b0e05;background:linear-gradient(180deg,#ffd08a,#ff9a3c 45%,#e2600f);border-color:#e2600f;box-shadow:0 0 18px rgba(255,122,26,.5)}
+.gallery{display:grid;grid-template-columns:repeat(4,1fr);gap:30px}
+.g-item{margin:0;position:relative;padding:12px;background:#0d0d0f;box-shadow:0 0 0 2px #45464d,0 20px 30px -16px #000;transition:box-shadow .4s}
+.g-item:hover{box-shadow:0 0 0 2px var(--ember),0 0 30px rgba(255,122,26,.35)}
+.g-item::before,.g-item::after{content:"";position:absolute;width:28px;height:28px;border:3px solid var(--steel2);z-index:2}
+.g-item::before{top:-6px;left:-6px;border-right:0;border-bottom:0;border-radius:14px 0 0 0}
+.g-item::after{bottom:-6px;right:-6px;border-left:0;border-top:0;border-radius:0 0 14px 0}
+.g-item picture{aspect-ratio:4/5;height:auto}
+.g-item figcaption{position:absolute;left:50%;bottom:-13px;transform:translateX(-50%);background:linear-gradient(180deg,#3b3c42,#222226);border:1px solid #6d6f78;padding:2px 14px;font:600 11px Oswald;letter-spacing:.24em;text-transform:uppercase;color:var(--silver);white-space:nowrap;z-index:3}
+
+/* контакты – вывеска на кронштейне */
+.contact{padding:110px 0 50px}
+.contact .grid{display:grid;grid-template-columns:auto 1fr;gap:0;align-items:start;max-width:1000px;margin:0 auto}
+.bracket{width:220px;color:#0d0d0f;margin-top:-10px}
+.signp{padding:56px 50px 50px;margin-top:70px}
+.signp h2{font:700 clamp(40px,5vw,72px)/1 "Cormorant SC";margin:12px 0 30px}
+.signp .chain{position:absolute;top:-72px;width:8px;height:72px;background:repeating-linear-gradient(180deg,#6d6f78 0 9px,#2a2a2e 9px 12px);border-radius:4px}
+.signp .chain.l{left:12%}.signp .chain.r{right:12%}
+.cl{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.cl a{display:block;padding:18px 20px;text-decoration:none;background:#121215;border:1px solid #3b3c42;box-shadow:inset 0 2px 8px rgba(0,0,0,.6);transition:.3s}
+.cl a:hover{border-color:var(--ember);box-shadow:inset 0 2px 8px rgba(0,0,0,.6),0 0 20px rgba(255,122,26,.3)}
+.cl small{display:block;font:600 11px Oswald;letter-spacing:.26em;text-transform:uppercase;color:var(--ember)}
+.cl span{font:500 22px "Cormorant Garamond"}
+footer{text-align:center;padding:40px 0 10px;font:400 12px Oswald;letter-spacing:.26em;text-transform:uppercase;color:#5d5e66}
+
+@media (max-width:1000px){
+ header nav{display:none}.facts .row{grid-template-columns:1fr 1fr}.about .grid{grid-template-columns:1fr}
+ .cards{grid-template-columns:1fr 1fr}.gallery{grid-template-columns:1fr 1fr}.contact .grid{grid-template-columns:1fr}.bracket{display:none}
+}
+@media (max-width:600px){.wrap{padding:0 16px}.cards{grid-template-columns:1fr}.cl{grid-template-columns:1fr}.signp{padding:46px 20px 34px}.fact b{font-size:42px}.gallery{gap:24px}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <!-- завиток -->
+  <symbol id="scroll" viewBox="0 0 100 100"><path d="M50 98V58c0-14-10-24-22-24S8 42 8 52s8 16 16 16 12-6 12-12-4-8-8-8" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M50 58c0-14 10-24 22-24s20 8 20 18-8 16-16 16-12-6-12-12 4-8 8-8" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></symbol>
+  <!-- секция ограды -->
+  <symbol id="fence" viewBox="0 0 120 70"><g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><path d="M0 8h120M0 62h120"/><path d="M20 62V14M60 62V14M100 62V14"/><path d="M40 62c0-14-8-20-14-20s-10 4-10 10 4 8 8 8 6-3 6-6M40 62c0-14 8-20 14-20s10 4 10 10-4 8-8 8-6-3-6-6"/><path d="M80 62c0-14-8-20-14-20M80 62c0-14 8-20 14-20s10 4 10 10-4 8-8 8-6-3-6-6"/><path d="M40 8c0 10-8 16-14 16M40 8c0 10 8 16 14 16M80 8c0 10-8 16-14 16M80 8c0 10 8 16 14 16"/></g><g fill="currentColor"><path d="M20 0l5 10H15zM60 0l5 10H55zM100 0l5 10H95z"/><circle cx="40" cy="35" r="4"/><circle cx="80" cy="35" r="4"/></g></symbol>
+</svg>
+
+<header><div class="wrap">
+  <a class="logo metaltx" href="#"><svg viewBox="0 0 44 44"><use href="#scroll"/></svg>Фазенда</a>
+  <nav><a href="#about">Усадьба</a><a href="#services">Услуги</a><a href="#gallery">Фото</a><a href="#contact">Контакты</a></nav>
+</div></header>
+
+<section class="hero">
+  <div class="bg" data-photo="usadba-svadba-vecher" data-sizes="100vw" data-eager aria-label="Свадьба вечером"></div>
+  <svg class="gate" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <g fill="none" stroke="currentColor" stroke-linecap="round">
+      <path d="M0 900V160Q720 -40 1440 160V900" stroke-width="22"/>
+      <path d="M40 900V200Q720 20 1400 200V900" stroke-width="6"/>
+      <path d="M720 40V900" stroke-width="10"/>
+      <g stroke-width="7">
+        <path d="M120 900V150M240 900V110M360 900V80M480 900V60M600 900V48M840 900V48M960 900V60M1080 900V80M1200 900V110M1320 900V150"/>
+      </g>
+      <g stroke-width="6">
+        <path d="M60 760h1320M60 790h1320"/>
+        <path d="M180 760c0-40-30-60-50-60s-30 14-30 30 12 24 24 24 18-8 18-18M180 760c0-40 30-60 50-60s30 14 30 30-12 24-24 24-18-8-18-18"/>
+        <path d="M420 760c0-40-30-60-50-60s-30 14-30 30 12 24 24 24 18-8 18-18M420 760c0-40 30-60 50-60s30 14 30 30-12 24-24 24-18-8-18-18"/>
+        <path d="M660 760c0-40-30-60-50-60s-30 14-30 30 12 24 24 24 18-8 18-18"/>
+        <path d="M780 760c0-40 30-60 50-60s30 14 30 30-12 24-24 24-18-8-18-18"/>
+        <path d="M1020 760c0-40-30-60-50-60s-30 14-30 30 12 24 24 24 18-8 18-18M1020 760c0-40 30-60 50-60s30 14 30 30-12 24-24 24-18-8-18-18"/>
+        <path d="M1260 760c0-40-30-60-50-60s-30 14-30 30 12 24 24 24 18-8 18-18M1260 760c0-40 30-60 50-60s30 14 30 30-12 24-24 24-18-8-18-18"/>
+        <path d="M720 120c-40 0-70 30-70 70s30 60 56 60 40-20 40-40-14-30-30-30M720 120c40 0 70 30 70 70s-30 60-56 60-40-20-40-40 14-30 30-30"/>
+      </g>
+    </g>
+    <g fill="currentColor"><circle cx="720" cy="190" r="10"/><path d="M110 150l10-26 10 26zM230 110l10-26 10 26zM350 80l10-26 10 26zM470 60l10-26 10 26zM590 48l10-26 10 26zM830 48l10-26 10 26zM950 60l10-26 10 26zM1070 80l10-26 10 26zM1190 110l10-26 10 26zM1310 150l10-26 10 26z"/></g>
+  </svg>
+  <canvas id="sparks" aria-hidden="true"></canvas>
+  <div class="wrap inner">
+    <div class="os" data-reveal>Усадьба · 5 км от Бреста</div>
+    <h1 class="metaltx" data-reveal="150">Фазенда</h1>
+    <p class="sub" data-reveal="300">Сруб, огонь тандыра, пар бани и яблоневый сад. Свадьбы и праздники под ключ там, где нет ни соседей, ни дорог.</p>
+    <div class="btns" data-reveal="450"><a class="btn" href="#contact">Забронировать дату</a><a class="btn steel" href="#services">Услуги</a></div>
+  </div>
+</section>
+
+<svg class="rail" preserveAspectRatio="none" viewBox="0 0 1440 70" aria-hidden="true"><defs><pattern id="fn" width="120" height="70" patternUnits="userSpaceOnUse"><use href="#fence" width="120" height="70"/></pattern></defs><rect width="1440" height="70" fill="url(#fn)" style="color:var(--steel)"/></svg>
+
+<section class="facts hammered"><div class="wrap row">
+  <div class="fact plate" data-reveal><i class="rivet"></i><i class="rivet"></i><i class="rivet"></i><i class="rivet"></i><b class="hot"><span data-count="5">5</span> км</b><span>от Бреста, ходит маршрутка</span></div>
+  <div class="fact plate" data-reveal="120"><i class="rivet"></i><i class="rivet"></i><i class="rivet"></i><i class="rivet"></i><b class="hot">0</b><span>соседей и дорог вокруг</span></div>
+  <div class="fact plate" data-reveal="240"><i class="rivet"></i><i class="rivet"></i><i class="rivet"></i><i class="rivet"></i><b class="hot">8–10</b><span>гостей в доме из сруба</span></div>
+  <div class="fact plate" data-reveal="360"><i class="rivet"></i><i class="rivet"></i><i class="rivet"></i><i class="rivet"></i><b class="hot"><span data-count="8">8</span></b><span>спальных мест в доме-бане</span></div>
+</div></section>
+
+<section class="about" id="about"><div class="wrap grid">
+  <div class="lantern" data-reveal>
+    <svg class="hook" viewBox="0 0 90 60" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"><path d="M45 60V30c0-14 12-24 24-24s16 10 10 18"/><path d="M45 30c0-14-12-24-24-24S5 16 11 24"/></svg>
+    <svg class="cap" viewBox="0 0 240 70" aria-hidden="true"><path d="M120 0l120 60H0z" fill="currentColor"/><rect x="0" y="58" width="240" height="12" fill="currentColor"/><circle cx="120" cy="40" r="10" fill="#3b3c42"/></svg>
+    <div class="body"><div class="ph" data-photo="eda-banketnyj-stol" data-sizes="(max-width:1000px) 80vw, 420px" aria-label="Банкетный зал"></div></div>
+    <div class="foot"></div>
+  </div>
+  <div data-reveal="200">
+    <div class="os">Об усадьбе</div>
+    <h2 class="metaltx">Крепко сделано. Тепло принимаем.</h2>
+    <p>Наша усадьба находится всего в 5 км от Бреста. Локация очень удобная: к нам ходят даже городские маршрутки.</p>
+    <p>При этом место вдали от людей: рядом нет ни соседей, ни дорог. Вокруг только яблоневый и грушевый сад, в котором утопает усадьба.</p>
+    <p>Все дома сделаны из сруба. А всё остальное, от тандыра до торта, мы делаем своими руками.</p>
+  </div>
+</div></section>
+
+<section class="svc hammered" id="services"><div class="wrap">
+  <div class="head"><div class="os">Услуги</div><h2 class="metaltx">Всё под ключ</h2></div>
+  <div class="cards">
+    <article class="card plate" data-reveal><i class="rivet"></i><i class="rivet"></i><i class="rivet"></i><i class="rivet"></i><div class="ph" data-photo="usadba-zhenih" data-sizes="(max-width:600px) 100vw, 33vw" aria-label="Свадьба"></div><div class="brand">I</div><h3>Свадьбы и мероприятия</h3><p>В свадебном зале или в саду: весной в цветении, летом в зелени под открытым небом. Полное обслуживание.</p></article>
+    <article class="card plate" data-reveal="150"><i class="rivet"></i><i class="rivet"></i><i class="rivet"></i><i class="rivet"></i><div class="ph" data-photo="priroda-semya" data-sizes="(max-width:600px) 100vw, 33vw" aria-label="Отдых"></div><div class="brand">II</div><h3>Баня и озеро</h3><p>Баня на дровах и отличный пар, купание в собственном озере, зимой прорубь. Дом-баня на 8 спальных мест.</p></article>
+    <article class="card plate" data-reveal="300"><i class="rivet"></i><i class="rivet"></i><i class="rivet"></i><i class="rivet"></i><div class="ph" data-photo="priroda-yablonevyj-sad" data-sizes="(max-width:600px) 100vw, 33vw" aria-label="Сад"></div><div class="brand">III</div><h3>Дом из сруба</h3><p>Для проживания на 8–10 человек, сдаётся целиком. Готовим завтраки.</p></article>
+    <article class="card plate" data-reveal><i class="rivet"></i><i class="rivet"></i><i class="rivet"></i><i class="rivet"></i><div class="ph" data-photo="eda-banketnyj-stol" data-sizes="(max-width:600px) 100vw, 33vw" aria-label="Банкет"></div><div class="brand">IV</div><h3>Тандыр</h3><p>Все блюда на фруктовых дровах, по нашему меню или вашим пожеланиям.</p></article>
+    <article class="card plate" data-reveal="150"><i class="rivet"></i><i class="rivet"></i><i class="rivet"></i><i class="rivet"></i><div class="ph" data-photo="dekor-svadebnyj-stol" data-sizes="(max-width:600px) 100vw, 33vw" aria-label="Декор"></div><div class="brand">V</div><h3>Свой декоратор</h3><p>Делаем любую картинку под ваш запрос.</p></article>
+    <article class="card plate" data-reveal="300"><i class="rivet"></i><i class="rivet"></i><i class="rivet"></i><i class="rivet"></i><div class="ph" data-photo="torty-medovik-sad" data-sizes="(max-width:600px) 100vw, 33vw" aria-label="Торт"></div><div class="brand">VI</div><h3>Свой кондитер</h3><p>Без доставки, аренды подставки и забот о том, кто вынесет и разрежет торт.</p></article>
+  </div>
+</div></section>
+
+<section class="forge">
+  <canvas id="sparks2" aria-hidden="true"></canvas>
+  <div class="wrap" style="position:relative">
+    <div class="os">Огонь</div>
+    <h2 class="hot" data-reveal>Всё, что на столе,<br>из тандыра</h2>
+    <p data-reveal="150">Мы готовим все блюда в тандыре на фруктовых дровах из нашего сада, по меню или по вашим пожеланиям. А для отдыхающих готовим завтраки.</p>
+  </div>
+  <div class="embers"></div>
+</section>
+
+<svg class="rail" preserveAspectRatio="none" viewBox="0 0 1440 70" aria-hidden="true"><rect width="1440" height="70" fill="url(#fn)" style="color:var(--steel)"/></svg>
+
+<section class="gal" id="gallery"><div class="wrap">
+  <div class="head"><div class="os">Галерея</div><h2 class="metaltx">Фотографии</h2></div>
+  <nav class="filters" data-filters aria-label="Категории фото"></nav>
+  <div class="gallery" data-gallery data-sizes="(max-width:1000px) 50vw, 25vw"></div>
+</div></section>
+
+<section class="contact hammered" id="contact"><div class="wrap">
+  <div class="grid">
+    <svg class="bracket" viewBox="0 0 220 220" fill="none" stroke="currentColor" stroke-linecap="round" aria-hidden="true" style="color:#3b3c42">
+      <path d="M10 10v200" stroke-width="12"/><path d="M10 40h210" stroke-width="10"/>
+      <path d="M10 180C10 100 70 40 160 40" stroke-width="7"/>
+      <path d="M60 100c0-20 14-30 28-30s22 10 22 22-8 18-18 18-14-6-14-12" stroke-width="5"/>
+      <path d="M30 150c0-16 10-24 20-24s16 8 16 16-6 12-12 12" stroke-width="5"/>
+      <circle cx="10" cy="10" r="10" fill="currentColor"/>
+    </svg>
+    <div class="signp plate" data-reveal>
+      <span class="chain l"></span><span class="chain r"></span>
+      <i class="rivet"></i><i class="rivet"></i><i class="rivet"></i><i class="rivet"></i>
+      <div class="os">Контакты</div>
+      <h2 class="metaltx">Ждём вас у ворот</h2>
+      <div class="cl">
+        <a href="https://instagram.com/fazenda.brest" target="_blank" rel="noopener"><small>Instagram</small><span>@fazenda.brest</span></a>
+        <a href="https://www.tiktok.com/@_kutman4" target="_blank" rel="noopener"><small>TikTok</small><span>@_kutman4</span></a>
+        <a href="tel:+375000000000"><small>Телефон</small><span>+375 (__) ___-__-__</span></a>
+        <a href="#"><small>Адрес</small><span>5 км от Бреста</span></a>
+      </div>
+    </div>
+  </div>
+  <footer>© Фазенда · усадьба · Брест</footer>
+</div></section>
+
+<script src="photos/manifest.js"></script>
+<script src="assets/photos.js"></script>
+<script src="assets/fx.js"></script>
+<script>
+// Искры над горном: лёгкие частицы на canvas, не работают при «уменьшить движение»
+(function(){
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  [['sparks',70],['sparks2',90]].forEach(function(cfg){
+    var c=document.getElementById(cfg[0]); if(!c) return; var x=c.getContext('2d'),W,H,dpr=Math.min(2,devicePixelRatio||1),P=[],on=true;
+    function size(){W=c.clientWidth;H=c.clientHeight;c.width=W*dpr;c.height=H*dpr;x.setTransform(dpr,0,0,dpr,0,0)}
+    function spawn(){return{x:W*(.15+Math.random()*.7),y:H+10,vx:(Math.random()-.5)*.8,vy:-(1+Math.random()*2.4),life:0,max:120+Math.random()*160,r:.6+Math.random()*1.8}}
+    size();addEventListener('resize',size);
+    new IntersectionObserver(function(e){on=e[0].isIntersecting}).observe(c);
+    (function loop(){requestAnimationFrame(loop);if(!on)return;
+      if(P.length<cfg[1])P.push(spawn());
+      x.clearRect(0,0,W,H);x.globalCompositeOperation='lighter';
+      for(var i=P.length-1;i>=0;i--){var p=P[i];p.life++;p.x+=p.vx+Math.sin(p.life*.05)*.3;p.y+=p.vy;p.vy*=.995;
+        var a=1-p.life/p.max;if(a<=0){P.splice(i,1);continue}
+        x.fillStyle='rgba(255,'+(140+Math.round(80*a))+',60,'+a+')';x.shadowColor='#ff7a1a';x.shadowBlur=8;
+        x.beginPath();x.arc(p.x,p.y,p.r,0,7);x.fill()}
+    })();
+  });
+})();
+</script>
+</body>
+</html>
