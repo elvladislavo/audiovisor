@@ -12,8 +12,8 @@
 Что делает скрипт:
   * поворачивает фото по EXIF и удаляет EXIF (геометки, модель телефона);
   * переводит цвет в sRGB, чтобы фото с iPhone (Display P3) не тускнели в браузере;
-  * режет на ширины 480 / 960 / 1500 / 2000 px — НИКОГДА не увеличивает;
-  * сохраняет каждую ширину в AVIF (q≈62), WebP (q≈82) и JPEG (q≈84, progressive) —
+  * режет на ширины 480 / 960 / 1600 px — НИКОГДА не увеличивает;
+  * сохраняет каждую ширину в AVIF (q≈60) и WebP (q≈80), плюс один JPEG 960 px (q≈82) —
     визуально без потерь, но в 5–15 раз легче исходника;
   * делает крошечное размытое превью (LQIP), которое видно, пока грузится фото;
   * пишет photos/manifest.js — список фото с размерами и категориями для галереи.
@@ -32,7 +32,8 @@ SRC = ROOT / "photos" / "originals"
 OUT = ROOT / "photos" / "web"
 MANIFEST = ROOT / "photos" / "manifest.js"
 
-WIDTHS = [480, 960, 1500, 2000]
+WIDTHS = [480, 960, 1600]
+JPG_WIDTH = 960  # JPEG — только запасной вариант для очень старых браузеров
 QUALITY = {"avif": 60, "webp": 80, "jpg": 82}
 # Категории галереи. Файлы с префиксом main- идут только на главную, в галерею не попадают.
 CATEGORIES = {
@@ -80,7 +81,7 @@ def process(src: Path, force: bool):
     for w in widths:
         h = round(h0 * w / w0)
         resized = None
-        for fmt in ("avif", "webp", "jpg"):
+        for fmt in ("avif", "webp") + (("jpg",) if w == min(JPG_WIDTH, w0) else ()):
             out = OUT / f"{stem}-{w}.{fmt}"
             if out.exists() and not force:
                 continue

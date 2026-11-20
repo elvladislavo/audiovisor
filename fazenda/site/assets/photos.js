@@ -9,11 +9,11 @@
     return p.widths.map(function (w) { return base + p.name + "-" + w + "." + fmt + " " + w + "w"; }).join(", ");
   }
   function picture(p, sizes, alt, eager) {
-    var last = p.widths[p.widths.length - 1];
+    var jw = Math.min(960, p.widths[p.widths.length - 1]);
     return '<picture style="background-image:url(' + p.lqip + ')">' +
       '<source type="image/avif" srcset="' + srcset(p, "avif") + '" sizes="' + sizes + '">' +
       '<source type="image/webp" srcset="' + srcset(p, "webp") + '" sizes="' + sizes + '">' +
-      '<img src="' + base + p.name + "-" + last + '.jpg" srcset="' + srcset(p, "jpg") + '" sizes="' + sizes +
+      '<img src="' + base + p.name + "-" + jw + '.jpg" sizes="' + sizes +
       '" width="' + p.w + '" height="' + p.h + '" alt="' + (alt || "") + '" ' +
       (eager ? 'fetchpriority="high"' : 'loading="lazy"') + ' decoding="async" onload="this.parentNode.classList.add(\'is-loaded\')">' +
       "</picture>";
