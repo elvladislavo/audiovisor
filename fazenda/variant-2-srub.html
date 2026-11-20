@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Фазенда — сруб, тандыр и баня под Брестом</title>
+<meta name="description" content="Усадьба в 5 км от Бреста: свадьбы под ключ, баня на дровах и своё озеро, срубовые дома, тандыр на фруктовых дровах.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter+Tight:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#15100c;--bg2:#1f1812;--wood:#3a2a1d;--text:#f1e6d6;--muted:#a8957d;--ember:#e0823d;--ember2:#f2b46b;--line:#3a2e24}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:300 17px/1.7 "Inter Tight",system-ui,sans-serif}
+a{color:inherit}img{display:block;width:100%;height:100%;object-fit:cover}
+picture{display:block;height:100%;background-size:cover;overflow:hidden}
+picture img{opacity:0;transition:opacity .8s}picture.is-loaded img{opacity:1}
+.wrap{max-width:1280px;margin:0 auto;padding:0 28px}
+.kicker{font:600 12px "Inter Tight";letter-spacing:.32em;text-transform:uppercase;color:var(--ember)}
+h1,h2,h3{font-family:"Playfair Display",serif;font-weight:400;margin:0}
+em{color:var(--ember2)}
+
+.hero{position:relative;min-height:100vh;display:grid;align-items:end;overflow:hidden}
+.hero .bg{position:absolute;inset:0}
+.hero .bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(21,16,12,.35) 0%,rgba(21,16,12,.2) 40%,var(--bg) 96%),radial-gradient(ellipse at 20% 80%,rgba(224,130,61,.25),transparent 60%)}
+.hero .bg picture{filter:saturate(1.1) contrast(1.05)}
+.top{position:absolute;top:0;left:0;right:0;z-index:3;display:flex;justify-content:space-between;align-items:center;padding:28px}
+.logo{font:italic 400 30px "Playfair Display";text-decoration:none}
+.top nav a{margin-left:32px;font-size:13px;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:var(--text);opacity:.8}
+.hero .content{position:relative;z-index:2;padding-bottom:9vh}
+h1{font-size:clamp(56px,9vw,148px);line-height:.9;letter-spacing:-.02em;margin:22px 0 30px}
+.hero p{max-width:34em;font-size:19px;color:#e3d4be}
+.btn{display:inline-flex;gap:12px;align-items:center;margin-top:28px;padding:18px 30px;background:var(--ember);color:#1a120b;text-decoration:none;font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:13px;transition:.25s}
+.btn:hover{background:var(--ember2)}
+.scroll{position:absolute;right:28px;bottom:9vh;z-index:2;writing-mode:vertical-rl;font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted)}
+
+.intro{padding:120px 0;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.intro h2{font-size:clamp(38px,4.6vw,64px);line-height:1.05;margin:16px 0 26px}
+.intro .tall{aspect-ratio:3/4;position:relative}
+.intro .tall::before{content:"";position:absolute;inset:-18px 18px 18px -18px;border:1px solid var(--ember);opacity:.5;z-index:-1}
+.tags{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}
+.tags span{border:1px solid var(--line);padding:8px 16px;font-size:14px;color:var(--muted)}
+
+.rows{border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:90px 1.1fr 1fr 220px;gap:36px;padding:44px 0;border-bottom:1px solid var(--line);align-items:center;transition:background .3s}
+.row:hover{background:var(--bg2)}
+.row .num{font:italic 42px "Playfair Display";color:var(--ember)}
+.row h3{font-size:clamp(28px,3vw,42px);line-height:1.1}
+.row p{margin:0;color:#cdbca4;font-size:16px}
+.row .ph{height:150px}
+
+.fire{padding:140px 0;text-align:center;background:radial-gradient(ellipse at 50% 120%,rgba(224,130,61,.28),transparent 65%)}
+.fire h2{font-size:clamp(40px,6vw,88px);line-height:1;max-width:14em;margin:20px auto}
+.fire p{max-width:36em;margin:0 auto;color:#cdbca4}
+
+.gal{padding:110px 0}
+.gal h2{font-size:clamp(38px,4.6vw,64px);margin:14px 0 28px}
+.filters{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:36px;border-bottom:1px solid var(--line)}
+.filters button{font:400 15px "Inter Tight";background:none;border:0;color:var(--muted);padding:14px 20px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.filters button[aria-pressed=true]{color:var(--text);border-color:var(--ember)}
+.gallery{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:240px;gap:10px}
+.g-item{margin:0;position:relative;overflow:hidden}
+.g-item:nth-child(5n+1){grid-row:span 2}.g-item:nth-child(7n+3){grid-column:span 2}
+.g-item img{transition:transform 1.2s}.g-item:hover img{transform:scale(1.05)}
+.g-item figcaption{position:absolute;left:0;bottom:0;padding:10px 14px;font-size:12px;letter-spacing:.2em;text-transform:uppercase;background:linear-gradient(transparent,rgba(0,0,0,.6));width:100%}
+
+.contact{background:var(--bg2);padding:110px 0;border-top:1px solid var(--line)}
+.contact .grid{display:grid;grid-template-columns:1.2fr 1fr;gap:70px}
+.contact h2{font-size:clamp(44px,6vw,92px);line-height:.95;margin-top:16px}
+.cl{list-style:none;padding:0;margin:0}
+.cl li{padding:20px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:20px}
+.cl span{color:var(--muted);font-size:13px;letter-spacing:.2em;text-transform:uppercase}
+.cl a{text-decoration:none;font:400 22px "Playfair Display"}.cl a:hover{color:var(--ember2)}
+footer{padding:30px 28px;color:#6f604f;font-size:13px;text-align:center}
+
+@media (max-width:900px){
+ .top nav{display:none}.intro,.contact .grid{grid-template-columns:1fr;gap:48px}
+ .row{grid-template-columns:56px 1fr;gap:16px 20px}.row p,.row .ph{grid-column:2}.row .ph{height:200px}
+ .gallery{grid-template-columns:1fr 1fr;grid-auto-rows:180px}.scroll{display:none}
+}
+@media (max-width:560px){.wrap{padding:0 16px}.top{padding:20px 16px}.g-item:nth-child(7n+3){grid-column:span 1}}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="bg" data-photo="usadba-svadba-vecher" data-sizes="100vw" data-eager aria-label="Свадьба вечером на усадьбе"></div>
+  <div class="top"><a class="logo" href="#">Фазенда</a><nav><a href="#services">Услуги</a><a href="#gallery">Фото</a><a href="#contact">Контакты</a></nav></div>
+  <div class="wrap content">
+    <div class="kicker">Усадьба под Брестом</div>
+    <h1>Сруб, огонь<br>и <em>яблоневый сад</em></h1>
+    <p>Свадьбы и праздники под ключ, баня на дровах с собственным озером, блюда из тандыра на фруктовых дровах. В 5 км от города — и ни одного соседа вокруг.</p>
+    <a class="btn" href="#contact">Узнать свободные даты →</a>
+  </div>
+  <div class="scroll">листайте вниз</div>
+</header>
+
+<main>
+<div class="wrap intro">
+  <div class="tall" data-photo="eda-banketnyj-stol" data-sizes="(max-width:900px) 100vw, 50vw" aria-label="Банкетный зал усадьбы"></div>
+  <div>
+    <div class="kicker">Место</div>
+    <h2>В 5 км от Бреста. <em>И будто за сто.</em></h2>
+    <p>К нам ходят даже городские маршрутки — а вокруг только яблоневый и грушевый сад. Ни дорог, ни соседей, ни чужих глаз: вся усадьба на время праздника принадлежит вам.</p>
+    <p>Все дома — из сруба: тёплые, живые, пахнущие деревом.</p>
+    <div class="tags"><span>Свадебный зал</span><span>Свадьба в саду</span><span>Баня на дровах</span><span>Своё озеро</span><span>Дом на 8–10 гостей</span></div>
+  </div>
+</div>
+
+<section id="services"><div class="wrap">
+  <div class="kicker" style="margin-bottom:30px">Что мы делаем</div>
+  <div class="rows">
+    <div class="row"><div class="num">01</div><h3>Мероприятия под ключ</h3><p>Свадьбы в специальном зале или в саду: весной — в цветущих яблонях, летом — под открытым небом. Полное обслуживание от встречи гостей до торта.</p><div class="ph" data-photo="usadba-zhenih" data-sizes="220px" aria-label="Жених в саду"></div></div>
+    <div class="row"><div class="num">02</div><h3>Тандыр на фруктовых дровах</h3><p>Все блюда готовим в тандыре — по меню или по вашим пожеланиям. Отдыхающим — домашние завтраки.</p><div class="ph" data-photo="eda-banketnyj-stol" data-sizes="220px" aria-label="Блюда"></div></div>
+    <div class="row"><div class="num">03</div><h3>Баня и озеро</h3><p>Баня на дровах и отличный пар. Купание в собственном озере, зимой — прорубь. Дом-баня для отдыха на 8 спальных мест.</p><div class="ph" data-photo="priroda-yablonevyj-sad" data-sizes="220px" aria-label="Сад"></div></div>
+    <div class="row"><div class="num">04</div><h3>Дом для проживания</h3><p>Срубовый дом на 8–10 человек, сдаётся целиком — для семьи, компании или гостей свадьбы.</p><div class="ph" data-photo="priroda-semya" data-sizes="220px" aria-label="Семья"></div></div>
+    <div class="row"><div class="num">05</div><h3>Декоратор и кондитер</h3><p>Свой декоратор соберёт любую картинку под ваш запрос. Свой кондитер испечёт торт — без доставки и аренды подставки, вынесем и разрежем сами.</p><div class="ph" data-photo="torty-medovik-sad" data-sizes="220px" aria-label="Торт"></div></div>
+  </div>
+</div></section>
+
+<div class="fire"><div class="wrap">
+  <div class="kicker">Кухня</div>
+  <h2>Всё, что на столе, <em>знает вкус огня</em></h2>
+  <p>Мясо, овощи, лепёшки — из тандыра на яблоневых и грушевых дровах из нашего же сада.</p>
+</div></div>
+
+<section class="gal" id="gallery"><div class="wrap">
+  <div class="kicker">Галерея</div>
+  <h2>Торты, декор, <em>сад</em></h2>
+  <nav class="filters" data-filters aria-label="Категории фото"></nav>
+  <div class="gallery" data-gallery data-sizes="(max-width:900px) 50vw, 25vw"></div>
+</div></section>
+
+<section class="contact" id="contact"><div class="wrap grid">
+  <div><div class="kicker">Контакты</div><h2>Растопим баню <em>к вашему приезду</em></h2></div>
+  <ul class="cl">
+    <li><span>Instagram</span><a href="https://instagram.com/fazenda.brest" target="_blank" rel="noopener">@fazenda.brest</a></li>
+    <li><span>TikTok</span><a href="https://www.tiktok.com/@_kutman4" target="_blank" rel="noopener">@_kutman4</a></li>
+    <li><span>Телефон</span><a href="tel:+375000000000">+375 (__) ___-__-__</a></li>
+    <li><span>Адрес</span><a href="#">5 км от Бреста</a></li>
+  </ul>
+</div></section>
+</main>
+<footer>© Фазенда — усадьба, баня и мероприятия под ключ · Брест</footer>
+<script src="photos/manifest.js"></script>
+<script src="assets/photos.js"></script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Фазенда — усадьба среди яблонь</title>
+<meta name="description" content="Усадьба в яблоневом саду в 5 км от Бреста: свадьбы, баня с озером, дом из сруба, тандыр, свой декоратор и кондитер.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,500&family=Marck+Script&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#fbf7ee;--sage:#dfe5cf;--green:#3f5a2e;--green2:#2c4220;--apple:#c8402f;--pear:#d9b44a;--ink:#24301c;--muted:#66705a}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--cream);color:var(--ink);font:400 17px/1.65 Nunito,system-ui,sans-serif}
+a{color:inherit}img{display:block;width:100%;height:100%;object-fit:cover}
+picture{display:block;height:100%;background-size:cover;overflow:hidden}
+picture img{opacity:0;transition:opacity .8s}picture.is-loaded img{opacity:1}
+.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+.script{font-family:"Marck Script",cursive;color:var(--apple);font-size:34px;line-height:1}
+h1,h2,h3{font-family:Lora,serif;font-weight:600;margin:0;line-height:1.05}
+
+header{padding:22px 0}
+header .wrap{display:flex;justify-content:space-between;align-items:center}
+.logo{display:flex;gap:10px;align-items:center;font:600 24px Lora;text-decoration:none;color:var(--green2)}
+.logo svg{width:34px}
+.pill{background:var(--green);color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:700;font-size:15px}
+.pill:hover{background:var(--apple)}
+
+.hero{background:var(--sage);border-radius:40px;margin:0 16px;padding:64px 0 0;overflow:hidden;position:relative}
+.hero .wrap{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:end}
+.hero h1{font-size:clamp(46px,6.4vw,92px);color:var(--green2);margin:10px 0 22px}
+.hero h1 em{font-style:italic;color:var(--apple)}
+.hero p{font-size:19px;color:#3c4a31;max-width:28em}
+.hero .copy{padding-bottom:72px}
+.hero .ctas{display:flex;gap:12px;margin-top:28px;flex-wrap:wrap}
+.ghost{border:2px solid var(--green);padding:10px 20px;border-radius:999px;text-decoration:none;font-weight:700;color:var(--green)}
+.arch{height:560px;border-radius:300px 300px 0 0;overflow:hidden;border:10px solid var(--cream);border-bottom:0}
+.badge{position:absolute;right:42%;top:60px;width:130px;height:130px;animation:spin 24s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.badge{animation:none}}
+
+.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;padding:56px 0}
+.chips span{background:#fff;border:1px solid #e3e0d3;padding:10px 18px;border-radius:999px;font-weight:600;color:var(--green)}
+.chips span::before{content:"● ";color:var(--apple)}
+
+section{padding:80px 0}
+.head{text-align:center;max-width:720px;margin:0 auto 56px}
+.head h2{font-size:clamp(36px,4.4vw,58px);color:var(--green2);margin-top:6px}
+.head p{color:var(--muted)}
+
+.bento{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:260px;gap:18px}
+.tile{border-radius:28px;overflow:hidden;position:relative;background:#fff;padding:28px;display:flex;flex-direction:column;justify-content:flex-end}
+.tile.photo{padding:0}
+.tile.photo .t{position:absolute;inset:auto 0 0 0;padding:26px;color:#fff;background:linear-gradient(transparent,rgba(20,30,12,.75))}
+.tile h3{font-size:26px;margin-bottom:8px}.tile p{margin:0;font-size:15px}
+.tile.photo p{color:#eef0e4}
+.t-big{grid-column:span 2;grid-row:span 2}.t-wide{grid-column:span 2}
+.tile.green{background:var(--green);color:#fff}.tile.green p{color:#d8e2c8}
+.tile.pear{background:var(--pear)}
+.tile.apple{background:var(--apple);color:#fff}.tile.apple p{color:#fbe2db}
+.tile .icon{font-size:40px;margin-bottom:auto}
+
+.wave{display:block;width:100%;height:60px}
+.green-sec{background:var(--green2);color:#fff;padding:90px 0}
+.green-sec .wrap{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.green-sec h2{font-size:clamp(36px,4.4vw,58px)}
+.green-sec p{color:#cdd8bd}
+.seasons{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.seasons div{background:rgba(255,255,255,.07);border-radius:20px;padding:22px}
+.seasons b{display:block;font:600 22px Lora;color:var(--pear)}
+
+.filters{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-bottom:34px}
+.filters button{font:700 15px Nunito;padding:10px 22px;border-radius:999px;border:2px solid var(--sage);background:#fff;color:var(--green);cursor:pointer}
+.filters button[aria-pressed=true]{background:var(--apple);border-color:var(--apple);color:#fff}
+.gallery{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.g-item{margin:0;border-radius:22px;overflow:hidden;aspect-ratio:4/5;position:relative}
+.g-item:nth-child(4n+2){transform:translateY(28px)}.g-item:nth-child(4n+4){transform:translateY(28px)}
+.g-item figcaption{position:absolute;top:12px;left:12px;background:var(--cream);border-radius:999px;padding:4px 12px;font-size:13px;font-weight:700;color:var(--green)}
+
+.contact{margin:60px 16px 16px;background:var(--apple);color:#fff;border-radius:40px;padding:80px 0}
+.contact .wrap{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center}
+.contact h2{font-size:clamp(40px,5vw,70px)}
+.contact .script{color:var(--pear)}
+.cards{display:grid;gap:12px}
+.cards a{display:flex;justify-content:space-between;align-items:center;background:#fff;color:var(--ink);text-decoration:none;padding:20px 24px;border-radius:20px;font-weight:700;font-size:18px;transition:transform .2s}
+.cards a:hover{transform:translateX(6px)}.cards small{color:var(--muted);font-weight:600}
+footer{text-align:center;color:var(--muted);font-size:13px;padding:24px}
+
+@media (max-width:900px){
+ .hero .wrap,.green-sec .wrap,.contact .wrap{grid-template-columns:1fr}.arch{height:400px}.badge{display:none}
+ .bento{grid-template-columns:1fr 1fr;grid-auto-rows:220px}.gallery{grid-template-columns:1fr 1fr}
+ .hero .copy{padding-bottom:0}
+}
+@media (max-width:560px){.bento{grid-template-columns:1fr}.t-big,.t-wide{grid-column:span 1}.hero,.contact{margin-inline:8px;border-radius:28px}.wrap{padding:0 16px}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <a class="logo" href="#"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 12c-6-4-15-1-15 9 0 9 7 16 11 16 2 0 3-1 4-1s2 1 4 1c4 0 11-7 11-16 0-10-9-13-15-9z" fill="#c8402f"/><path d="M20 12c0-4 2-8 6-9-1 4-3 7-6 9z" fill="#3f5a2e"/></svg>Фазенда</a>
+  <a class="pill" href="#contact">Забронировать</a>
+</div></header>
+
+<div class="hero">
+  <svg class="badge" viewBox="0 0 120 120" aria-hidden="true"><defs><path id="c" d="M60,60 m-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0"/></defs><circle cx="60" cy="60" r="58" fill="#fbf7ee"/><text font-family="Nunito" font-weight="700" font-size="11.5" letter-spacing="3" fill="#3f5a2e"><textPath href="#c">• 5 КМ ОТ БРЕСТА • ЯБЛОНЕВЫЙ САД </textPath></text><text x="60" y="70" text-anchor="middle" font-size="28">🍏</text></svg>
+  <div class="wrap">
+    <div class="copy">
+      <div class="script">усадьба в саду</div>
+      <h1>Ваш праздник среди <em>яблонь и груш</em></h1>
+      <p>Свадьбы под ключ, баня на дровах и своё озеро, тёплые дома из сруба и вкуснейший тандыр — в 5 км от Бреста, но вдали от людей.</p>
+      <div class="ctas"><a class="pill" href="#contact">Хочу к вам</a><a class="ghost" href="#services">Услуги</a></div>
+    </div>
+    <div class="arch" data-photo="priroda-yablonevyj-sad" data-sizes="(max-width:900px) 100vw, 50vw" data-eager aria-label="Пара в яблоневом саду"></div>
+  </div>
+</div>
+
+<div class="wrap chips"><span>Маршрутка из города</span><span>Ни соседей, ни дорог</span><span>Дома из сруба</span><span>Свадебный зал</span><span>Прорубь зимой</span></div>
+
+<section id="services"><div class="wrap">
+  <div class="head"><div class="script">всё под ключ</div><h2>Что мы для вас приготовим</h2><p>Вам остаётся только приехать — остальное сделаем сами.</p></div>
+  <div class="bento">
+    <div class="tile photo t-big" data-photo-host><div style="position:absolute;inset:0" data-photo="usadba-zhenih" data-sizes="(max-width:560px) 100vw, 50vw" aria-label="Свадьба в саду"></div><div class="t"><h3>Свадьбы и мероприятия</h3><p>В свадебном зале или в саду — весной в цветении, летом в зелени под открытым небом. Полное обслуживание.</p></div></div>
+    <div class="tile green"><div class="icon">🔥</div><h3>Тандыр</h3><p>Все блюда — на фруктовых дровах, по меню или вашим пожеланиям.</p></div>
+    <div class="tile pear"><div class="icon">🧖</div><h3>Баня и озеро</h3><p>Пар на дровах, своё озеро, зимой — прорубь.</p></div>
+    <div class="tile photo t-wide"><div style="position:absolute;inset:0" data-photo="torty-medovik-sad" data-sizes="(max-width:560px) 100vw, 50vw" aria-label="Торт"></div><div class="t"><h3>Свой кондитер</h3><p>Торт на месте: без доставки, подставки и забот о подаче.</p></div></div>
+    <div class="tile"><div class="icon">🏡</div><h3>Дом на 8–10 гостей</h3><p>Сруб целиком для вас. Готовим завтраки.</p></div>
+    <div class="tile apple"><div class="icon">💐</div><h3>Свой декоратор</h3><p>Любая картинка под ваш запрос.</p></div>
+    <div class="tile photo t-wide"><div style="position:absolute;inset:0" data-photo="priroda-semya" data-sizes="(max-width:560px) 100vw, 50vw" aria-label="Отдых с семьёй"></div><div class="t"><h3>Дом-баня на 8 мест</h3><p>Уютно отдохнуть после пара — с ночёвкой.</p></div></div>
+  </div>
+</div></section>
+
+<svg class="wave" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 60V30C240 0 480 0 720 30s480 30 720 0v30z" fill="#2c4220"/></svg>
+<div class="green-sec"><div class="wrap">
+  <div><div class="script" style="color:var(--pear)">круглый год</div><h2>Сад меняется — праздник остаётся</h2><p>Наша усадьба утопает в яблоневом и грушевом саду. Каждый сезон здесь выглядит по-своему, и каждый хорош для торжества.</p></div>
+  <div class="seasons"><div><b>Весна</b>Свадьбы в цветущих яблонях</div><div><b>Лето</b>Банкет в зелени под открытым небом</div><div><b>Осень</b>Урожай, яблоки и тёплый декор</div><div><b>Зима</b>Баня, пар и прорубь</div></div>
+</div></div>
+<svg class="wave" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true" style="transform:scaleY(-1)"><path d="M0 60V30C240 0 480 0 720 30s480 30 720 0v30z" fill="#2c4220"/></svg>
+
+<section id="gallery"><div class="wrap">
+  <div class="head"><div class="script">загляните к нам</div><h2>Фотографии</h2></div>
+  <nav class="filters" data-filters aria-label="Категории фото"></nav>
+  <div class="gallery" data-gallery data-sizes="(max-width:900px) 50vw, 25vw"></div>
+</div></section>
+
+<div class="contact" id="contact"><div class="wrap">
+  <div><div class="script">ждём в гости</div><h2>Напишите нам — подберём дату</h2><p>Расскажите, какой праздник задумали, — предложим меню, декор и торт.</p></div>
+  <div class="cards">
+    <a href="https://instagram.com/fazenda.brest" target="_blank" rel="noopener">@fazenda.brest <small>Instagram →</small></a>
+    <a href="https://www.tiktok.com/@_kutman4" target="_blank" rel="noopener">@_kutman4 <small>TikTok →</small></a>
+    <a href="tel:+375000000000">+375 (__) ___-__-__ <small>Позвонить →</small></a>
+    <a href="#">5 км от Бреста <small>Маршрут →</small></a>
+  </div>
+</div></div>
+<footer>© Фазенда · усадьба в яблоневом саду под Брестом</footer>
+<script src="photos/manifest.js"></script>
+<script src="assets/photos.js"></script>
+</body>
+</html>

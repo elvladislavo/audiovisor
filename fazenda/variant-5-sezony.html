@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Фазенда — четыре сезона усадьбы под Брестом</title>
+<meta name="description" content="Усадьба в яблоневом саду в 5 км от Бреста. Свадьбы весной и летом, осенний урожай, зимняя баня с прорубью.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Forum&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#efe9df;--ink:#2a2723;--muted:#857b6e;--line:#cfc5b4;--spring:#e8c9c4;--summer:#b9c6a0;--autumn:#d79a5b;--winter:#b7c4cc}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:300 17px/1.7 Jost,system-ui,sans-serif}
+a{color:inherit}img{display:block;width:100%;height:100%;object-fit:cover}
+picture{display:block;height:100%;background-size:cover;overflow:hidden}
+picture img{opacity:0;transition:opacity .8s}picture.is-loaded img{opacity:1}
+.wrap{max-width:1280px;margin:0 auto;padding:0 28px}
+h1,h2,h3,.forum{font-family:Forum,serif;font-weight:400;margin:0}
+.cap{font:500 12px Jost;letter-spacing:.3em;text-transform:uppercase;color:var(--muted)}
+
+header{position:fixed;top:0;left:0;right:0;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:22px 28px;mix-blend-mode:difference;color:#fff}
+header .logo{font:28px Forum;letter-spacing:.3em;text-decoration:none;text-transform:uppercase}
+header a.c{font-size:13px;letter-spacing:.2em;text-transform:uppercase;text-decoration:none}
+
+.hero{height:100vh;min-height:620px;display:grid;grid-template-columns:repeat(4,1fr);position:relative}
+.hero>div{position:relative;overflow:hidden}
+.hero>div picture{transition:transform 1.4s cubic-bezier(.2,.7,.2,1)}
+.hero>div:hover picture{transform:scale(1.06)}
+.hero>div span{position:absolute;bottom:24px;left:20px;color:#fff;font:22px Forum;letter-spacing:.2em;text-transform:uppercase;text-shadow:0 2px 12px rgba(0,0,0,.4)}
+.hero .center{position:absolute;inset:0;display:grid;place-items:center;text-align:center;pointer-events:none;background:rgba(30,25,20,.32)}
+.hero h1{color:#fff;font-size:clamp(58px,10vw,170px);line-height:.85;letter-spacing:.04em;text-transform:uppercase}
+.hero .center p{color:#f2ece2;font-size:clamp(16px,1.6vw,21px);margin:20px auto 0;max-width:28em;letter-spacing:.04em}
+
+.manifest{padding:130px 0;text-align:center}
+.manifest p.forum{font-size:clamp(30px,3.8vw,52px);line-height:1.2;max-width:22em;margin:22px auto 0}
+.manifest .sub{max-width:40em;margin:30px auto 0;color:#4f483f}
+
+.season{display:grid;grid-template-columns:1fr 1fr;min-height:88vh}
+.season:nth-of-type(even) .media{order:2}
+.season .media{position:relative}
+.season .media .small{position:absolute;width:38%;aspect-ratio:3/4;right:-6%;bottom:8%;border:8px solid var(--bg);z-index:2}
+.season:nth-of-type(even) .media .small{right:auto;left:-6%}
+.season .text{padding:10vh 7vw;display:flex;flex-direction:column;justify-content:center}
+.season .no{font:120px/1 Forum;opacity:.35}
+.season h2{font-size:clamp(40px,4.6vw,70px);line-height:1;margin:10px 0 24px}
+.season ul{list-style:none;padding:0;margin:20px 0 0;border-top:1px solid var(--line)}
+.season li{padding:14px 0;border-bottom:1px solid var(--line)}
+.season li b{font-weight:500}
+.s-spring{background:var(--spring)}.s-summer{background:var(--summer)}.s-autumn{background:var(--autumn)}.s-winter{background:var(--winter)}
+
+.always{padding:120px 0}
+.always .head{display:flex;justify-content:space-between;align-items:end;gap:30px;margin-bottom:50px;flex-wrap:wrap}
+.always h2{font-size:clamp(40px,4.6vw,70px);line-height:1}
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:50px}
+.cols h3{font-size:30px;margin-bottom:10px}.cols p{margin:0;color:#4f483f}
+.cols .line{height:1px;background:var(--ink);margin-bottom:22px}
+
+.film{padding:0 0 120px}
+.filters{display:flex;gap:28px;flex-wrap:wrap;margin:0 0 30px}
+.filters button{font:400 16px Jost;letter-spacing:.15em;text-transform:uppercase;background:none;border:0;padding:6px 0;color:var(--muted);cursor:pointer;border-bottom:1px solid transparent}
+.filters button[aria-pressed=true]{color:var(--ink);border-color:var(--ink)}
+.gallery{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 28px 18px;scrollbar-width:thin}
+.g-item{margin:0;flex:0 0 auto;height:min(70vh,560px);aspect-ratio:3/4;scroll-snap-align:start;position:relative}
+.g-item:nth-child(3n+2){aspect-ratio:4/5;align-self:end;height:min(56vh,440px)}
+.g-item figcaption{position:absolute;top:100%;left:0;margin-top:8px;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.hint{color:var(--muted);font-size:14px;margin-top:22px}
+
+.contact{background:var(--ink);color:var(--bg);padding:120px 0 50px;text-align:center}
+.contact h2{font-size:clamp(46px,7vw,110px);line-height:.95;text-transform:uppercase;letter-spacing:.04em}
+.contact .links{display:flex;justify-content:center;flex-wrap:wrap;gap:16px;margin:46px 0 70px}
+.contact .links a{border:1px solid #6b6258;padding:16px 28px;text-decoration:none;letter-spacing:.12em;text-transform:uppercase;font-size:14px;transition:.25s}
+.contact .links a:hover{background:var(--bg);color:var(--ink)}
+.contact small{color:#857b6e}
+
+@media (max-width:900px){
+ .hero{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+ .season{grid-template-columns:1fr}.season:nth-of-type(even) .media{order:0}.season .media{height:60vh}
+ .season .media .small{display:none}.cols{grid-template-columns:1fr}
+}
+@media (max-width:560px){.wrap{padding:0 16px}header{padding:18px 16px}.gallery{padding:0 16px 18px}.season .text{padding:56px 16px}}
+</style>
+</head>
+<body>
+<header><a class="logo" href="#">Фазенда</a><a class="c" href="#contact">Контакты</a></header>
+
+<div class="hero">
+  <div><div style="height:100%" data-photo="dekor-svadebnyj-stol" data-sizes="(max-width:900px) 50vw, 25vw" data-eager aria-label="Весна"></div><span>Весна</span></div>
+  <div><div style="height:100%" data-photo="usadba-zhenih" data-sizes="(max-width:900px) 50vw, 25vw" data-eager aria-label="Лето"></div><span>Лето</span></div>
+  <div><div style="height:100%" data-photo="priroda-yablonevyj-sad" data-sizes="(max-width:900px) 50vw, 25vw" data-eager aria-label="Осень"></div><span>Осень</span></div>
+  <div><div style="height:100%" data-photo="usadba-svadba-vecher" data-sizes="(max-width:900px) 50vw, 25vw" data-eager aria-label="Зима"></div><span>Зима</span></div>
+  <div class="center"><div><h1>Фазенда</h1><p>Усадьба в яблоневом саду, 5 км от Бреста.<br>Хороша в любое время года.</p></div></div>
+</div>
+
+<div class="manifest wrap">
+  <div class="cap">Об усадьбе</div>
+  <p class="forum">Ни соседей, ни дорог — только яблони, груши и дома из сруба. А до города — пять километров и одна маршрутка.</p>
+  <p class="sub">Мы проводим свадьбы и мероприятия под ключ, топим баню на дровах, готовим в тандыре на фруктовых дровах и печём торты сами. Вам остаётся выбрать сезон.</p>
+</div>
+
+<section class="season s-spring">
+  <div class="media"><div style="height:100%" data-photo="dekor-svadebnyj-stol" data-sizes="(max-width:900px) 100vw, 50vw" aria-label="Свадебный стол"></div><div class="small" data-photo="dekor-welcome" data-sizes="20vw" aria-label="Декор"></div></div>
+  <div class="text"><div class="no">I</div><div class="cap">Весна</div><h2>Свадьба в цветущем саду</h2><p>Церемония под белыми яблонями, банкет в специальном свадебном зале или прямо в саду.</p>
+  <ul><li><b>Свой декоратор</b> — любая картинка под ваш запрос</li><li><b>Полное обслуживание</b> — от встречи гостей до финала вечера</li></ul></div>
+</section>
+<section class="season s-summer">
+  <div class="media"><div style="height:100%" data-photo="usadba-zhenih" data-sizes="(max-width:900px) 100vw, 50vw" aria-label="Летняя свадьба"></div><div class="small" data-photo="torty-kollazh" data-sizes="20vw" aria-label="Торты"></div></div>
+  <div class="text"><div class="no">II</div><div class="cap">Лето</div><h2>Праздник под открытым небом</h2><p>Столы в зелени сада, блюда из тандыра на фруктовых дровах, вечер у озера.</p>
+  <ul><li><b>Свой кондитер</b> — торт без доставки, аренды подставки и хлопот с подачей</li><li><b>Тандыр</b> — по нашему меню или по вашим пожеланиям</li></ul></div>
+</section>
+<section class="season s-autumn">
+  <div class="media"><div style="height:100%" data-photo="priroda-yablonevyj-sad" data-sizes="(max-width:900px) 100vw, 50vw" aria-label="Осенний сад"></div><div class="small" data-photo="torty-medovik-sad" data-sizes="20vw" aria-label="Медовик"></div></div>
+  <div class="text"><div class="no">III</div><div class="cap">Осень</div><h2>Урожай, яблоки и тёплый свет</h2><p>Фотосессии в саду, семейные выходные в срубовом доме, осенние банкеты.</p>
+  <ul><li><b>Дом для проживания</b> — на 8–10 человек, целиком</li><li><b>Завтраки</b> — готовим для отдыхающих</li></ul></div>
+</section>
+<section class="season s-winter">
+  <div class="media"><div style="height:100%" data-photo="usadba-svadba-vecher" data-sizes="(max-width:900px) 100vw, 50vw" aria-label="Вечер"></div><div class="small" data-photo="dekor-osen-stol" data-sizes="20vw" aria-label="Уют"></div></div>
+  <div class="text"><div class="no">IV</div><div class="cap">Зима</div><h2>Баня, пар и прорубь</h2><p>Баня на дровах с отличным паром и ныряние в прорубь собственного озера. Летом — купание.</p>
+  <ul><li><b>Дом-баня</b> — уютный отдых, 8 спальных мест</li><li><b>Своё озеро</b> — купание летом, прорубь зимой</li></ul></div>
+</section>
+
+<div class="always wrap">
+  <div class="head"><h2>Круглый год</h2><div class="cap">Что есть всегда</div></div>
+  <div class="cols">
+    <div><div class="line"></div><h3>Мероприятия под ключ</h3><p>Свадьбы, юбилеи, дни рождения — в зале или в саду, с полным обслуживанием.</p></div>
+    <div><div class="line"></div><h3>Кухня из тандыра</h3><p>Все блюда — на фруктовых дровах. Меню — наше или ваше.</p></div>
+    <div><div class="line"></div><h3>Дома из сруба</h3><p>Дом для проживания на 8–10 гостей и дом-баня на 8 мест.</p></div>
+  </div>
+</div>
+
+<section class="film" id="gallery">
+  <div class="wrap"><div class="cap" style="margin-bottom:16px">Фотоплёнка</div><nav class="filters" data-filters aria-label="Категории фото"></nav></div>
+  <div class="gallery" data-gallery data-sizes="(max-width:900px) 75vw, 420px"></div>
+  <div class="wrap hint">← листайте →</div>
+</section>
+
+<footer class="contact" id="contact"><div class="wrap">
+  <div class="cap" style="color:#a39887">Контакты</div>
+  <h2 style="margin-top:18px">Выберите<br>свой сезон</h2>
+  <div class="links">
+    <a href="https://instagram.com/fazenda.brest" target="_blank" rel="noopener">Instagram · @fazenda.brest</a>
+    <a href="https://www.tiktok.com/@_kutman4" target="_blank" rel="noopener">TikTok · @_kutman4</a>
+    <a href="tel:+375000000000">+375 (__) ___-__-__</a>
+  </div>
+  <small>Усадьба «Фазенда» · 5 км от Бреста</small>
+</div></footer>
+<script src="photos/manifest.js"></script>
+<script src="assets/photos.js"></script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Фазенда — усадьба в яблоневом саду под Брестом</title>
+<meta name="description" content="Усадьба в 5 км от Бреста: свадьбы и мероприятия под ключ, баня на дровах с собственным озером, срубовые дома, кухня из тандыра, свой декоратор и кондитер.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#f6f1e7;--paper2:#ece4d3;--ink:#2b2620;--muted:#7a6f60;--apple:#a8372a;--leaf:#5e6b45;--line:#d8cdb8}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 17px/1.65 Manrope,system-ui,sans-serif}
+a{color:inherit}img{display:block;width:100%;height:100%;object-fit:cover}
+picture{display:block;height:100%;background-size:cover;overflow:hidden}
+picture img{opacity:0;transition:opacity .8s}picture.is-loaded img{opacity:1}
+.serif{font-family:"Cormorant Garamond",serif}
+.wrap{max-width:1240px;margin:0 auto;padding:0 24px}
+header{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{font:500 28px/1 "Cormorant Garamond",serif;letter-spacing:.02em;text-decoration:none}
+.logo i{color:var(--apple)}
+nav a{margin-left:28px;text-decoration:none;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+nav a:hover{color:var(--ink)}
+.btn{display:inline-block;padding:14px 26px;border:1px solid var(--ink);border-radius:999px;text-decoration:none;font-weight:600;font-size:14px;letter-spacing:.06em;text-transform:uppercase;transition:.25s}
+.btn:hover{background:var(--ink);color:var(--paper)}
+.btn.fill{background:var(--apple);border-color:var(--apple);color:#fff}.btn.fill:hover{background:var(--ink);border-color:var(--ink)}
+
+.hero{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;padding:72px 0 96px;align-items:center}
+.eyebrow{font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--leaf);font-weight:600}
+h1{font:400 clamp(52px,7.4vw,108px)/.95 "Cormorant Garamond",serif;margin:18px 0 28px;letter-spacing:-.01em}
+h1 em{color:var(--apple)}
+.lead{font-size:19px;max-width:30em;color:#4a4238}
+.hero .actions{display:flex;gap:14px;margin-top:36px;flex-wrap:wrap}
+.collage{position:relative;height:620px}
+.collage>div{position:absolute;overflow:hidden;box-shadow:0 30px 60px -30px rgba(60,40,20,.45)}
+.c1{inset:0 18% 22% 0;border-radius:200px 200px 4px 4px}
+.c2{width:46%;height:46%;right:0;bottom:0;border:10px solid var(--paper)}
+.c3{width:30%;height:28%;right:4%;top:6%;border-radius:50%;border:8px solid var(--paper)}
+.stamp{position:absolute;left:-28px;bottom:40px;width:120px;height:120px;border-radius:50%;background:var(--apple);color:#fff;display:grid;place-items:center;text-align:center;font:italic 500 20px/1.05 "Cormorant Garamond",serif;transform:rotate(-12deg);z-index:2}
+
+.strip{border-block:1px solid var(--line);padding:22px 0;overflow:hidden;white-space:nowrap}
+.strip span{font:italic 400 30px "Cormorant Garamond",serif;margin-right:48px;color:var(--muted)}
+.strip b{color:var(--apple);font-weight:400;margin-right:48px}
+
+section{padding:110px 0}
+h2{font:400 clamp(40px,5vw,68px)/1 "Cormorant Garamond",serif;margin:12px 0 28px}
+h2 em{color:var(--leaf)}
+.about{display:grid;grid-template-columns:5fr 7fr;gap:72px;align-items:start}
+.about .big{font:italic 400 clamp(26px,2.6vw,36px)/1.3 "Cormorant Garamond",serif}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);margin-top:40px;border-top:1px solid var(--line)}
+.facts div{padding:24px 0}.facts b{display:block;font:400 54px/1 "Cormorant Garamond",serif;color:var(--apple)}
+.facts span{font-size:14px;color:var(--muted)}
+
+.services{background:var(--paper2)}
+.svc{display:grid;grid-template-columns:repeat(3,1fr);gap:36px 28px;margin-top:48px}
+.card .ph{aspect-ratio:4/5;border-radius:160px 160px 0 0;overflow:hidden;margin-bottom:22px}
+.card:nth-child(even) .ph{border-radius:0 0 160px 160px}
+.card h3{font:500 30px/1.1 "Cormorant Garamond",serif;margin:0 0 10px}
+.card .n{font:italic 18px "Cormorant Garamond",serif;color:var(--apple)}
+.card p{margin:0;color:#4a4238;font-size:16px}
+.mini{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:64px;border-top:1px solid var(--line);padding-top:40px}
+.mini h4{font:500 26px "Cormorant Garamond",serif;margin:0 0 8px}.mini p{margin:0;font-size:15px;color:#4a4238}
+
+.quote{text-align:center;padding:140px 0}
+.quote p{font:italic 400 clamp(32px,4.4vw,60px)/1.15 "Cormorant Garamond",serif;max-width:18em;margin:0 auto}
+.quote small{display:block;margin-top:24px;letter-spacing:.2em;text-transform:uppercase;font-size:12px;color:var(--muted)}
+
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 36px}
+.filters button{font:500 14px Manrope;padding:10px 20px;border-radius:999px;border:1px solid var(--line);background:none;cursor:pointer;color:var(--ink)}
+.filters button[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.gallery{columns:3;column-gap:18px}
+.g-item{margin:0 0 18px;break-inside:avoid;position:relative}
+.g-item picture{height:auto}.g-item img{height:auto}
+.g-item figcaption{position:absolute;left:14px;bottom:12px;font:italic 20px "Cormorant Garamond",serif;color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+
+.contact{background:var(--ink);color:var(--paper)}
+.contact .grid{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}
+.contact h2 em{color:#e9b8a0}
+.contact a.row{display:flex;justify-content:space-between;align-items:baseline;padding:22px 0;border-bottom:1px solid #4a4238;text-decoration:none;font:400 30px "Cormorant Garamond",serif}
+.contact a.row span{font:500 13px Manrope;letter-spacing:.15em;text-transform:uppercase;color:#a99c88}
+.contact a.row:hover{color:#e9b8a0}
+.contact .ph{aspect-ratio:1;border-radius:50%;overflow:hidden}
+footer{background:var(--ink);color:#8a7f70;font-size:13px;padding:28px 0;border-top:1px solid #3b342c}
+
+@media (max-width:900px){
+  nav{display:none}.hero,.about,.contact .grid{grid-template-columns:1fr;gap:40px}
+  .collage{height:440px}.svc,.mini{grid-template-columns:1fr 1fr}.gallery{columns:2}section{padding:72px 0}
+}
+@media (max-width:560px){.svc,.mini,.facts{grid-template-columns:1fr}.wrap{padding:0 16px}.stamp{left:0;width:96px;height:96px;font-size:16px}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <a class="logo" href="#">Фазенда<i>.</i></a>
+  <nav><a href="#about">Усадьба</a><a href="#services">Услуги</a><a href="#gallery">Фото</a><a href="#contact">Контакты</a></nav>
+  <a class="btn" href="#contact">Забронировать</a>
+</div></header>
+
+<main>
+<div class="wrap hero">
+  <div>
+    <div class="eyebrow">Усадьба · 5 км от Бреста</div>
+    <h1>Праздник, который <em>утопает</em> в&nbsp;саду</h1>
+    <p class="lead">Свадьбы и мероприятия под ключ, баня на дровах с собственным озером и срубовые дома — посреди яблоневого и грушевого сада, где нет ни соседей, ни дорог.</p>
+    <div class="actions"><a class="btn fill" href="#contact">Обсудить дату</a><a class="btn" href="#services">Что у нас есть</a></div>
+  </div>
+  <div class="collage">
+    <div class="c1" data-photo="priroda-yablonevyj-sad" data-sizes="(max-width:900px) 80vw, 40vw" data-eager aria-label="Пара в яблоневом саду"></div>
+    <div class="c2" data-photo="torty-medovik-sad" data-sizes="25vw" aria-label="Торт с малиной в саду"></div>
+    <div class="c3" data-photo="dekor-osen-stol" data-sizes="15vw" aria-label="Осенний декор"></div>
+    <div class="stamp">свадьбы<br>в цветущем<br>саду</div>
+  </div>
+</div>
+
+<div class="strip"><span>баня на дровах</span><b>✿</b><span>прорубь зимой</span><b>✿</b><span>тандыр на фруктовых дровах</span><b>✿</b><span>свой кондитер</span><b>✿</b><span>свой декоратор</span><b>✿</b><span>дома из сруба</span></div>
+
+<section id="about"><div class="wrap about">
+  <div>
+    <div class="eyebrow">Об усадьбе</div>
+    <h2>Близко к городу. <em>Далеко от суеты.</em></h2>
+  </div>
+  <div>
+    <p class="big">Мы всего в 5 км от Бреста — к нам ходят даже городские маршрутки. Но вокруг ни соседей, ни дорог: только яблоневый и грушевый сад, в котором утопает усадьба.</p>
+    <p>Все дома у нас из сруба. Здесь можно сыграть свадьбу, отметить юбилей, попариться в бане и нырнуть в своё озеро — или просто приехать с семьёй на выходные.</p>
+    <div class="facts">
+      <div><b>5 км</b><span>от Бреста</span></div>
+      <div><b>8–10</b><span>гостей в доме</span></div>
+      <div><b>8</b><span>мест в доме-бане</span></div>
+    </div>
+  </div>
+</div></section>
+
+<section class="services" id="services"><div class="wrap">
+  <div class="eyebrow">Услуги</div>
+  <h2>Всё для праздника — <em>в одном месте</em></h2>
+  <div class="svc">
+    <article class="card"><div class="ph" data-photo="usadba-svadba-vecher" data-sizes="(max-width:560px) 100vw, 33vw" aria-label="Свадьба вечером"></div><span class="n">01</span><h3>Мероприятия под ключ</h3><p>Свадьбы в свадебном зале или прямо в саду: весной — среди цветущих яблонь, летом — в зелени под открытым небом. Полное обслуживание.</p></article>
+    <article class="card"><div class="ph" data-photo="eda-banketnyj-stol" data-sizes="(max-width:560px) 100vw, 33vw" aria-label="Банкетный стол"></div><span class="n">02</span><h3>Кухня из тандыра</h3><p>Все блюда готовим в тандыре на фруктовых дровах — по нашему меню или по вашим пожеланиям. Для отдыхающих — завтраки.</p></article>
+    <article class="card"><div class="ph" data-photo="priroda-semya" data-sizes="(max-width:560px) 100vw, 33vw" aria-label="Семья в саду"></div><span class="n">03</span><h3>Баня и озеро</h3><p>Баня на дровах и отличный пар, купание в собственном озере, зимой — прорубь. Уютный дом-баня для отдыха на 8 спальных мест.</p></article>
+  </div>
+  <div class="mini">
+    <div><h4>Дом для проживания</h4><p>Сруб на 8–10 человек, сдаётся целиком. Утром — завтрак от нашей кухни.</p></div>
+    <div><h4>Свой декоратор</h4><p>Соберём любую картинку под ваш запрос — от welcome-зоны до сервировки.</p></div>
+    <div><h4>Свой кондитер</h4><p>Торт готовим здесь же: без доставки, без аренды подставки — вынесем и разрежем сами.</p></div>
+  </div>
+</div></section>
+
+<div class="quote wrap"><p>«Весной — в цветущих яблонях, летом — в зелени, осенью — среди урожая»</p><small>Свадьбы на усадьбе</small></div>
+
+<section id="gallery" style="padding-top:0"><div class="wrap">
+  <div class="eyebrow">Фотографии</div>
+  <h2>Как это <em>выглядит</em></h2>
+  <nav class="filters" data-filters aria-label="Категории фото"></nav>
+  <div class="gallery" data-gallery data-sizes="(max-width:900px) 50vw, 33vw"></div>
+</div></section>
+
+<section class="contact" id="contact"><div class="wrap grid">
+  <div>
+    <div class="eyebrow" style="color:#c9b98f">Контакты</div>
+    <h2>Приезжайте <em>в сад</em></h2>
+    <a class="row" href="https://instagram.com/fazenda.brest" target="_blank" rel="noopener">@fazenda.brest <span>Instagram</span></a>
+    <a class="row" href="https://www.tiktok.com/@_kutman4" target="_blank" rel="noopener">@_kutman4 <span>TikTok</span></a>
+    <a class="row" href="tel:+375000000000">+375 (__) ___-__-__ <span>Телефон</span></a>
+    <a class="row" href="#">Брестский р-н, 5 км от Бреста <span>Как добраться</span></a>
+  </div>
+  <div class="ph" data-photo="dekor-welcome" data-sizes="(max-width:900px) 100vw, 45vw" aria-label="Welcome-зона свадьбы"></div>
+</div></section>
+</main>
+<footer><div class="wrap">© Фазенда · усадьба для свадеб, мероприятий и отдыха под Брестом</div></footer>
+
+<script src="photos/manifest.js"></script>
+<script src="assets/photos.js"></script>
+</body>
+</html>
