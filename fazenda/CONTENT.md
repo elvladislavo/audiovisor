@@ -34,5 +34,6 @@
 ## Контакты
 - Instagram: @fazenda.brest
 - TikTok: @_kutman4
-- Телефон: _нужен_
+- Телефон: +375 (29) 217-29-21 → `tel:+375292172921`
+- Telegram: @Keitering_Fazenda_Brest → https://t.me/Keitering_Fazenda_Brest
 - Точный адрес: _нужен_
