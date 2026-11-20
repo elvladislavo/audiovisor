@@ -22,7 +22,7 @@ def pose(t, rt):
         elif lt < 2.2:  # reaches into the fridge
             p.update(x=120, d=-1, armF=-120 + 15 * math.sin(rt * 5))
         elif lt < 3.6:  # turns, waves
-            p.update(x=120, d=1, armF=-160 + 22 * math.sin(rt * 14), talk=1 if lt < 3.0 else 0)
+            p.update(x=120, d=1, armF=-150 + 35 * math.sin(rt * 10), talk=1 if lt < 3.0 else 0)
         else:
             p.update(x=120, d=1, armB=-15, bob=1.5 * math.sin(rt * 3))
     elif t >= S3:  # kitchen: comes in at the end, tastes
@@ -36,6 +36,15 @@ def pose(t, rt):
             else: p.update(armF=-95 + 6 * math.sin(rt * 4), armB=-60 + 10 * math.sin(rt * 6),
                            talk=1 if lt < 5.6 else 0, bob=1.5 * math.sin(rt * 6))
     return p
+
+_ARM = {}
+def blend_arm(key, swing, override, a=0.45):
+    """Ease limbs between walk swing and posed angles instead of snapping (frames are sampled in order)."""
+    st = _ARM.setdefault(key, {"w": 0.0, "ov": override if override is not None else swing})
+    if override is not None:
+        st["ov"] += (override - st["ov"]) * a
+    st["w"] += ((1.0 if override is not None else 0.0) - st["w"]) * a
+    return swing + (st["ov"] - swing) * st["w"]
 
 def parts(t, rt):
     p = pose(t, rt); d = p["d"]
@@ -55,8 +64,8 @@ def parts(t, rt):
         fx, fy = limb(hip[0], hip[1], 116, ang)
         out["g_shoe" + n] = at(fx + 4, fy - 2)
     sh = (0, -124)
-    armF = p["armF"] if p["armF"] is not None else -sw
-    armB = p["armB"] if p["armB"] is not None else sw
+    armF = blend_arm("gF", -sw, p["armF"])
+    armB = blend_arm("gB", sw, p["armB"])
     for n, ang in (("B", armB), ("F", armF)):
         cx, cy = limb(sh[0] + (-7 if n == "B" else 7) * 0, sh[1], 50, ang)
         out["g_arm" + n] = at(cx, cy, rotation=ang * d)

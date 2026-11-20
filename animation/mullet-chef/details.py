@@ -57,8 +57,8 @@ def add_details(objs, rect, circ, text, S1, S2, S3, DUR, GROUND):
           z=5, x=650 + dx, keys=[dict(k, x=k["x"] + dx) for k in cat])
     o(id="cattail", type="line", points=[[0, 0], [8, -6], [12, -16]], stroke="#111", stroke_width=3, y=304,
       start=S1, end=S2, z=5, x=663,
-      keys=[dict(k, x=k["x"] + 13, rotation=15 * math.sin(i * 1.7)) for i, k in enumerate(
-          [{"t": t * 0.25, "x": (650 - 155 * t * 0.25) if t * 0.25 < 2.2 else 300} for t in range(19)])])
+      keys=[dict(k, x=k["x"] + 13, rotation=15 * math.sin(i * 0.8), ease="linear") for i, k in enumerate(
+          [{"t": t * 0.25, "x": (650 - 350 / 2.2 * t * 0.25) if t * 0.25 < 2.2 else 300} for t in range(19)])])
     for j, dx in enumerate((-8, 8)):
         o(id=f"cateye{j}", type="circle", r=1.5, fill="#c8f04a", y=298, start=S1 + 2.2, end=S2, z=5.1,
           x=300 - 13 + dx / 3)
@@ -67,7 +67,7 @@ def add_details(objs, rect, circ, text, S1, S2, S3, DUR, GROUND):
         x0, t0 = 80 + i * 130, 0.2 + i * 0.7
         o(id=f"leaf{i}", type="ellipse", rx=5, ry=2.5, fill=("#c26a2a", "#d9a03a")[i % 2], start=t0, end=S2, z=25,
           keys=[{"t": t0 + j * 0.3, "x": x0 + 18 * math.sin(j * 1.3) + j * 8, "y": 90 + j * 22,
-                 "rotation": j * 50, "ease": "inout"} for j in range(11)])
+                 "rotation": j * 50, "ease": "linear"} for j in range(11)])
 
     # ================= shop =================
     for c in range(16):  # checkered floor
@@ -80,7 +80,7 @@ def add_details(objs, rect, circ, text, S1, S2, S3, DUR, GROUND):
              rect("cord", 255, 20, 2, 40, "#333", S2, S3, 1)]
     o(id="shade", type="polygon", points=[[-20, 10], [20, 10], [10, -8], [-10, -8]], fill="#2f7d4f",
       x=255, y=48, start=S2, end=S3, z=1.2,
-      keys=[{"t": S2 + i * 0.3, "rotation": 3 * math.sin(i)} for i in range(16)])
+      keys=[{"t": S2 + i * 0.15, "rotation": 4 * math.sin(i * 0.6), "ease": "linear"} for i in range(31)])
     o(id="lightcone", type="polygon", points=[[-20, 0], [20, 0], [90, 140], [-90, 140]], fill="#fff6c822",
       x=255, y=58, start=S2, end=S3, z=1.3)
     for j, (name, ang0) in enumerate((("hourhand", 60), ("minhand", 0))):
@@ -133,7 +133,7 @@ def add_details(objs, rect, circ, text, S1, S2, S3, DUR, GROUND):
     # hanging utensils that sway
     for i, x in enumerate((420, 445, 470)):
         o(id=f"utensil{i}", type="rect", w=4, h=36, fill="#8a8f99", x=x, y=150, start=S3, end=DUR, z=1.4,
-          keys=[{"t": S3 + j * 0.4, "rotation": 4 * math.sin(j + i)} for j in range(14)])
+          keys=[{"t": S3 + j * 0.2, "rotation": 4 * math.sin(j * 0.6 + i), "ease": "linear"} for j in range(26)])
     objs.append(rect("rail", 445, 132, 80, 3, "#5d6168", S3, DUR, 1.5))
     # window plant + curtain, wall clock
     objs += [rect("pot", 490, 135, 18, 14, "#b0562f", S3, DUR, 1.6),

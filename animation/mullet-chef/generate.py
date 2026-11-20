@@ -38,18 +38,27 @@ def pose(t, rt):
         elif lt < 3.9:   # walk to till
             p.update(x=lerp(250, 470, (lt - 3.0) / 0.9), walk=1, phase=rt * 2 * math.pi * 1.6)
         else:            # pay
-            p.update(x=470, armF=-80 + 10 * math.sin(rt * 12))
+            p.update(x=470, armF=-80 + 16 * math.sin(rt * 8))
         p["y"] = GROUND[2]
     else:          # kitchen
         lt = t - S3
         if lt < 0.9:
             p.update(x=lerp(-30, 240, lt / 0.9), walk=1, phase=rt * 2 * math.pi * 1.6)
         elif lt < 4.0:   # stir pan: front arm circles
-            p.update(x=240, armF=-70 + 18 * math.sin(rt * 9), bob=2 * math.sin(rt * 9))
+            p.update(x=240, armF=-70 + 30 * math.sin(rt * 9), bob=2 * math.sin(rt * 9))
         else:            # proud pose: thumbs up
             p.update(x=240, armF=-160, armB=10)
         p["y"] = GROUND[3]
     return p
+
+_ARM = {}
+def blend_arm(key, swing, override, a=0.45):
+    """Ease limbs between walk swing and posed angles instead of snapping (frames are sampled in order)."""
+    st = _ARM.setdefault(key, {"w": 0.0, "ov": override if override is not None else swing})
+    if override is not None:
+        st["ov"] += (override - st["ov"]) * a
+    st["w"] += ((1.0 if override is not None else 0.0) - st["w"]) * a
+    return swing + (st["ov"] - swing) * st["w"]
 
 def parts(t, rt):
     """Return {part: props} in screen space for the character at time t."""
@@ -74,8 +83,8 @@ def parts(t, rt):
         out[name + "_stripe"] = at(cx + 6 * d * math.cos(math.radians(ang)), cy, rotation=ang * d)
         out[name.replace("leg", "shoe")] = at(fx + 6, fy - 3)
     sh = (0, -128)
-    armF = p["armF"] if p["armF"] is not None else -sw * 0.9
-    armB = p["armB"] if p["armB"] is not None else sw * 0.9
+    armF = blend_arm("hF", -sw * 0.9, p["armF"])
+    armB = blend_arm("hB", sw * 0.9, p["armB"])
     for name, ang in (("armB", armB), ("armF", armF)):
         cx, cy = limb(sh[0], sh[1], 54, ang)
         out[name] = at(cx, cy, rotation=ang * d)
@@ -168,7 +177,7 @@ for r, y in enumerate((150, 200, 250)):
 shelf_items = [("tomato", 200, 160, "circle", "#d6332b"), ("onion", 240, 160, "circle", "#c9a24a"),
                ("pasta", 290, 210, "rect", "#f2c94c"), ("basil", 225, 260, "circle", "#3f9b44"),
                ("cheese", 300, 160, "rect", "#f5dd7a"), ("can", 190, 210, "rect", "#b3443a")]
-bought = {"tomato": 1.6, "pasta": 2.15, "basil": 2.7}
+bought = {"tomato": 1.8, "pasta": 2.33, "basil": 2.87}  # = hand at full reach
 for name, x, y, kind, col in shelf_items:
     o = dict(id="shop_" + name, type=kind, fill=col, start=S2, end=S3, z=3,
              **({"r": 12} if kind == "circle" else {"w": 18, "h": 26}))
