@@ -39,7 +39,8 @@
       }).join("");
   }
   if (nav) {
-    var keys = ["all"].concat(Object.keys(cats));
+    var noAll = nav.hasAttribute("data-no-all");
+    var keys = (noAll ? [] : ["all"]).concat(Object.keys(cats));
     nav.innerHTML = keys.map(function (k, i) {
       return '<button type="button" data-cat="' + k + '" aria-pressed="' + (i === 0) + '">' + (k === "all" ? "Все" : cats[k]) + "</button>";
     }).join("");
@@ -49,5 +50,5 @@
       render(b.dataset.cat);
     });
   }
-  render("all");
+  render(nav && nav.hasAttribute("data-no-all") ? Object.keys(cats)[0] : "all");
 })();

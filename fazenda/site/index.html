@@ -61,6 +61,9 @@ picture img{opacity:0;transition:opacity 1.2s var(--ease)}picture.is-loaded img{
 .nav .links a:hover::after{transform:scaleX(1);transform-origin:left}
 .nav .r{display:flex;justify-content:flex-end}
 .nav .r a{border:1px solid currentColor;border-radius:999px;padding:12px 22px}
+.nav{transition:background .5s,color .5s,box-shadow .5s}
+.nav.solid{mix-blend-mode:normal;color:var(--ink);background:color-mix(in srgb,var(--bone) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 1px 0 var(--line)}
+@media (max-width:560px){.nav .wrap{height:64px}.nav .logo{font-size:20px;letter-spacing:.22em}.nav .r a{padding:9px 14px;font-size:10px;letter-spacing:.14em}}
 
 /* hero */
 .hero{position:relative;height:100svh;min-height:640px;overflow:hidden;color:var(--bone)}
@@ -226,7 +229,7 @@ picture img{opacity:0;transition:opacity 1.2s var(--ease)}picture.is-loaded img{
   .hero .meta{flex-direction:column;align-items:flex-start;top:auto;bottom:30%}.hero .side,.scrollcue{display:none}
   .manifest .cols{display:block}.manifest .cols .sig{margin-bottom:24px}
   .figures .row{grid-template-columns:1fr 1fr}.fig:nth-child(2){border-right:0}.fig:nth-child(-n+2){border-bottom:1px solid var(--line)}.fig:nth-child(3){padding-left:0}
-  .venues .pin{position:relative;height:auto}.track{flex-direction:column;transform:none!important;padding-bottom:60px}
+  .venues .pin{position:relative;height:auto}.venues .count{display:none}.track{flex-direction:column;transform:none!important;padding-bottom:60px}
   .panel{width:100%;grid-template-columns:1fr}.panel .ph{height:56vw}.venues .bar{display:none}.venues{height:auto!important}
   .services .head{display:block}.services .head p{margin-top:20px}
   .item{grid-template-columns:1fr;gap:10px}.item .arr,.item .n{display:none}.item .mthumb{display:block;aspect-ratio:16/10;margin-bottom:10px}
@@ -351,7 +354,7 @@ picture img{opacity:0;transition:opacity 1.2s var(--ease)}picture.is-loaded img{
 </div></section>
 
 <section class="gal" id="gallery"><div class="wrap">
-  <div class="head"><div><div class="label" style="color:var(--muted)">Галерея</div><h2>Фотографии</h2></div><nav class="filters" data-filters aria-label="Категории фото"></nav></div>
+  <div class="head"><div><div class="label" style="color:var(--muted)">Галерея</div><h2>Фотографии</h2></div><nav class="filters" data-filters data-no-all aria-label="Категории фото"></nav></div>
   <div class="gallery" data-gallery data-sizes="(max-width:700px) 100vw, (max-width:1100px) 50vw, 33vw"></div>
 </div></section>
 <div class="lb" id="lb"><img alt=""></div>
@@ -402,6 +405,9 @@ picture img{opacity:0;transition:opacity 1.2s var(--ease)}picture.is-loaded img{
       bar.style.width=(p*100)+'%';cnt.textContent='0'+Math.min(3,1+Math.floor(p*2.999))+' / 03';
     }
   }
+  var nav=document.querySelector('.nav'),hero=document.querySelector('.hero');
+  function navState(){nav.classList.toggle('solid',scrollY>hero.offsetHeight-90)}
+  addEventListener('scroll',navState,{passive:true});navState();
   sizeVenues();onScroll();
   addEventListener('resize',function(){sizeVenues();onScroll()});
   addEventListener('scroll',function(){requestAnimationFrame(onScroll)},{passive:true});
