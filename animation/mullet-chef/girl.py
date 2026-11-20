@@ -38,7 +38,7 @@ def pose(t, rt):
     return p
 
 _ARM = {}
-def blend_arm(key, swing, override, a=0.45):
+def blend_arm(key, swing, override, a=0.26):
     """Ease limbs between walk swing and posed angles instead of snapping (frames are sampled in order)."""
     st = _ARM.setdefault(key, {"w": 0.0, "ov": override if override is not None else swing})
     if override is not None:
@@ -78,6 +78,7 @@ def parts(t, rt):
             out["g_skewer_tip"] = dict(at(hx, hy - 36), opacity=op * p["skewer"])
     blink = 0.15 if (rt % 2.7) < 0.12 else 1
     mouth = 1 + (1.6 * abs(math.sin(rt * 14)) if p["talk"] else 0) + (1.4 if p["bite"] else 0)
+    out["g_shadow"] = dict(x=X, y=p["y"] + 2, opacity=op)
     out.update(
         g_skirt=at(0, -60), g_pleat1=at(-10, -58, rotation=-12 * d), g_pleat2=at(0, -57), g_pleat3=at(10, -58, rotation=12 * d),
         g_belt=at(0, -78), g_buckle=at(4, -78), g_grom1=at(-9, -79), g_grom2=at(-14, -79),
@@ -97,6 +98,7 @@ def parts(t, rt):
 
 def shape(**kw): return kw
 RIG = [
+    ("g_shadow", shape(type="ellipse", rx=28, ry=5, fill="#00000070", blur=3, flat=True), 5.9),
     ("g_armB", shape(type="rect", w=9, h=50, fill=G["skin_dk"]), 6.0),
     ("g_bangleB", shape(type="rect", w=12, h=5, fill=G["gold"]), 6.05),
     ("g_handB", shape(type="circle", r=5, fill=G["skin_dk"]), 6.1),

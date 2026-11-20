@@ -6,7 +6,7 @@ every body part is sampled once per frame into keyframes for render.py.
 """
 import json, math, os
 
-W, H, FPS = 640, 360, 12
+W, H, FPS = 640, 360, 24
 DUR = 14.0
 K = 30.0 / DUR  # stretch story to 30 s; walk/stir cycles stay real-time
 S1, S2, S3 = 0.0, 4.5, 9.0          # scene starts: street, shop, kitchen
@@ -52,7 +52,7 @@ def pose(t, rt):
     return p
 
 _ARM = {}
-def blend_arm(key, swing, override, a=0.45):
+def blend_arm(key, swing, override, a=0.26):
     """Ease limbs between walk swing and posed angles instead of snapping (frames are sampled in order)."""
     st = _ARM.setdefault(key, {"w": 0.0, "ov": override if override is not None else swing})
     if override is not None:
@@ -99,11 +99,13 @@ def parts(t, rt):
         stache=at(3, -142), beard=at(3, -137),
         btn1=at(-7, -90), btn2=at(7, -90), btn3=at(-7, -72), btn4=at(7, -72),
         pocketL=at(-13, -58), pocketR=at(13, -58), glint=at(-7, -154), ear=at(-9, -148),
+        shadow=dict(x=X, y=p["y"] + 2, scale=s),
         bag=at(-22, -78, rotation=6 * math.sin(p["phase"]) * p["walk"]),
     )
     return out
 
 RIG = [  # (id, shape dict, z)
+    ("shadow", dict(type="ellipse", rx=34, ry=6, fill="#00000070", blur=3, flat=True), 9.9),
     ("armB", dict(type="rect", w=15, h=54, fill=C["coat_dk"]), 10),
     ("handB", dict(type="circle", r=6, fill=C["skin"]), 10),
     ("bag", dict(type="rect", w=22, h=34, fill=C["bag"], stroke="#0f2a8a", stroke_width=2), 11),
@@ -278,8 +280,12 @@ for c in (S2, S3):
     fade += [{"t": c - 0.35, "opacity": 0}, {"t": c, "opacity": 1, "ease": "in"}, {"t": c + 0.3, "opacity": 0, "ease": "out"}]
 objs.append(rect("fade", 320, 180, 640, 360, "#000000", 0, DUR * K, 100, keys=[dict(k, t=k["t"] * K) for k in fade], opacity=0))
 
+import realism
+realism.apply(objs, S1, S2, S3, DUR * K, K)
 scene = dict(title="Mullet chef: shop run and dinner", width=W, height=H, fps=FPS, duration=DUR * K,
-             hold=1, background="#000000", objects=objs)
+             hold=1, background="#000000", objects=objs, output_scale=2, shade=True, shade_strength=1.0,
+             post=dict(bloom=0.45, bloom_threshold=228, contrast=1.06, saturation=0.9,
+                       shadows=[-4, 2, 10], highlights=[10, 4, -6], vignette=0.4, grain=3.5))
 out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "scene.json")
 json.dump(scene, open(out, "w"), indent=1)
 print("wrote", out, len(objs), "objects")
