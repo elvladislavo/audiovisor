@@ -2,8 +2,9 @@
 """
 Фото-конвейер для сайта усадьбы.
 
-Кладёте исходники (JPG / PNG / HEIC, прямо с камеры или телефона) в photos/originals/,
-называете файл по категории:  torty-*, dekor-*, usadba-*, priroda-*, eda-*
+Кладёте исходники в site/photos/originals/ (JPG / PNG / HEIC, прямо с камеры или телефона) в photos/originals/,
+называете файл по категории:  svadba-*, lokaciya-*, dekor-*, eda-*, torty-*
+(main-* — фото только для главной страницы, в галерею не попадают)
 и запускаете:
 
     python3 tools/optimize_photos.py
@@ -11,7 +12,7 @@
 Что делает скрипт:
   * поворачивает фото по EXIF и удаляет EXIF (геометки, модель телефона);
   * переводит цвет в sRGB, чтобы фото с iPhone (Display P3) не тускнели в браузере;
-  * режет на ширины 480 / 960 / 1600 / 2400 px — НИКОГДА не увеличивает;
+  * режет на ширины 480 / 960 / 1500 / 2000 px — НИКОГДА не увеличивает;
   * сохраняет каждую ширину в AVIF (q≈62), WebP (q≈82) и JPEG (q≈84, progressive) —
     визуально без потерь, но в 5–15 раз легче исходника;
   * делает крошечное размытое превью (LQIP), которое видно, пока грузится фото;
@@ -23,16 +24,20 @@ import base64, io, json, sys
 from pathlib import Path
 from PIL import Image, ImageOps, ImageCms
 
-ROOT = Path(__file__).resolve().parent.parent
+# Папка сайта: по умолчанию fazenda/site (её и выкладываем на Cloudflare).
+# Другую можно передать: python3 tools/optimize_photos.py путь/к/папке
+_args = [a for a in sys.argv[1:] if not a.startswith("--")]
+ROOT = Path(_args[0]).resolve() if _args else Path(__file__).resolve().parent.parent / "site"
 SRC = ROOT / "photos" / "originals"
 OUT = ROOT / "photos" / "web"
 MANIFEST = ROOT / "photos" / "manifest.js"
 
-WIDTHS = [480, 960, 1600, 2400]
-QUALITY = {"avif": 62, "webp": 82, "jpg": 84}
+WIDTHS = [480, 960, 1500, 2000]
+QUALITY = {"avif": 60, "webp": 80, "jpg": 82}
+# Категории галереи. Файлы с префиксом main- идут только на главную, в галерею не попадают.
 CATEGORIES = {
-    "torty": "Торты", "dekor": "Декор", "usadba": "Усадьба",
-    "priroda": "Природа", "eda": "Еда",
+    "svadba": "Свадьбы", "lokaciya": "Локация", "dekor": "Декор",
+    "eda": "Еда", "torty": "Торты",
 }
 EXTS = {".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif", ".tif", ".tiff"}
 
@@ -58,7 +63,7 @@ def to_srgb(im: Image.Image) -> Image.Image:
 
 def save(im, path, fmt):
     if fmt == "avif":
-        im.save(path, "AVIF", quality=QUALITY["avif"], speed=4)
+        im.save(path, "AVIF", quality=QUALITY["avif"], speed=5)
     elif fmt == "webp":
         im.save(path, "WEBP", quality=QUALITY["webp"], method=6)
     else:
@@ -85,7 +90,7 @@ def process(src: Path, force: bool):
     tiny = im.copy(); tiny.thumbnail((24, 24))
     buf = io.BytesIO(); tiny.save(buf, "WEBP", quality=40)
     return {
-        "name": stem, "cat": cat if cat in CATEGORIES else "usadba",
+        "name": stem, "cat": cat,
         "w": min(w0, WIDTHS[-1]), "h": round(h0 * min(w0, WIDTHS[-1]) / w0),
         "widths": widths, "lqip": "data:image/webp;base64," + base64.b64encode(buf.getvalue()).decode(),
     }

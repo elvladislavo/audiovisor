@@ -1,0 +1,12 @@
+# Cloudflare Pages: фото и скрипты кэшируются надолго, страница — всегда свежая.
+/photos/web/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/*
+  Cache-Control: public, max-age=604800
+
+/photos/manifest.js
+  Cache-Control: public, max-age=3600
+
+/
+  Cache-Control: public, max-age=0, must-revalidate
