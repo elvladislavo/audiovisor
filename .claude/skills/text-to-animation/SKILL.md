@@ -45,6 +45,16 @@ For long or complex prompts, delegate this step to the `animation-director` agen
 
 See `examples/bouncing-ball.json`.
 
+### Realistic look (optional, needs numpy)
+- Scene: `"output_scale": 2` (1280x720 from 640x360 coords), `"shade": true` (top-lit gradient on every fill),
+  `"post": {"bloom": .45, "bloom_threshold": 228, "contrast": 1.06, "saturation": .9,
+  "shadows": [r,g,b], "highlights": [r,g,b], "vignette": .4, "grain": 3.5}`.
+- Object: `"gradient": ["#top", "#bottom"]`, `"texture": 1.2, "texture_grain": 2` (plaster, wool, suede…),
+  `"blur": px` (depth of field, soft shadows, glows), `"flat": true` to opt out of shading.
+- Add contact shadows (blurred dark ellipse at the feet), light pools and ambient-occlusion gradients
+  where walls meet floors. Example: `animation/mullet-chef/realism.py`.
+- Rendering runs in parallel (`-j N`, default all cores); static objects are cached.
+
 ## 3. Render
 ```bash
 python3 .claude/skills/text-to-animation/scripts/render.py scene.json -o out/ --mp4 --gif --sheet --onion 2
