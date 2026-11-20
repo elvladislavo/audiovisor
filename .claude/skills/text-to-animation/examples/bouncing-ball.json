@@ -1,0 +1,32 @@
+{
+  "title": "Bouncing ball with squash and stretch",
+  "width": 640, "height": 360, "fps": 24, "duration": 2, "hold": 2,
+  "background": "#16191d",
+  "objects": [
+    {"id": "floor", "type": "rect", "w": 640, "h": 40, "x": 320, "y": 340, "fill": "#21262c", "z": 0},
+    {"id": "shadow", "type": "ellipse", "rx": 30, "ry": 6, "fill": "#00000088", "z": 1,
+     "keys": [
+       {"t": 0, "x": 80, "y": 322, "scale": 0.5},
+       {"t": 0.5, "x": 240, "y": 322, "scale": 1.1, "ease": "in"},
+       {"t": 1.0, "x": 400, "y": 322, "scale": 0.5, "ease": "out"},
+       {"t": 1.5, "x": 560, "y": 322, "scale": 1.1, "ease": "in"}
+     ]},
+    {"id": "ball", "type": "circle", "r": 30, "fill": "#e8a33d", "stroke": "#ece6da", "stroke_width": 3, "z": 2,
+     "keys": [
+       {"t": 0, "x": 80, "y": 80, "sx": 0.9, "sy": 1.1},
+       {"t": 0.46, "x": 225, "y": 284, "sx": 0.85, "sy": 1.2, "ease": "in"},
+       {"t": 0.5, "x": 240, "y": 300, "sx": 1.35, "sy": 0.65, "ease": "linear"},
+       {"t": 0.56, "x": 258, "y": 280, "sx": 0.9, "sy": 1.15, "ease": "linear"},
+       {"t": 1.0, "x": 400, "y": 120, "sx": 1, "sy": 1, "ease": "out"},
+       {"t": 1.46, "x": 545, "y": 284, "sx": 0.85, "sy": 1.2, "ease": "in"},
+       {"t": 1.5, "x": 560, "y": 300, "sx": 1.35, "sy": 0.65, "ease": "linear"},
+       {"t": 2.0, "x": 640, "y": 200, "sx": 1, "sy": 1, "ease": "out"}
+     ]},
+    {"id": "title", "type": "text", "text": "BOING", "size": 36, "fill": "#c8513b", "z": 3, "start": 0.5,
+     "keys": [
+       {"t": 0.5, "x": 240, "y": 200, "opacity": 0, "scale": 0.4},
+       {"t": 0.7, "x": 240, "y": 180, "opacity": 1, "scale": 1.1, "ease": "back"},
+       {"t": 1.2, "x": 240, "y": 170, "opacity": 0, "scale": 1}
+     ]}
+  ]
+}
