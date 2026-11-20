@@ -88,6 +88,8 @@ def parts(t, rt):
         hairCurl1=at(-12, -164), hairCurl2=at(12, -164),
         head=at(2, -150), shadeL=at(-5, -152), shadeR=at(9, -152), bridge=at(2, -153),
         stache=at(3, -142), beard=at(3, -137),
+        btn1=at(-7, -90), btn2=at(7, -90), btn3=at(-7, -72), btn4=at(7, -72),
+        pocketL=at(-13, -58), pocketR=at(13, -58), glint=at(-7, -154), ear=at(-9, -148),
         bag=at(-22, -78, rotation=6 * math.sin(p["phase"]) * p["walk"]),
     )
     return out
@@ -120,6 +122,14 @@ RIG = [  # (id, shape dict, z)
     ("shadeL", dict(type="ellipse", rx=6, ry=3.5, fill=C["shades"], stroke="#8a8f99", stroke_width=1), 19),
     ("shadeR", dict(type="ellipse", rx=6, ry=3.5, fill=C["shades"], stroke="#8a8f99", stroke_width=1), 19),
     ("bridge", dict(type="rect", w=4, h=1.5, fill="#8a8f99"), 19),
+    ("btn1", dict(type="circle", r=2, fill="#3a2f25"), 17.5),
+    ("btn2", dict(type="circle", r=2, fill="#3a2f25"), 17.5),
+    ("btn3", dict(type="circle", r=2, fill="#3a2f25"), 17.5),
+    ("btn4", dict(type="circle", r=2, fill="#3a2f25"), 17.5),
+    ("pocketL", dict(type="rect", w=12, h=3, fill=C["coat_dk"]), 17.5),
+    ("pocketR", dict(type="rect", w=12, h=3, fill=C["coat_dk"]), 17.5),
+    ("ear", dict(type="ellipse", rx=3, ry=5, fill="#d29e7a"), 18.65),
+    ("glint", dict(type="circle", r=1.3, fill="#ffffff"), 19.5),
     ("armF", dict(type="rect", w=15, h=54, fill=C["coat"], stroke=C["coat_dk"], stroke_width=1), 20),
     ("handF", dict(type="circle", r=6, fill=C["skin"]), 20.5),
 ]
@@ -231,12 +241,22 @@ for i in range(5):  # sparkles
                            {"t": DUR, "x": 380 + 25 * i, "y": 200 - 18 * (i % 2), "scale": 0.7, "rotation": 180}]))
 
 # ---- character: sample rig once per frame
+from details import add_details
+add_details(objs, rect, circ, text, S1, S2, S3, DUR, GROUND)
+import girl
+objs += girl.extra_objects()
 for o in objs:  # stretch scenery/prop timings
     for f in ("start", "end"):
         if f in o: o[f] = round(o[f] * K, 4)
     for k in o.get("keys", []): k["t"] = round(k["t"] * K, 4)
 frames = [i / FPS for i in range(int(DUR * K * FPS) + 1)]
 samples = [parts(t / K, t) for t in frames]
+gsamples = [girl.parts(t / K, t) for t in frames]
+for pid, shape, z in girl.RIG:
+    o = dict(id=pid, z=z, **shape)
+    o["keys"] = [dict(t=round(t, 4), ease="linear", **{k: round(v, 2) for k, v in s[pid].items()})
+                 for t, s in zip(frames, gsamples)]
+    objs.append(o)
 for pid, shape, z in RIG:
     o = dict(id=pid, z=z, **shape)
     o["keys"] = [dict(t=round(t, 4), ease="linear", **{k: round(v, 2) for k, v in s[pid].items()})
