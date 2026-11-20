@@ -2,7 +2,7 @@
 """
 Фото-конвейер для сайта усадьбы.
 
-Кладёте исходники в site/photos/originals/ (JPG / PNG / HEIC, прямо с камеры или телефона) в photos/originals/,
+Кладёте исходники в fazenda/photo-originals/ (JPG / PNG / HEIC, прямо с камеры или телефона),
 называете файл по категории:  svadba-*, lokaciya-*, dekor-*, eda-*, torty-*
 (main-* — фото только для главной страницы, в галерею не попадают)
 и запускаете:
@@ -28,7 +28,7 @@ from PIL import Image, ImageOps, ImageCms
 # Другую можно передать: python3 tools/optimize_photos.py путь/к/папке
 _args = [a for a in sys.argv[1:] if not a.startswith("--")]
 ROOT = Path(_args[0]).resolve() if _args else Path(__file__).resolve().parent.parent / "site"
-SRC = ROOT / "photos" / "originals"
+SRC = ROOT.parent / "photo-originals"  # исходники лежат ВНЕ папки сайта и на Cloudflare не попадают
 OUT = ROOT / "photos" / "web"
 MANIFEST = ROOT / "photos" / "manifest.js"
 
