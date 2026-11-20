@@ -20,10 +20,14 @@ def lerp(a, b, u): return a + (b - a) * max(0, min(1, u))
 def smooth(u): u = max(0, min(1, u)); return u * u * (3 - 2 * u)
 
 # ---------------------------------------------------------------- character rig
+GRABS = [("tomato", 200, 160), ("pasta", 290, 210), ("basil", 225, 260)]
+GRAB_T0, GRAB_DT = 1.4, 0.53          # story time of first grab (shop-local), spacing
+REACH, CARRY = 0.24, 0.50             # within each grab: hand at item by REACH, at bag by CARRY
+
 def pose(t, rt):
-    """root x, ground y, facing (+1 right), walk phase, arm overrides, visible bag, scale."""
-    p = dict(x=0, y=0, d=1, walk=0.0, phase=0.0, armF=None, armB=None, scale=1.0, bob=0)
-    if t < S2:  # street: walk left -> shop door, then step in (shrink a little into doorway)
+    """root x, ground y, facing (+1 right), walk phase, arm specs (see arms.resolve), scale."""
+    p = dict(x=0, y=0, d=1, walk=0.0, phase=0.0, armF=None, armB=None, scale=1.0, bob=0, spoon=0)
+    if t < S2:  # street: walk to the shop door, then step in (shrink a little into doorway)
         u = t / 3.6
         p.update(x=lerp(-40, 455, u), y=GROUND[1], walk=1 if u < 1 else 0, phase=rt * 2 * math.pi * 1.6)
         if u >= 1:
@@ -31,34 +35,36 @@ def pose(t, rt):
             p.update(scale=1 - 0.15 * k, y=GROUND[1] - 18 * k)
     elif t < S3:  # shop
         lt = t - S2
-        if lt < 1.4:     # walk to shelf
-            p.update(x=lerp(40, 250, lt / 1.4), walk=1, phase=rt * 2 * math.pi * 1.6)
-        elif lt < 3.0:   # grab three items (reach up and back down x3)
-            p.update(x=250, armF=-150 + 40 * math.sin((lt - 1.4) / 1.6 * 3 * 2 * math.pi))
-        elif lt < 3.9:   # walk to till
+        if lt < GRAB_T0:     # walk to shelf
+            p.update(x=lerp(40, 250, lt / GRAB_T0), walk=1, phase=rt * 2 * math.pi * 1.6)
+        elif lt < 3.0:       # take each item off the shelf and put it in the bag
+            p.update(x=250, armB=("ang", 4, -8))
+            k = min(len(GRABS) - 1, int((lt - GRAB_T0) / GRAB_DT))
+            u = lt - GRAB_T0 - k * GRAB_DT
+            _, ix, iy = GRABS[k]
+            p["armF"] = ("scr", ix, iy) if u < REACH else ("tgt", -16, -98)
+        elif lt < 3.9:       # walk to till
             p.update(x=lerp(250, 470, (lt - 3.0) / 0.9), walk=1, phase=rt * 2 * math.pi * 1.6)
-        else:            # pay
-            p.update(x=470, armF=-80 + 16 * math.sin(rt * 8))
+        else:                # pay: taps card on the counter by the till
+            p.update(x=470, armF=("scr", 512, 236 + 3 * math.sin(rt * 8)), armB=("ang", 4, -8))
         p["y"] = GROUND[2]
     else:          # kitchen
         lt = t - S3
         if lt < 0.9:
             p.update(x=lerp(-30, 240, lt / 0.9), walk=1, phase=rt * 2 * math.pi * 1.6)
-        elif lt < 4.0:   # stir pan: front arm circles
-            p.update(x=240, armF=-70 + 30 * math.sin(rt * 9), bob=2 * math.sin(rt * 9))
-        else:            # proud pose: thumbs up
-            p.update(x=240, armF=-160, armB=10)
+        elif lt < 4.0:   # stir the pan with a wooden spoon, other hand on hip
+            p.update(x=240, spoon=1, bob=1.2 * math.sin(rt * 7),
+                     armF=("scr", 290 + 12 * math.cos(rt * 7), 205 + 4 * math.sin(rt * 7)),
+                     armB=("tgt", -21, -76))
+        else:            # proud pose: fist in the air, hand on hip
+            p.update(x=240, armF=("ang", -168, -176), armB=("tgt", -21, -76))
         p["y"] = GROUND[3]
     return p
 
-_ARM = {}
-def blend_arm(key, swing, override, a=0.26):
-    """Ease limbs between walk swing and posed angles instead of snapping (frames are sampled in order)."""
-    st = _ARM.setdefault(key, {"w": 0.0, "ov": override if override is not None else swing})
-    if override is not None:
-        st["ov"] += (override - st["ov"]) * a
-    st["w"] += ((1.0 if override is not None else 0.0) - st["w"]) * a
-    return swing + (st["ov"] - swing) * st["w"]
+import arms
+BLEND = arms.ArmBlender(0.26)
+UPPER, FORE = 30, 28
+PAN_PT = (300, 226)
 
 def parts(t, rt):
     """Return {part: props} in screen space for the character at time t."""
@@ -82,14 +88,19 @@ def parts(t, rt):
         fx, fy = limb(hip[0], hip[1], 120, ang)
         out[name + "_stripe"] = at(cx + 6 * d * math.cos(math.radians(ang)), cy, rotation=ang * d)
         out[name.replace("leg", "shoe")] = at(fx + 6, fy - 3)
-    sh = (0, -128)
-    armF = blend_arm("hF", -sw * 0.9, p["armF"])
-    armB = blend_arm("hB", sw * 0.9, p["armB"])
-    for name, ang in (("armB", armB), ("armF", armF)):
-        cx, cy = limb(sh[0], sh[1], 54, ang)
-        out[name] = at(cx, cy, rotation=ang * d)
-        hx, hy = limb(sh[0], sh[1], 112, ang)
-        out[name.replace("arm", "hand")] = at(hx, hy)
+    def to_local(sx_, sy_): return (sx_ - X) * d / s, (sy_ - Y) / s
+    for side, sh_x, ph in (("F", 13, 1), ("B", -13, -1)):
+        sh = (sh_x, -126)
+        sw_a = -ph * sw * 0.55
+        walk = (sw_a, sw_a - 18 - 6 * ph * math.sin(p["phase"]) * p["walk"])
+        spec = arms.resolve(p["arm" + side], sh, UPPER, FORE, to_local)
+        a1, a2 = BLEND("h" + side, walk, spec)
+        _, hand = arms.arm_parts(out, ("arm" + side, "elbow" + side, "fore" + side, "hand" + side),
+                                 sh, a1, a2, UPPER, FORE, at, d)
+        if side == "F":
+            px, py = to_local(*PAN_PT)
+            arms.held_stick(out, "spoon", "spoonhead", hand, (px - hand[0], py - hand[1] + 4), 30, at, d, tip_len=30)
+            out["spoon"]["opacity"] = out["spoonhead"]["opacity"] = p["spoon"]
     out.update(
         coat=at(0, -84), lapel=at(0, -120), shirt=at(0, -121), tie=at(1, -110),
         neck=at(0, -136),
@@ -106,8 +117,10 @@ def parts(t, rt):
 
 RIG = [  # (id, shape dict, z)
     ("shadow", dict(type="ellipse", rx=34, ry=6, fill="#00000070", blur=3, flat=True), 9.9),
-    ("armB", dict(type="rect", w=15, h=54, fill=C["coat_dk"]), 10),
-    ("handB", dict(type="circle", r=6, fill=C["skin"]), 10),
+    ("armB", dict(type="rect", w=14, h=30, fill=C["coat_dk"]), 10),
+    ("elbowB", dict(type="circle", r=6.5, fill=C["coat_dk"]), 10.01),
+    ("foreB", dict(type="rect", w=13, h=28, fill=C["coat_dk"]), 10.02),
+    ("handB", dict(type="circle", r=5.5, fill=C["skin"]), 10.03),
     ("bag", dict(type="rect", w=22, h=34, fill=C["bag"], stroke="#0f2a8a", stroke_width=2), 11),
     ("legB", dict(type="rect", w=15, h=60, fill=C["pants"]), 12),
     ("legB_stripe", dict(type="rect", w=2, h=58, fill=C["stripe"]), 12.1),
@@ -141,8 +154,12 @@ RIG = [  # (id, shape dict, z)
     ("pocketR", dict(type="rect", w=12, h=3, fill=C["coat_dk"]), 17.5),
     ("ear", dict(type="ellipse", rx=3, ry=5, fill="#d29e7a"), 18.65),
     ("glint", dict(type="circle", r=1.3, fill="#ffffff"), 19.5),
-    ("armF", dict(type="rect", w=15, h=54, fill=C["coat"], stroke=C["coat_dk"], stroke_width=1), 20),
-    ("handF", dict(type="circle", r=6, fill=C["skin"]), 20.5),
+    ("spoon", dict(type="rect", w=3.5, h=30, fill="#b07a45", stroke="#6e4a26", stroke_width=1), 20.4),
+    ("spoonhead", dict(type="ellipse", rx=4, ry=6, fill="#b07a45", stroke="#6e4a26", stroke_width=1), 20.41),
+    ("armF", dict(type="rect", w=14, h=30, fill=C["coat"], stroke=C["coat_dk"], stroke_width=1), 20),
+    ("elbowF", dict(type="circle", r=6.5, fill=C["coat"]), 20.01),
+    ("foreF", dict(type="rect", w=13, h=28, fill=C["coat"], stroke=C["coat_dk"], stroke_width=1), 20.02),
+    ("handF", dict(type="circle", r=5.5, fill=C["skin"]), 20.5),
 ]
 
 # ---------------------------------------------------------------- helpers
@@ -179,7 +196,7 @@ for r, y in enumerate((150, 200, 250)):
 shelf_items = [("tomato", 200, 160, "circle", "#d6332b"), ("onion", 240, 160, "circle", "#c9a24a"),
                ("pasta", 290, 210, "rect", "#f2c94c"), ("basil", 225, 260, "circle", "#3f9b44"),
                ("cheese", 300, 160, "rect", "#f5dd7a"), ("can", 190, 210, "rect", "#b3443a")]
-bought = {"tomato": 1.8, "pasta": 2.33, "basil": 2.87}  # = hand at full reach
+bought = {}  # grabbed items follow the hand; keys are added after the rig is sampled
 for name, x, y, kind, col in shelf_items:
     o = dict(id="shop_" + name, type=kind, fill=col, start=S2, end=S3, z=3,
              **({"r": 12} if kind == "circle" else {"w": 18, "h": 26}))
@@ -262,6 +279,23 @@ for o in objs:  # stretch scenery/prop timings
     for k in o.get("keys", []): k["t"] = round(k["t"] * K, 4)
 frames = [i / FPS for i in range(int(DUR * K * FPS) + 1)]
 samples = [parts(t / K, t) for t in frames]
+# grabbed items: on the shelf until the hand arrives, then ride in the hand into the bag
+byid = {o["id"]: o for o in objs}
+for k, (name, ix, iy) in enumerate(GRABS):
+    o = byid["shop_" + name]
+    t_take = (S2 + GRAB_T0 + k * GRAB_DT + REACH) * K
+    t_drop = (S2 + GRAB_T0 + k * GRAB_DT + CARRY) * K
+    keys = [{"t": 0, "x": ix, "y": iy}, {"t": round(t_take, 4), "x": ix, "y": iy}]
+    for t, smp in zip(frames, samples):
+        if t_take < t <= t_drop:
+            h = smp["handF"]
+            keys.append({"t": round(t, 4), "x": h["x"], "y": h["y"] - 4, "ease": "linear",
+                         "scale": 1 - 0.35 * (t - t_take) / (t_drop - t_take)})
+    keys.append({"t": round(t_drop + 0.05, 4), "opacity": 0, "ease": "step"})
+    keys[0]["opacity"] = 1
+    o["keys"] = keys
+    o.pop("x", None); o.pop("y", None)
+    o["z"] = 20.45  # in front of the body while carried
 gsamples = [girl.parts(t / K, t) for t in frames]
 for pid, shape, z in girl.RIG:
     o = dict(id=pid, z=z, **shape)

@@ -19,32 +19,31 @@ def pose(t, rt):
         lt = t - S2; p.update(vis=1, y=GROUND[2])
         if lt < 1.0:
             p.update(x=lerp(-30, 120, lt), walk=1, d=1, phase=rt * 2 * math.pi * 1.5)
-        elif lt < 2.2:  # reaches into the fridge
-            p.update(x=120, d=-1, armF=-120 + 15 * math.sin(rt * 5))
-        elif lt < 3.6:  # turns, waves
-            p.update(x=120, d=1, armF=-150 + 35 * math.sin(rt * 10), talk=1 if lt < 3.0 else 0)
-        else:
-            p.update(x=120, d=1, armB=-15, bob=1.5 * math.sin(rt * 3))
+        elif lt < 2.2:  # reaches into the fridge, rummaging between the bottles
+            p.update(x=120, d=-1, armF=("scr", 84 + 6 * math.sin(rt * 5), 212 + 5 * math.cos(rt * 4)),
+                     armB=("ang", 6, -10))
+        elif lt < 3.6:  # turns, waves (forearm swings from the elbow)
+            p.update(x=120, d=1, armF=("ang", -138, -172 + 28 * math.sin(rt * 10)), armB=("ang", 6, -12),
+                     talk=1 if lt < 3.0 else 0)
+        else:           # relaxed: hand on hip, the other loose
+            p.update(x=120, d=1, armB=("tgt", -18, -74), armF=("ang", -4, -20), bob=1.5 * math.sin(rt * 3))
     elif t >= S3:  # kitchen: comes in at the end, tastes
         lt = t - S3; p.update(y=GROUND[3], vis=1 if lt > 3.3 else 0, x=700)
         if 3.3 <= lt < 4.3:
-            p.update(x=lerp(700, 505, (lt - 3.3)), walk=1, phase=rt * 2 * math.pi * 1.5)
+            p.update(x=lerp(700, 505, (lt - 3.3)), walk=1, phase=rt * 2 * math.pi * 1.5, skewer=1)
         elif lt >= 4.3:
             p.update(x=505, skewer=1)
-            if lt < 4.6: p["armF"] = lerp(-20, -150, (lt - 4.3) / 0.3)
-            elif lt < 4.9: p.update(armF=-150, bite=1)
-            else: p.update(armF=-95 + 6 * math.sin(rt * 4), armB=-60 + 10 * math.sin(rt * 6),
-                           talk=1 if lt < 5.6 else 0, bob=1.5 * math.sin(rt * 6))
+            if lt < 4.9:   # skewer up to the mouth, bite
+                p.update(armF=("tgt", 15, -124), armB=("ang", 6, -10), bite=1 if lt > 4.55 else 0)
+            else:          # chewing, "mmm" gesture with the free hand
+                p.update(armF=("tgt", 16, -98), armB=("ang", -38 + 8 * math.sin(rt * 6), -120 + 10 * math.sin(rt * 6)),
+                         talk=1 if lt < 5.6 else 0, bob=1.5 * math.sin(rt * 6))
     return p
 
-_ARM = {}
-def blend_arm(key, swing, override, a=0.26):
-    """Ease limbs between walk swing and posed angles instead of snapping (frames are sampled in order)."""
-    st = _ARM.setdefault(key, {"w": 0.0, "ov": override if override is not None else swing})
-    if override is not None:
-        st["ov"] += (override - st["ov"]) * a
-    st["w"] += ((1.0 if override is not None else 0.0) - st["w"]) * a
-    return swing + (st["ov"] - swing) * st["w"]
+import arms
+BLEND = arms.ArmBlender(0.26)
+UPPER, FORE = 27, 25
+MOUTH = (2, -140)
 
 def parts(t, rt):
     p = pose(t, rt); d = p["d"]
@@ -63,19 +62,21 @@ def parts(t, rt):
         out["g_leg" + n] = at(cx, cy, rotation=ang * d)
         fx, fy = limb(hip[0], hip[1], 116, ang)
         out["g_shoe" + n] = at(fx + 4, fy - 2)
-    sh = (0, -124)
-    armF = blend_arm("gF", -sw, p["armF"])
-    armB = blend_arm("gB", sw, p["armB"])
-    for n, ang in (("B", armB), ("F", armF)):
-        cx, cy = limb(sh[0] + (-7 if n == "B" else 7) * 0, sh[1], 50, ang)
-        out["g_arm" + n] = at(cx, cy, rotation=ang * d)
-        bx, by = limb(sh[0], sh[1], 80, ang)
-        out["g_bangle" + n] = at(bx, by, rotation=ang * d)
-        hx, hy = limb(sh[0], sh[1], 104, ang)
-        out["g_hand" + n] = at(hx, hy)
-        if n == "F":  # skewer held upright in the front hand
-            out["g_skewer"] = dict(at(hx, hy - 22), opacity=op * p["skewer"])
-            out["g_skewer_tip"] = dict(at(hx, hy - 36), opacity=op * p["skewer"])
+    def to_local(sx_, sy_): return (sx_ - X) * d, sy_ - Y
+    for side, sh_x, ph in (("F", 12, 1), ("B", -12, -1)):
+        sh = (sh_x, -123)
+        sw_a = -ph * sw * 0.55
+        walk = (sw_a, sw_a - 16 - 5 * ph * math.sin(p["phase"]) * p["walk"])
+        spec = arms.resolve(p["arm" + side], sh, UPPER, FORE, to_local)
+        a1, a2 = BLEND("g" + side, walk, spec)
+        elbow, hand = arms.arm_parts(out, ("g_arm" + side, "g_elbow" + side, "g_fore" + side, "g_hand" + side),
+                                     sh, a1, a2, UPPER, FORE, at, d)
+        bx, by = arms.bone_end(elbow[0], elbow[1], a2, FORE * 0.78)
+        out["g_bangle" + side] = at(bx, by, rotation=a2 * d)
+        if side == "F":  # skewer: upright, or tilted into the mouth while biting
+            direction = (MOUTH[0] - hand[0], MOUTH[1] - hand[1]) if p["bite"] else (0.15, -1)
+            arms.held_stick(out, "g_skewer", "g_skewer_tip", hand, direction, 34, at, d, tip_len=36)
+            out["g_skewer"]["opacity"] = out["g_skewer_tip"]["opacity"] = op * p["skewer"]
     blink = 0.15 if (rt % 2.7) < 0.12 else 1
     mouth = 1 + (1.6 * abs(math.sin(rt * 14)) if p["talk"] else 0) + (1.4 if p["bite"] else 0)
     out["g_shadow"] = dict(x=X, y=p["y"] + 2, opacity=op)
@@ -99,7 +100,9 @@ def parts(t, rt):
 def shape(**kw): return kw
 RIG = [
     ("g_shadow", shape(type="ellipse", rx=28, ry=5, fill="#00000070", blur=3, flat=True), 5.9),
-    ("g_armB", shape(type="rect", w=9, h=50, fill=G["skin_dk"]), 6.0),
+    ("g_armB", shape(type="rect", w=8.5, h=27, fill=G["skin_dk"]), 6.0),
+    ("g_elbowB", shape(type="circle", r=4, fill=G["skin_dk"]), 6.01),
+    ("g_foreB", shape(type="rect", w=7.5, h=25, fill=G["skin_dk"]), 6.02),
     ("g_bangleB", shape(type="rect", w=12, h=5, fill=G["gold"]), 6.05),
     ("g_handB", shape(type="circle", r=5, fill=G["skin_dk"]), 6.1),
     ("g_legB", shape(type="rect", w=11, h=58, fill=G["tights"]), 6.2),
@@ -143,10 +146,12 @@ RIG = [
     ("g_shadesL", shape(type="ellipse", rx=6, ry=3.5, fill="#1a1612", stroke="#8a8f99", stroke_width=1), 7.5),
     ("g_shadesR", shape(type="ellipse", rx=6, ry=3.5, fill="#1a1612", stroke="#8a8f99", stroke_width=1), 7.5),
     ("g_shbridge", shape(type="rect", w=3, h=1.5, fill="#8a8f99"), 7.5),
-    ("g_armF", shape(type="rect", w=9, h=50, fill=G["skin"]), 7.6),
+    ("g_armF", shape(type="rect", w=8.5, h=27, fill=G["skin"]), 7.6),
+    ("g_elbowF", shape(type="circle", r=4, fill=G["skin"]), 7.61),
+    ("g_foreF", shape(type="rect", w=7.5, h=25, fill=G["skin"]), 7.62),
     ("g_bangleF", shape(type="rect", w=12, h=5, fill=G["gold"], stroke="#a87e22", stroke_width=1), 7.65),
-    ("g_skewer", shape(type="rect", w=7, h=40, fill="#a8442a", stroke="#5a1f12", stroke_width=1), 7.68),
-    ("g_skewer_tip", shape(type="rect", w=2, h=8, fill="#c8a06a"), 7.67),
+    ("g_skewer", shape(type="rect", w=6, h=34, fill="#a8442a", stroke="#5a1f12", stroke_width=1), 7.68),
+    ("g_skewer_tip", shape(type="rect", w=2, h=10, fill="#c8a06a"), 7.67),
     ("g_handF", shape(type="circle", r=5, fill=G["skin"]), 7.7),
 ]
 
