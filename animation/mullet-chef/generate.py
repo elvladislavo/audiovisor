@@ -8,6 +8,7 @@ import json, math, os
 
 W, H, FPS = 640, 360, 12
 DUR = 14.0
+K = 30.0 / DUR  # stretch story to 30 s; walk/stir cycles stay real-time
 S1, S2, S3 = 0.0, 4.5, 9.0          # scene starts: street, shop, kitchen
 GROUND = {1: 312, 2: 318, 3: 318}
 
@@ -19,40 +20,40 @@ def lerp(a, b, u): return a + (b - a) * max(0, min(1, u))
 def smooth(u): u = max(0, min(1, u)); return u * u * (3 - 2 * u)
 
 # ---------------------------------------------------------------- character rig
-def pose(t):
+def pose(t, rt):
     """root x, ground y, facing (+1 right), walk phase, arm overrides, visible bag, scale."""
     p = dict(x=0, y=0, d=1, walk=0.0, phase=0.0, armF=None, armB=None, scale=1.0, bob=0)
     if t < S2:  # street: walk left -> shop door, then step in (shrink a little into doorway)
         u = t / 3.6
-        p.update(x=lerp(-40, 455, u), y=GROUND[1], walk=1 if u < 1 else 0, phase=t * 2 * math.pi * 1.6)
+        p.update(x=lerp(-40, 455, u), y=GROUND[1], walk=1 if u < 1 else 0, phase=rt * 2 * math.pi * 1.6)
         if u >= 1:
             k = smooth((t - 3.6) / 0.8)
             p.update(scale=1 - 0.15 * k, y=GROUND[1] - 18 * k)
     elif t < S3:  # shop
         lt = t - S2
         if lt < 1.4:     # walk to shelf
-            p.update(x=lerp(40, 250, lt / 1.4), walk=1, phase=lt * 2 * math.pi * 1.6)
+            p.update(x=lerp(40, 250, lt / 1.4), walk=1, phase=rt * 2 * math.pi * 1.6)
         elif lt < 3.0:   # grab three items (reach up and back down x3)
             p.update(x=250, armF=-150 + 40 * math.sin((lt - 1.4) / 1.6 * 3 * 2 * math.pi))
         elif lt < 3.9:   # walk to till
-            p.update(x=lerp(250, 470, (lt - 3.0) / 0.9), walk=1, phase=lt * 2 * math.pi * 1.6)
+            p.update(x=lerp(250, 470, (lt - 3.0) / 0.9), walk=1, phase=rt * 2 * math.pi * 1.6)
         else:            # pay
-            p.update(x=470, armF=-80 + 10 * math.sin(lt * 12))
+            p.update(x=470, armF=-80 + 10 * math.sin(rt * 12))
         p["y"] = GROUND[2]
     else:          # kitchen
         lt = t - S3
         if lt < 0.9:
-            p.update(x=lerp(-30, 240, lt / 0.9), walk=1, phase=lt * 2 * math.pi * 1.6)
+            p.update(x=lerp(-30, 240, lt / 0.9), walk=1, phase=rt * 2 * math.pi * 1.6)
         elif lt < 4.0:   # stir pan: front arm circles
-            p.update(x=240, armF=-70 + 18 * math.sin(lt * 9), bob=2 * math.sin(lt * 9))
+            p.update(x=240, armF=-70 + 18 * math.sin(rt * 9), bob=2 * math.sin(rt * 9))
         else:            # proud pose: thumbs up
             p.update(x=240, armF=-160, armB=10)
         p["y"] = GROUND[3]
     return p
 
-def parts(t):
+def parts(t, rt):
     """Return {part: props} in screen space for the character at time t."""
-    p = pose(t); d, s = p["d"], p["scale"]
+    p = pose(t, rt); d, s = p["d"], p["scale"]
     sw = math.sin(p["phase"]) * 28 * p["walk"]
     bob = abs(math.cos(p["phase"])) * -3 * p["walk"] + p["bob"]
     X, Y = p["x"], p["y"] + bob
@@ -230,8 +231,12 @@ for i in range(5):  # sparkles
                            {"t": DUR, "x": 380 + 25 * i, "y": 200 - 18 * (i % 2), "scale": 0.7, "rotation": 180}]))
 
 # ---- character: sample rig once per frame
-frames = [i / FPS for i in range(int(DUR * FPS) + 1)]
-samples = [parts(t) for t in frames]
+for o in objs:  # stretch scenery/prop timings
+    for f in ("start", "end"):
+        if f in o: o[f] = round(o[f] * K, 4)
+    for k in o.get("keys", []): k["t"] = round(k["t"] * K, 4)
+frames = [i / FPS for i in range(int(DUR * K * FPS) + 1)]
+samples = [parts(t / K, t) for t in frames]
 for pid, shape, z in RIG:
     o = dict(id=pid, z=z, **shape)
     o["keys"] = [dict(t=round(t, 4), ease="linear", **{k: round(v, 2) for k, v in s[pid].items()})
@@ -242,9 +247,9 @@ for pid, shape, z in RIG:
 fade = []
 for c in (S2, S3):
     fade += [{"t": c - 0.35, "opacity": 0}, {"t": c, "opacity": 1, "ease": "in"}, {"t": c + 0.3, "opacity": 0, "ease": "out"}]
-objs.append(rect("fade", 320, 180, 640, 360, "#000000", 0, DUR, 100, keys=fade, opacity=0))
+objs.append(rect("fade", 320, 180, 640, 360, "#000000", 0, DUR * K, 100, keys=[dict(k, t=k["t"] * K) for k in fade], opacity=0))
 
-scene = dict(title="Mullet chef: shop run and dinner", width=W, height=H, fps=FPS, duration=DUR,
+scene = dict(title="Mullet chef: shop run and dinner", width=W, height=H, fps=FPS, duration=DUR * K,
              hold=1, background="#000000", objects=objs)
 out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "scene.json")
 json.dump(scene, open(out, "w"), indent=1)
