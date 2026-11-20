@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Фазенда — журнал усадьбы</title>
+<meta name="description" content="Усадьба «Фазенда» в 5 км от Бреста: свадьбы под ключ, баня и озеро, срубовые дома, тандыр, свой декоратор и кондитер.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Caveat:wght@600;700&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#f4ecdd;--paper:#fbf6ec;--ink:#1d1a16;--tomato:#d8492c;--moss:#33452b;--butter:#f1cf6b;--blush:#efc3b4;--muted:#6f675b;--line:#d7cbb6}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--cream);color:var(--ink);font:400 17px/1.65 Manrope,system-ui,sans-serif;overflow-x:hidden}
+a{color:inherit}img{display:block;width:100%;height:100%;object-fit:cover}
+picture{display:block;height:100%;background-size:cover;overflow:hidden}
+picture img{opacity:0;transition:opacity .8s}picture.is-loaded img{opacity:1}
+.wrap{max-width:1320px;margin:0 auto;padding:0 28px;position:relative}
+.pf{font-family:"Playfair Display",serif}
+.hand{font-family:Caveat,cursive}
+.kick{font:700 12px Manrope;letter-spacing:.24em;text-transform:uppercase}
+[data-reveal]{opacity:0;transform:translateY(40px) rotate(var(--r,0deg));transition:opacity 1s var(--d,0ms),transform 1.1s cubic-bezier(.2,.8,.2,1) var(--d,0ms)}
+[data-reveal].in{opacity:1;transform:rotate(var(--r,0deg))}
+.scribble path{stroke-dasharray:600;stroke-dashoffset:600;transition:stroke-dashoffset 1.6s ease .4s}
+.scribble.in path{stroke-dashoffset:0}
+@media (prefers-reduced-motion:reduce){.scribble path{stroke-dashoffset:0}.spin,.marquee div{animation:none!important}}
+
+/* шапка-журнал */
+.mast{padding:18px 0 0}
+.mast .bar{display:flex;justify-content:space-between;align-items:center;font:700 12px Manrope;letter-spacing:.18em;text-transform:uppercase;border-bottom:2px solid var(--ink);padding-bottom:10px}
+.mast .bar nav a{margin-left:22px;text-decoration:none}.mast .bar nav a:hover{color:var(--tomato)}
+.mast h1{font:900 clamp(60px,17vw,270px)/.8 "Playfair Display";letter-spacing:-.045em;margin:16px 0 0;text-align:center;position:relative}
+.mast h1 em{font-weight:400;color:var(--tomato)}
+.mast .under{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px;border-block:1px solid var(--ink);padding:10px 0;margin-top:16px;font:500 13px Manrope;letter-spacing:.12em;text-transform:uppercase}
+.mast .under span:nth-child(2){font:italic 400 19px "Playfair Display";letter-spacing:0;text-transform:none}
+.mast .under span:last-child{text-align:right}
+
+/* обложка-коллаж */
+.cover{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;padding:56px 0 110px;align-items:start}
+.collage{position:relative;height:720px}
+.collage .c{position:absolute;box-shadow:0 26px 50px -24px rgba(40,25,10,.55)}
+.ca{width:62%;height:78%;left:4%;top:0;border:12px solid var(--paper)}
+.cb{width:42%;height:44%;right:0;top:14%;border:10px solid var(--paper);--r:5deg}
+.cc{width:40%;height:38%;left:30%;bottom:0;border:10px solid var(--paper);--r:-4deg}
+.cd{width:24%;aspect-ratio:1;border-radius:50%;right:6%;bottom:6%;border:8px solid var(--paper);overflow:hidden}
+.tape{position:absolute;width:110px;height:30px;background:rgba(241,207,107,.75);z-index:3;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.t1{top:-14px;left:40%;transform:rotate(-6deg)}.t2{top:-10px;right:20px;transform:rotate(8deg);background:rgba(239,195,180,.85)}.t3{bottom:-12px;left:20px;transform:rotate(-3deg)}
+.sticker{position:absolute;width:150px;height:150px;left:-10px;bottom:120px;z-index:4}
+.spin{animation:spin 18s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.note{position:absolute;z-index:5;font:700 28px/1.05 Caveat;color:var(--tomato);transform:rotate(-8deg)}
+.note svg{display:block;width:90px;color:var(--tomato)}
+.n1{right:2%;top:-10px}
+
+.story{padding-top:30px}
+.story .kick{color:var(--tomato)}
+.story h2{font:700 clamp(40px,4.6vw,70px)/.98 "Playfair Display";letter-spacing:-.02em;margin:16px 0 22px}
+.story h2 em{font-weight:400;color:var(--moss)}
+.story .deck{font:italic 400 23px/1.45 "Playfair Display";color:#3b352c;margin:0 0 26px}
+.story .body{columns:2;column-gap:30px;font-size:16px}
+.story .body p{margin:0 0 14px}
+.story .body p:first-child::first-letter{float:left;font:900 78px/.8 "Playfair Display";color:var(--tomato);margin:6px 10px 0 0}
+.byline{display:flex;gap:14px;align-items:center;margin-top:26px;padding-top:18px;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}
+.byline b{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;gap:10px;background:var(--ink);color:var(--cream);text-decoration:none;padding:16px 26px;border-radius:999px;font:700 14px Manrope;letter-spacing:.06em;transition:.25s}
+.btn:hover{background:var(--tomato)}
+
+/* бегущая строка */
+.marquee{background:var(--tomato);color:var(--cream);overflow:hidden;white-space:nowrap;padding:18px 0;transform:rotate(-1.5deg);margin:0 -20px;box-shadow:0 10px 30px -18px rgba(0,0,0,.5)}
+.marquee div{display:inline-block;animation:mq 34s linear infinite;font:italic 400 38px "Playfair Display"}
+.marquee b{font:700 28px Caveat;margin:0 26px;color:var(--butter)}
+@keyframes mq{to{transform:translateX(-50%)}}
+
+/* рубрики */
+.toc{padding:120px 0}
+.toc .head{display:grid;grid-template-columns:1fr 1fr;align-items:end;gap:40px;margin-bottom:60px}
+.toc h2{font:900 clamp(48px,7vw,110px)/.85 "Playfair Display";letter-spacing:-.04em;margin:0}
+.toc h2 em{font-weight:400;color:var(--tomato)}
+.toc .head p{font:italic 21px "Playfair Display";color:#3b352c;margin:0}
+.feat{display:grid;grid-template-columns:repeat(12,1fr);gap:26px}
+.f{background:var(--paper);position:relative;overflow:hidden;transition:transform .5s}
+.f:hover{transform:translateY(-6px)}
+.f .ph{position:relative}
+.f .txt{padding:22px 24px 28px}
+.f .no{font:900 54px/1 "Playfair Display";color:var(--tomato);position:absolute;top:14px;left:18px;z-index:2;text-shadow:0 2px 14px rgba(0,0,0,.35)}
+.f .no{color:var(--paper)}
+.f h3{font:700 27px/1.1 "Playfair Display";margin:0 0 8px}
+.f p{margin:0;font-size:15.5px;color:#3b352c}
+.f .tag{display:inline-block;font:700 11px Manrope;letter-spacing:.18em;text-transform:uppercase;background:var(--butter);padding:4px 10px;margin-bottom:12px}
+.f1{grid-column:span 7}.f1 .ph{aspect-ratio:16/10}
+.f2{grid-column:span 5;background:var(--moss);color:var(--cream)}.f2 .ph{aspect-ratio:4/3}.f2 p{color:#d4dcc8}
+.f3{grid-column:span 4}.f3 .ph{aspect-ratio:1}
+.f4{grid-column:span 4;background:var(--blush)}.f4 .ph{aspect-ratio:1}
+.f5{grid-column:span 4;background:var(--ink);color:var(--cream)}.f5 .ph{aspect-ratio:1}.f5 p{color:#cfc6b6}
+.f6{grid-column:span 12;display:grid;grid-template-columns:1.2fr 1fr;background:var(--butter)}.f6 .ph{min-height:340px}.f6 .txt{padding:46px;display:flex;flex-direction:column;justify-content:center}.f6 h3{font-size:clamp(30px,3.4vw,48px)}.f6 p{font-size:18px}
+
+/* цитата */
+.pull{padding:60px 0 120px;text-align:center;position:relative}
+.pull q{display:block;font:italic 400 clamp(34px,4.6vw,68px)/1.12 "Playfair Display";max-width:17em;margin:0 auto;quotes:"«" "»"}
+.pull q::before,.pull q::after{color:var(--tomato)}
+.pull .who{margin-top:24px;font:700 26px Caveat;color:var(--moss)}
+.pull svg.scribble{display:block;width:300px;margin:6px auto 0;color:var(--tomato)}
+
+/* галерея-разворот */
+.spread{background:var(--ink);color:var(--cream);padding:110px 0}
+.spread .head{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap;margin-bottom:40px}
+.spread h2{font:900 clamp(54px,8vw,130px)/.85 "Playfair Display";letter-spacing:-.04em;margin:0}
+.spread h2 em{font-weight:400;color:var(--butter)}
+.filters{display:flex;flex-wrap:wrap;gap:8px}
+.filters button{font:700 13px Manrope;letter-spacing:.06em;padding:10px 18px;border-radius:999px;border:1.5px solid #4b453b;background:none;color:var(--cream);cursor:pointer;transition:.2s}
+.filters button:hover{border-color:var(--butter)}
+.filters button[aria-pressed=true]{background:var(--butter);border-color:var(--butter);color:var(--ink);transform:rotate(-3deg)}
+.gallery{display:grid;grid-template-columns:repeat(5,1fr);grid-auto-rows:150px;gap:14px;grid-auto-flow:dense}
+.g-item{margin:0;position:relative;grid-row:span 2;background:var(--paper);padding:8px;transition:transform .4s}
+.g-item:nth-child(6n+1){grid-column:span 2;grid-row:span 3}
+.g-item:nth-child(6n+4){grid-row:span 3}
+.g-item:nth-child(odd){transform:rotate(-1.2deg)}.g-item:nth-child(even){transform:rotate(1.4deg)}
+.g-item:hover{transform:rotate(0) scale(1.03);z-index:2}
+.g-item figcaption{position:absolute;right:-6px;bottom:14px;background:var(--tomato);color:#fff;font:700 20px Caveat;padding:2px 12px;transform:rotate(-4deg)}
+
+/* контакты-открытка */
+.contact{padding:120px 0 40px}
+.contact .grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.contact h2{font:900 clamp(52px,7.4vw,118px)/.86 "Playfair Display";letter-spacing:-.04em;margin:14px 0 26px}
+.contact h2 em{font-weight:400;color:var(--tomato)}
+.chips{display:grid;gap:12px}
+.chips a{display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;background:var(--paper);padding:20px 24px;text-decoration:none;border:1.5px solid var(--ink);box-shadow:6px 6px 0 var(--ink);transition:.2s}
+.chips a:hover{transform:translate(-3px,-3px);box-shadow:9px 9px 0 var(--tomato)}
+.chips a .i{width:44px;height:44px;border-radius:50%;background:var(--butter);display:grid;place-items:center;font:700 18px "Playfair Display"}
+.chips a b{font:700 20px Manrope}.chips a small{font:600 12px Manrope;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.contact .photo{position:relative;height:540px}
+.contact .photo .c{position:absolute;border:12px solid var(--paper);box-shadow:0 26px 50px -24px rgba(40,25,10,.55)}
+.contact .p1{inset:0 18% 14% 0;--r:-3deg}.contact .p2{width:48%;height:52%;right:10px;bottom:0;--r:5deg}
+footer{border-top:2px solid var(--ink);margin-top:80px;padding:16px 0;display:flex;justify-content:space-between;font:700 12px Manrope;letter-spacing:.16em;text-transform:uppercase}
+
+@media (max-width:1000px){
+ .mast .bar nav{display:none}.mast .under{grid-template-columns:1fr;text-align:center}.mast .under span:last-child{text-align:center}
+ .cover,.toc .head,.contact .grid{grid-template-columns:1fr}.collage{height:560px}
+ .feat{grid-template-columns:1fr 1fr}.f1,.f2,.f3,.f4,.f5{grid-column:span 1}.f6{grid-column:span 2;grid-template-columns:1fr}
+ .gallery{grid-template-columns:repeat(3,1fr)}
+}
+@media (max-width:600px){.wrap{padding:0 16px}.collage{height:440px}.sticker{width:110px;height:110px;bottom:80px}.story .body{columns:1}.feat{grid-template-columns:1fr}.f6{grid-column:span 1}.f6 .txt{padding:28px}
+ .gallery{grid-template-columns:1fr 1fr;grid-auto-rows:120px}.g-item:nth-child(6n+1){grid-column:span 2}.contact .photo{height:400px}.marquee div{font-size:28px}footer{flex-direction:column;gap:6px}}
+</style>
+</head>
+<body>
+<header class="mast wrap">
+  <div class="bar"><span>Выпуск №1 · Брест</span><nav><a href="#story">Усадьба</a><a href="#toc">Услуги</a><a href="#spread">Фото</a><a href="#contact">Контакты</a></nav></div>
+  <h1>Фазенда<em>.</em></h1>
+  <div class="under"><span>Свадьбы · Баня · Сруб · Тандыр</span><span>журнал усадьбы в яблоневом саду</span><span>5 км от Бреста</span></div>
+</header>
+
+<main>
+<section class="wrap cover" id="story">
+  <div class="collage">
+    <div class="c ca" data-reveal style="--r:-2deg"><div class="tape t1"></div><div style="height:100%" data-photo="priroda-yablonevyj-sad" data-sizes="(max-width:1000px) 70vw, 40vw" data-eager aria-label="Пара в саду"></div></div>
+    <div class="c cb" data-reveal="200"><div class="tape t2"></div><div style="height:100%" data-photo="torty-medovik-sad" data-sizes="(max-width:1000px) 45vw, 25vw" aria-label="Торт"></div></div>
+    <div class="c cc" data-reveal="350"><div class="tape t3"></div><div style="height:100%" data-photo="dekor-osen-stol" data-sizes="(max-width:1000px) 45vw, 25vw" aria-label="Декор"></div></div>
+    <div class="c cd" data-reveal="500" data-photo="usadba-svadba-vecher" data-sizes="200px" aria-label="Свадьба"></div>
+    <svg class="sticker spin" viewBox="0 0 150 150" aria-hidden="true"><defs><path id="cir" d="M75,75 m-56,0 a56,56 0 1,1 112,0 a56,56 0 1,1 -112,0"/></defs><circle cx="75" cy="75" r="74" fill="#33452b"/><text font-family="Manrope" font-weight="700" font-size="12.5" letter-spacing="3.2" fill="#f4ecdd"><textPath href="#cir">СВАДЬБЫ В САДУ ✿ БАНЯ ✿ ТАНДЫР ✿ </textPath></text><text x="75" y="88" text-anchor="middle" font-family="Playfair Display" font-style="italic" font-size="38" fill="#f1cf6b">Ф</text></svg>
+    <div class="note n1">тут играют<br>свадьбы!<svg viewBox="0 0 90 50" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M80 4C60 30 30 40 8 40M18 30L6 40l14 6"/></svg></div>
+  </div>
+
+  <article class="story">
+    <div class="kick">Главная история</div>
+    <h2>Усадьба, которая <em>утопает в саду</em></h2>
+    <p class="deck">В пяти километрах от Бреста, куда ходят даже городские маршрутки, есть место без соседей и дорог. Только яблони, груши и тёплые дома из сруба.</p>
+    <div class="body">
+      <p>Наша усадьба стоит посреди яблоневого и грушевого сада. Здесь мы проводим свадьбы и мероприятия под ключ: в специальном свадебном зале или прямо в саду, весной среди цветения, летом в зелени под открытым небом.</p>
+      <p>Блюда готовим в тандыре на фруктовых дровах, по нашему меню или по вашим пожеланиям. Есть свой декоратор и свой кондитер.</p>
+      <p>А для отдыха есть банный комплекс: баня на дровах, отличный пар, купание в собственном озере и прорубь зимой. Дом-баня на 8 мест и дом для проживания на 8–10 человек.</p>
+    </div>
+    <div class="byline"><a class="btn" href="#contact">Забронировать дату →</a><span>Читать: <b>2 минуты</b></span></div>
+  </article>
+</section>
+
+<div style="overflow:hidden;padding:24px 0"><div class="marquee" aria-hidden="true"><div>свадьбы в цветущем саду <b>✿</b> баня на дровах <b>✿</b> прорубь зимой <b>✿</b> тандыр <b>✿</b> дома из сруба <b>✿</b> свой кондитер <b>✿</b> свой декоратор <b>✿</b> свадьбы в цветущем саду <b>✿</b> баня на дровах <b>✿</b> прорубь зимой <b>✿</b> тандыр <b>✿</b> дома из сруба <b>✿</b> свой кондитер <b>✿</b> свой декоратор <b>✿</b> </div></div></div>
+
+<section class="toc wrap" id="toc">
+  <div class="head"><h2>В этом <em>номере</em></h2><p>Шесть причин отметить праздник у нас. Всё под ключ: вам остаётся только приехать.</p></div>
+  <div class="feat">
+    <article class="f f1" data-reveal><div class="ph" data-photo="usadba-zhenih" data-sizes="(max-width:1000px) 50vw, 58vw" aria-label="Свадьба"></div><div class="txt"><span class="tag">Торжества</span><h3>Свадьбы и мероприятия под ключ</h3><p>Свадебный зал или сад: весной в цветущих яблонях, летом в зелени под открытым небом. Полное обслуживание от встречи гостей до торта.</p></div></article>
+    <article class="f f2" data-reveal="150"><div class="ph" data-photo="eda-banketnyj-stol" data-sizes="(max-width:1000px) 50vw, 42vw" aria-label="Банкет"></div><div class="txt"><span class="tag">Кухня</span><h3>Всё из тандыра</h3><p>Блюда на фруктовых дровах, по нашему меню или вашим пожеланиям. Завтраки для отдыхающих.</p></div></article>
+    <article class="f f3" data-reveal><div class="ph" data-photo="torty-kollazh" data-sizes="(max-width:1000px) 50vw, 33vw" aria-label="Торты"></div><div class="txt"><span class="tag">Торты</span><h3>Свой кондитер</h3><p>Без доставки и аренды подставки. Вынесем и разрежем сами.</p></div></article>
+    <article class="f f4" data-reveal="150"><div class="ph" data-photo="dekor-welcome" data-sizes="(max-width:1000px) 50vw, 33vw" aria-label="Декор"></div><div class="txt"><span class="tag">Декор</span><h3>Свой декоратор</h3><p>Любая картинка под ваш запрос.</p></div></article>
+    <article class="f f5" data-reveal="300"><div class="ph" data-photo="priroda-semya" data-sizes="(max-width:1000px) 50vw, 33vw" aria-label="Семья"></div><div class="txt"><span class="tag">Ночлег</span><h3>Дом из сруба</h3><p>На 8–10 человек, сдаётся целиком.</p></div></article>
+    <article class="f f6" data-reveal><div class="ph" data-photo="usadba-svadba-vecher" data-sizes="(max-width:1000px) 100vw, 55vw" aria-label="Вечер"></div><div class="txt"><span class="tag">Баня</span><h3>Пар на дровах, своё озеро и прорубь</h3><p>Банный комплекс с купанием в собственном озере, зимой ныряние в прорубь. После парной отдых в уютном доме-бане на 8 спальных мест.</p></div></article>
+  </div>
+</section>
+
+<section class="pull wrap">
+  <q>Весной в цветущих яблонях, летом в зелени, осенью среди спелых плодов</q>
+  <div class="who">о свадьбах на «Фазенде»</div>
+  <svg class="scribble" data-reveal viewBox="0 0 300 30" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M4 20C60 4 120 26 170 12s90 4 126 0"/></svg>
+</section>
+
+<section class="spread" id="spread"><div class="wrap">
+  <div class="head"><h2>Фото<em>графии</em></h2><nav class="filters" data-filters aria-label="Категории фото"></nav></div>
+  <div class="gallery" data-gallery data-sizes="(max-width:600px) 50vw, (max-width:1000px) 33vw, 20vw"></div>
+</div></section>
+
+<section class="contact wrap" id="contact">
+  <div class="grid">
+    <div>
+      <div class="kick" style="color:var(--tomato)">Подписка на праздник</div>
+      <h2>Пишите<br><em>нам</em></h2>
+      <div class="chips">
+        <a href="https://instagram.com/fazenda.brest" target="_blank" rel="noopener"><span class="i">In</span><b>@fazenda.brest</b><small>Instagram</small></a>
+        <a href="https://www.tiktok.com/@_kutman4" target="_blank" rel="noopener"><span class="i">Tt</span><b>@_kutman4</b><small>TikTok</small></a>
+        <a href="tel:+375000000000"><span class="i">☎</span><b>+375 (__) ___-__-__</b><small>Телефон</small></a>
+        <a href="#"><span class="i">⌖</span><b>5 км от Бреста</b><small>Адрес</small></a>
+      </div>
+    </div>
+    <div class="photo">
+      <div class="c p1" data-reveal><div class="tape t1"></div><div style="height:100%" data-photo="dekor-svadebnyj-stol" data-sizes="(max-width:1000px) 80vw, 40vw" aria-label="Свадебный стол"></div></div>
+      <div class="c p2" data-reveal="200"><div class="tape t2"></div><div style="height:100%" data-photo="dekor-kirpich" data-sizes="(max-width:1000px) 50vw, 25vw" aria-label="Декор"></div></div>
+    </div>
+  </div>
+  <footer><span>© Фазенда</span><span>Усадьба в яблоневом саду · Брест</span></footer>
+</section>
+</main>
+<script src="photos/manifest.js"></script>
+<script src="assets/photos.js"></script>
+<script src="assets/fx.js"></script>
+</body>
+</html>

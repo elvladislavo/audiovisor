@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Фазенда — усадьба с узором</title>
+<meta name="description" content="Усадьба «Фазенда» в 5 км от Бреста: свадьбы под ключ, баня на дровах и своё озеро, дома из сруба, тандыр, свой декоратор и кондитер.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ruslan+Display&family=Lora:ital,wght@0,400;0,600;1,400&family=Marck+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/uzor.css">
+<style>
+:root{--linen:#efe2c8;--linen2:#e6d5b4;--red:#b8282a;--red2:#8e1c1f;--black:#1d1412;--ochre:#e0a33a;--ink:#2a1d18;--muted:#7b6555}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;color:var(--ink);font:400 18px/1.7 Lora,Georgia,serif;
+ background:var(--linen) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6'%3E%3Cpath d='M0 0h3v3H0zM3 3h3v3H3z' fill='%23d9c6a1' fill-opacity='.28'/%3E%3C/svg%3E")}
+a{color:inherit}img{display:block;width:100%;height:100%;object-fit:cover}
+picture{display:block;height:100%;background-size:cover;overflow:hidden}
+picture img{opacity:0;transition:opacity .9s}picture.is-loaded img{opacity:1}
+.wrap{max-width:1240px;margin:0 auto;padding:0 28px;position:relative}
+.rus{font-family:"Ruslan Display",serif;font-weight:400}
+.script{font:32px/1 "Marck Script",cursive;color:var(--red)}
+.band{height:39px;background:var(--band-red) repeat-x center/auto 39px}
+.band.cream{background-image:var(--band-cream)}
+.band.thin{height:26px;background-size:auto 26px}
+.star{width:60px;height:60px;background:var(--star) center/contain no-repeat;display:inline-block}
+.star.cream{background-image:var(--star-cream)}
+[data-reveal]{opacity:0;transform:translateY(30px);transition:opacity 1s var(--d,0ms),transform 1.1s cubic-bezier(.2,.7,.2,1) var(--d,0ms)}
+[data-reveal].in{opacity:1;transform:none}
+.stitch{border:2px dashed var(--red);outline:6px solid var(--linen);outline-offset:-10px}
+@media (prefers-reduced-motion:reduce){.sun{animation:none!important}}
+
+/* шапка */
+header{background:var(--red);color:var(--linen)}
+header .wrap{display:flex;justify-content:space-between;align-items:center;height:76px}
+.logo{display:flex;gap:12px;align-items:center;text-decoration:none;font:400 26px "Ruslan Display";letter-spacing:.08em}
+.logo .star{width:40px;height:40px}
+header nav a{margin-left:26px;text-decoration:none;font:600 14px Lora;letter-spacing:.14em;text-transform:uppercase}
+header nav a:hover{color:var(--ochre)}
+
+/* hero — рушник */
+.hero{padding:70px 0 0;position:relative;overflow:hidden}
+.hero .grid{display:grid;grid-template-columns:1fr 1.1fr;gap:60px;align-items:center}
+.hero h1{font:400 clamp(38px,6.6vw,104px)/.95 "Ruslan Display";color:var(--red2);margin:14px 0 22px;letter-spacing:.01em}
+.hero h1 span{color:var(--black)}
+.hero p{font-size:20px;max-width:28em}
+.btns{display:flex;gap:14px;flex-wrap:wrap;margin-top:30px}
+.btn{display:inline-block;background:var(--red);color:var(--linen);padding:16px 30px;text-decoration:none;font:600 14px Lora;letter-spacing:.16em;text-transform:uppercase;box-shadow:0 0 0 3px var(--linen),0 0 0 5px var(--red);transition:.25s}
+.btn:hover{background:var(--black);box-shadow:0 0 0 3px var(--linen),0 0 0 5px var(--black)}
+.btn.o{background:none;color:var(--red)}
+.towel{position:relative;padding:0 46px}
+.towel::before,.towel::after{content:"";position:absolute;top:0;bottom:0;width:30px;background:var(--band-red) repeat-y center/39px auto;transform:none}
+.towel::before{left:0}.towel::after{right:0}
+.towel .ph{aspect-ratio:4/5;border:10px solid var(--linen);box-shadow:0 0 0 2px var(--red),0 30px 60px -30px rgba(60,20,10,.6)}
+.towel .fringe{height:34px;background:repeating-linear-gradient(90deg,var(--red) 0 3px,transparent 3px 9px);-webkit-mask:linear-gradient(#000,transparent);mask:linear-gradient(#000,transparent)}
+.towel .tb{height:39px;background:var(--band-red) repeat-x center/auto 39px;margin:10px 0}
+.sun{position:absolute;right:-140px;top:-120px;width:420px;height:420px;opacity:.13;animation:sunr 80s linear infinite;color:var(--red)}
+@keyframes sunr{to{transform:rotate(360deg)}}
+
+/* преимущества */
+.facts{background:var(--black);color:var(--linen);margin-top:90px}
+.facts .row{display:grid;grid-template-columns:repeat(4,1fr)}
+.facts .row div{padding:38px 20px;text-align:center;border-right:1px solid rgba(239,226,200,.15)}
+.facts .row div:last-child{border:0}
+.facts b{display:block;font:400 48px/1 "Ruslan Display";color:var(--ochre)}
+.facts .row div>span{font-size:15px;color:#cdbf9f}
+
+/* о месте */
+.about{padding:110px 0}
+.about .grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:70px;align-items:center}
+.diamond{position:relative;aspect-ratio:1;width:100%;max-width:520px;margin:0 auto}
+.diamond .d{position:absolute;inset:12%;transform:rotate(45deg);overflow:hidden;border:8px solid var(--linen);box-shadow:0 0 0 2px var(--red),0 0 0 12px var(--linen),0 0 0 14px var(--black)}
+.diamond .d>div{position:absolute;inset:-21%;transform:rotate(-45deg)}
+.diamond .star{position:absolute}
+.diamond .s1{top:0;left:calc(50% - 30px)}.diamond .s2{bottom:0;left:calc(50% - 30px)}.diamond .s3{left:0;top:calc(50% - 30px)}.diamond .s4{right:0;top:calc(50% - 30px)}
+.about h2{font:400 clamp(36px,4.2vw,58px)/1.05 "Ruslan Display";color:var(--red2);margin:12px 0 24px}
+.about p{margin:0 0 16px}
+.about .lead::first-letter{float:left;font:400 84px/.8 "Ruslan Display";color:var(--red);margin:8px 12px 0 0}
+
+/* услуги – вышитые карточки */
+.svc{background:var(--red2);color:var(--linen);padding:0 0 110px;position:relative}
+.svc .band{margin-bottom:90px;background-image:var(--band-cream)}
+.svc .head{text-align:center;margin-bottom:60px}
+.svc .head h2{font:400 clamp(40px,5vw,72px)/1 "Ruslan Display";margin:12px 0 0}
+.svc .script{color:var(--ochre)}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:30px}
+.card{background:var(--linen);color:var(--ink);padding:16px 16px 30px;position:relative;box-shadow:0 30px 50px -30px rgba(0,0,0,.6)}
+.card::before{content:"";position:absolute;inset:6px;border:2px dashed rgba(184,40,42,.55);pointer-events:none}
+.card .ph{aspect-ratio:4/3;position:relative}
+.card .bt{height:26px;background:var(--band-red) repeat-x center/auto 26px;margin:14px 0 4px}
+.card .star{position:absolute;top:-22px;right:-22px;width:56px;height:56px;background-color:var(--linen);border-radius:50%;background-size:40px;box-shadow:0 0 0 3px var(--red2)}
+.card h3{font:400 24px/1.15 "Ruslan Display";color:var(--red2);margin:14px 10px 8px;text-align:center}
+.card p{margin:0 14px;font-size:16.5px;text-align:center}
+
+/* сезоны-круг */
+.seasons{padding:110px 0}
+.seasons .head{text-align:center;margin-bottom:60px}
+.seasons h2{font:400 clamp(38px,4.8vw,66px)/1 "Ruslan Display";color:var(--red2);margin:10px 0 0}
+.wheel{display:grid;grid-template-columns:1fr 300px 1fr;gap:40px;align-items:center}
+.wheel .core{aspect-ratio:1;border-radius:50%;overflow:hidden;box-shadow:0 0 0 10px var(--linen),0 0 0 12px var(--red),0 0 0 22px var(--linen),0 0 0 24px var(--black)}
+.ss{display:grid;gap:30px}
+.s{padding:22px 24px;border:2px solid var(--red);position:relative;background:rgba(255,255,255,.25)}
+.s b{font:400 26px "Ruslan Display";color:var(--red)}
+.s p{margin:4px 0 0;font-size:16px}
+.ss.l .s{text-align:right}
+
+/* галерея */
+.gal{background:var(--black);color:var(--linen);padding:0 0 110px}
+.gal .band{margin-bottom:80px}
+.gal .head{text-align:center;margin-bottom:40px}
+.gal h2{font:400 clamp(40px,5vw,72px)/1 "Ruslan Display";margin:12px 0 0}
+.gal .script{color:var(--ochre)}
+.filters{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-bottom:50px}
+.filters button{font:600 14px Lora;letter-spacing:.12em;text-transform:uppercase;background:none;color:var(--linen);border:2px dashed rgba(239,226,200,.4);padding:10px 20px;cursor:pointer}
+.filters button[aria-pressed=true]{background:var(--red);border:2px solid var(--red)}
+.gallery{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
+.g-item{margin:0;position:relative;background:var(--linen);padding:8px 8px 34px;transition:transform .4s}
+.g-item:hover{transform:translateY(-6px)}
+.g-item picture{aspect-ratio:4/5;height:auto}
+.g-item::after{content:"";position:absolute;left:8px;right:8px;bottom:8px;height:18px;background:var(--band-red) repeat-x center/auto 18px}
+.g-item figcaption{position:absolute;top:16px;left:16px;background:var(--red);color:var(--linen);font:600 12px Lora;letter-spacing:.14em;text-transform:uppercase;padding:4px 10px}
+
+/* контакты */
+.contact{padding:110px 0 40px;text-align:center}
+.contact h2{font:400 clamp(44px,6vw,90px)/1 "Ruslan Display";color:var(--red2);margin:12px 0 40px}
+.contact .stars{display:flex;justify-content:center;gap:16px;margin-bottom:30px}
+.cl{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;max-width:1100px;margin:0 auto 70px}
+.cl a{display:block;text-decoration:none;padding:26px 14px;background:var(--linen2);border:2px solid var(--red);box-shadow:6px 6px 0 var(--red);transition:.2s}
+.cl a:hover{transform:translate(-3px,-3px);box-shadow:9px 9px 0 var(--black)}
+.cl small{display:block;font:600 12px Lora;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:6px}
+.cl span{font:600 19px Lora}
+footer{background:var(--red);color:var(--linen);text-align:center;padding:20px;font-size:14px}
+
+@media (max-width:1000px){
+ header nav{display:none}.hero .grid,.about .grid{grid-template-columns:1fr}.towel{max-width:520px;margin:0 auto}
+ .facts .row{grid-template-columns:1fr 1fr}.facts .row div:nth-child(2){border-right:0}
+ .cards{grid-template-columns:1fr 1fr}.wheel{grid-template-columns:1fr}.wheel .core{max-width:300px;width:100%;margin:20px auto;order:-1}.ss.l .s{text-align:left}
+ .gallery{grid-template-columns:1fr 1fr}.cl{grid-template-columns:1fr 1fr}
+}
+@media (max-width:600px){.wrap{padding:0 16px}.cards{grid-template-columns:1fr}.card .star{right:-8px}.cl{grid-template-columns:1fr}.towel{padding:0 34px}.towel::before,.towel::after{width:22px;background-size:30px auto}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <a class="logo" href="#"><span class="star cream"></span>Фазенда</a>
+  <nav><a href="#about">Усадьба</a><a href="#services">Услуги</a><a href="#gallery">Фото</a><a href="#contact">Контакты</a></nav>
+</div></header>
+<div class="band thin" style="background-color:var(--linen)"></div>
+
+<main>
+<section class="hero">
+  <svg class="sun" viewBox="0 0 200 200" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="3"><circle cx="100" cy="100" r="40"/><circle cx="100" cy="100" r="26"/><path d="M100 0v40M100 160v40M0 100h40M160 100h40M29 29l28 28M143 143l28 28M29 171l28-28M143 57l28-28"/><path d="M100 60l40 40-40 40-40-40z"/></g></svg>
+  <div class="wrap grid">
+    <div data-reveal>
+      <div class="script">усадьба под Брестом</div>
+      <h1>Праздник<br><span>в&nbsp;яблоневом</span><br>саду</h1>
+      <p>Свадьбы и мероприятия под ключ, баня на дровах с собственным озером, дома из сруба и блюда из тандыра. В 5 км от Бреста, а вокруг ни соседей, ни дорог.</p>
+      <div class="btns"><a class="btn" href="#contact">Забронировать</a><a class="btn o" href="#services">Услуги</a></div>
+    </div>
+    <div class="towel" data-reveal="200">
+      <div class="tb"></div>
+      <div class="ph" data-photo="priroda-yablonevyj-sad" data-sizes="(max-width:1000px) 90vw, 50vw" data-eager aria-label="Пара в яблоневом саду"></div>
+      <div class="tb"></div>
+      <div class="fringe"></div>
+    </div>
+  </div>
+  <div class="facts"><div class="wrap row">
+    <div data-reveal><b><span data-count="5">5</span> км</b><span>от Бреста, ходит маршрутка</span></div>
+    <div data-reveal="120"><b>сруб</b><span>все дома из бревна</span></div>
+    <div data-reveal="240"><b>8–10</b><span>гостей в доме для проживания</span></div>
+    <div data-reveal="360"><b><span data-count="8">8</span></b><span>мест в доме-бане</span></div>
+  </div></div>
+</section>
+
+<section class="about" id="about"><div class="wrap grid">
+  <div class="diamond" data-reveal>
+    <div class="d"><div data-photo="usadba-svadba-vecher" data-sizes="(max-width:1000px) 90vw, 45vw" aria-label="Свадьба вечером"></div></div>
+    <span class="star s1"></span><span class="star s2"></span><span class="star s3"></span><span class="star s4"></span>
+  </div>
+  <div data-reveal="150">
+    <div class="script">о нас</div>
+    <h2>Усадьба, что утопает в саду</h2>
+    <p class="lead">Наша усадьба находится всего в 5 км от Бреста. Локация очень удобная: к нам ходят даже городские маршрутки.</p>
+    <p>При этом место вдали от людей, рядом нет ни соседей, ни дорог. Вокруг только яблоневый и грушевый сад, в котором утопает усадьба. Все дома сделаны из сруба.</p>
+    <p>Мы делаем праздники под ключ: готовим, украшаем, печём торты и обслуживаем гостей сами.</p>
+  </div>
+</div></section>
+
+<section class="svc" id="services">
+  <div class="band"></div>
+  <div class="wrap">
+    <div class="head"><div class="script">для вас</div><h2>Что есть на усадьбе</h2></div>
+    <div class="cards">
+      <article class="card" data-reveal><span class="star"></span><div class="ph" data-photo="usadba-zhenih" data-sizes="(max-width:600px) 100vw, 33vw" aria-label="Свадьба"></div><div class="bt"></div><h3>Свадьбы под ключ</h3><p>В специальном свадебном зале или в саду: весной в цветении, летом в зелени под открытым небом. Полное обслуживание.</p></article>
+      <article class="card" data-reveal="150"><span class="star"></span><div class="ph" data-photo="eda-banketnyj-stol" data-sizes="(max-width:600px) 100vw, 33vw" aria-label="Банкет"></div><div class="bt"></div><h3>Тандыр</h3><p>Все блюда готовим в тандыре на фруктовых дровах, по меню или по вашим пожеланиям. Завтраки для отдыхающих.</p></article>
+      <article class="card" data-reveal="300"><span class="star"></span><div class="ph" data-photo="priroda-semya" data-sizes="(max-width:600px) 100vw, 33vw" aria-label="Отдых"></div><div class="bt"></div><h3>Баня и озеро</h3><p>Баня на дровах, отличный пар, купание в своём озере, зимой прорубь. Дом-баня на 8 спальных мест.</p></article>
+      <article class="card" data-reveal><span class="star"></span><div class="ph" data-photo="dekor-welcome" data-sizes="(max-width:600px) 100vw, 33vw" aria-label="Декор"></div><div class="bt"></div><h3>Свой декоратор</h3><p>Делаем любую картинку под ваш запрос.</p></article>
+      <article class="card" data-reveal="150"><span class="star"></span><div class="ph" data-photo="torty-medovik-sad" data-sizes="(max-width:600px) 100vw, 33vw" aria-label="Торт"></div><div class="bt"></div><h3>Свой кондитер</h3><p>Не нужно думать о доставке, аренде подставки и о том, кто вынесет и разрежет торт.</p></article>
+      <article class="card" data-reveal="300"><span class="star"></span><div class="ph" data-photo="dekor-osen-stol" data-sizes="(max-width:600px) 100vw, 33vw" aria-label="Дом"></div><div class="bt"></div><h3>Дом из сруба</h3><p>Дом для проживания на 8–10 человек, сдаётся целиком.</p></article>
+    </div>
+  </div>
+</section>
+<div class="band" style="background-color:var(--linen)"></div>
+
+<section class="seasons"><div class="wrap">
+  <div class="head"><div class="script">круглый год</div><h2>Четыре времени года</h2></div>
+  <div class="wheel">
+    <div class="ss l"><div class="s" data-reveal><b>Весна</b><p>Свадьбы среди цветущих яблонь</p></div><div class="s" data-reveal="150"><b>Лето</b><p>Банкет в зелени под открытым небом, купание в озере</p></div></div>
+    <div class="core" data-reveal="100" data-photo="torty-medovik-sad" data-sizes="300px" aria-label="Торт в саду"></div>
+    <div class="ss"><div class="s" data-reveal><b>Осень</b><p>Урожай, яблоки, тёплые праздники в срубе</p></div><div class="s" data-reveal="150"><b>Зима</b><p>Баня на дровах и ныряние в прорубь</p></div></div>
+  </div>
+</div></section>
+
+<section class="gal" id="gallery">
+  <div class="band" style="background-color:var(--linen)"></div>
+  <div class="wrap">
+    <div class="head"><div class="script">загляните</div><h2>Фотографии</h2></div>
+    <nav class="filters" data-filters aria-label="Категории фото"></nav>
+    <div class="gallery" data-gallery data-sizes="(max-width:1000px) 50vw, 25vw"></div>
+  </div>
+</section>
+<div class="band" style="background-color:var(--linen)"></div>
+
+<section class="contact" id="contact"><div class="wrap">
+  <div class="stars"><span class="star"></span><span class="star"></span><span class="star"></span></div>
+  <div class="script">ждём в гости</div>
+  <h2>Напишите нам</h2>
+  <div class="cl">
+    <a href="https://instagram.com/fazenda.brest" target="_blank" rel="noopener"><small>Instagram</small><span>@fazenda.brest</span></a>
+    <a href="https://www.tiktok.com/@_kutman4" target="_blank" rel="noopener"><small>TikTok</small><span>@_kutman4</span></a>
+    <a href="tel:+375000000000"><small>Телефон</small><span>+375 (__) ___-__-__</span></a>
+    <a href="#"><small>Адрес</small><span>5 км от Бреста</span></a>
+  </div>
+</div></section>
+</main>
+<div class="band" style="background-color:var(--linen)"></div>
+<footer>© Фазенда · усадьба в яблоневом саду · Брест</footer>
+<script src="photos/manifest.js"></script>
+<script src="assets/photos.js"></script>
+<script src="assets/fx.js"></script>
+</body>
+</html>
