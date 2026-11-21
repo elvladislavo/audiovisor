@@ -27,6 +27,7 @@ const PI = Math.PI, E = ease, lerp = (a, b, k) => a + (b - a) * k;
 const sm = (a, b, x) => { const u = Math.min(1, Math.max(0, (x - a) / (b - a))); return u * u * (3 - 2 * u); };
 const T_END = 32;
 const SHOW_URL = false;   // this video ends without elvladislavo.com
+const SHOW_TEXT = false;  // this video has no text at all: no captions, bubbles or titles, blank signs
 export const meta = { duration: T_END, fps: 30, background: '#000000' };
 
 const T_SHOP = 9.75, T_KIT = 19.6;
@@ -241,13 +242,13 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
     add(rbox(0.38, 0.55, 0.38), toon(0x2f6b45), [-0.2, 0.52, -0.95], S);
     // shop front
     add(rbox(1.95, 0.46, 0.16, 0.04), toon(0x237a4b), [1.85, 3.05, -1.15], S);
-    signPlane(textTex('SKLEP', { w: 512, h: 120, size: 96 }), 1.7, 0.4, [1.85, 3.05, -1.06], S, true);
+    signPlane(textTex(SHOW_TEXT ? 'SKLEP' : '', { w: 512, h: 120, size: 96 }), 1.7, 0.4, [1.85, 3.05, -1.06], S, true);
     add(rbox(1.08, 2.22, 0.1), toon(0x3b2a1e), [1.4, 1.11, -1.22], S);
     add(new THREE.PlaneGeometry(0.92, 2.08), glow(0xffd98a), [1.4, 1.04, -1.25], S, false);
     door = new THREE.Group(); door.position.set(0.94, 0, -1.16); S.add(door);
     add(new THREE.BoxGeometry(0.92, 2.06, 0.05), toon(0xe9c77e), [0.46, 1.04, 0], door);
     add(new THREE.PlaneGeometry(0.62, 1.0), glow(0xfff0c4), [0.46, 1.35, 0.03], door, false);
-    signPlane(textTex('OTWARTE', { w: 512, h: 128, bg: '#fff7e2', fg: '#237a4b', size: 80, radius: 18 }), 0.5, 0.13, [0.46, 1.72, 0.04], door, true);
+    signPlane(textTex(SHOW_TEXT ? 'OTWARTE' : '', { w: 512, h: 128, bg: '#fff7e2', fg: '#237a4b', size: 80, radius: 18 }), 0.5, 0.13, [0.46, 1.72, 0.04], door, true);
     add(rbox(0.72, 1.0, 0.1), toon(0x3b2a1e), [2.6, 1.3, -1.22], S);
     add(new THREE.PlaneGeometry(0.6, 0.88), glow(0xffe2a0), [2.6, 1.3, -1.19], S, false);
     for (const [x, y] of [[2.48, 1.0], [2.64, 1.0], [2.56, 1.13], [2.73, 1.02]]) add(new THREE.SphereGeometry(0.07, 12, 10), toon(0xd8312a), [x, y, -1.12], S);
@@ -310,7 +311,7 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
     add(rbox(0.7, 0.62, 0.06, 0.03), toon(0x237a4b), [1.2, 2.75, -1.17], B);
     signPlane(ctex(256, 256, (g) => { g.fillStyle = '#fff'; g.beginPath(); g.arc(128, 86, 54, 0, 7); g.fill(); g.fillStyle = '#3aa35a';
       g.beginPath(); g.ellipse(112, 86, 18, 36, -0.5, 0, 7); g.fill(); g.beginPath(); g.ellipse(146, 86, 18, 36, 0.5, 0, 7); g.fill();
-      g.font = '58px Tag'; g.textAlign = 'center'; g.fillStyle = '#fff'; g.fillText('ŚWIEŻE', 128, 212); }), 0.6, 0.6, [1.2, 2.75, -1.13], B, true);
+      g.font = '58px Tag'; g.textAlign = 'center'; g.fillStyle = '#fff'; if (SHOW_TEXT) g.fillText('ŚWIEŻE', 128, 212); }), 0.6, 0.6, [1.2, 2.75, -1.13], B, true);
     add(new THREE.CylinderGeometry(0.2, 0.2, 0.05, 28), toon(0xf6f1e6), [1.5, 3.4, -1.17], B, true, [PI / 2, 0, 0]);
     clockHand = add(new THREE.BoxGeometry(0.02, 0.15, 0.01), toon(0x222222), [1.5, 3.4, -1.13], B, false); clockHand.geometry.translate(0, 0.07, 0);
     clockHand2 = add(new THREE.BoxGeometry(0.025, 0.1, 0.01), toon(0x222222), [1.5, 3.4, -1.125], B, false); clockHand2.geometry.translate(0, 0.045, 0);
@@ -320,7 +321,7 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
     // till
     add(rbox(0.95, 0.95, 0.6), toon(0x4a5566), [1.45, 0.475, -0.4], B);
     add(rbox(0.36, 0.2, 0.3), toon(0x2a2d33), [1.6, 1.05, -0.45], B);
-    const dispOff = textTex('', { w: 256, h: 96, bg: '#14261b' }), dispOn = textTex('24 zł', { w: 256, h: 96, bg: '#14261b', fg: '#62ff8e', size: 70 });
+    const dispOff = textTex('', { w: 256, h: 96, bg: '#14261b' }), dispOn = textTex(SHOW_TEXT ? '24 zł' : '', { w: 256, h: 96, bg: '#14261b', fg: '#62ff8e', size: 70 });
     dingDisplay = signPlane(dispOff, 0.3, 0.11, [1.6, 1.24, -0.38], B, true); dingDisplay.userData = { dispOff, dispOn };
     add(new THREE.BoxGeometry(0.05, 0.18, 0.05), toon(0x2a2d33), [1.6, 1.17, -0.45], B, false);
     for (let i = 0; i < 3; i++) add(rbox(0.42, 0.16, 0.3, 0.02), toon(0xc8141e), [-0.85, 0.08 + i * 0.12, -0.9], B, true);
@@ -585,6 +586,8 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
       { const a = E.outBack(range(t, T_TITLE, T_TITLE + 0.5)); T.title.material.opacity = range(t, T_TITLE, T_TITLE + 0.15); hud(T.title, 0, 0.7, 0.95 * Math.max(0.01, a));
         T.title.material.rotation = -0.06; }
       T.url.material.opacity = SHOW_URL ? sm(T_URL, T_URL + 0.5, t) : 0; hud(T.url, 0, -0.78, 0.85);
+
+      if (!SHOW_TEXT) for (const k in T) T[k].material.opacity = 0;
 
       /* hearts (shop hej, kitchen ending) and humming notes */
       hearts.forEach((h, i) => {
