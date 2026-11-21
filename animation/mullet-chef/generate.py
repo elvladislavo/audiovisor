@@ -9,6 +9,8 @@ import json, math, os
 W, H, FPS = 640, 360, 24
 DUR = 14.0
 K = 30.0 / DUR  # stretch story to 30 s; walk/stir cycles stay real-time
+TAIL = 2.0       # extra real seconds holding on the final shot
+TOTAL = DUR * K + TAIL
 S1, S2, S3 = 0.0, 4.5, 9.0          # scene starts: street, shop, kitchen
 GROUND = {1: 312, 2: 318, 3: 318}
 
@@ -279,7 +281,7 @@ for o in objs:  # stretch scenery/prop timings
     for f in ("start", "end"):
         if f in o: o[f] = round(o[f] * K, 4)
     for k in o.get("keys", []): k["t"] = round(k["t"] * K, 4)
-frames = [i / FPS for i in range(int(DUR * K * FPS) + 1)]
+frames = [i / FPS for i in range(int(TOTAL * FPS) + 1)]
 samples = [parts(t / K, t) for t in frames]
 # grabbed items: on the shelf until the hand arrives, then ride in the hand into the bag
 byid = {o["id"]: o for o in objs}
@@ -318,7 +320,9 @@ objs.append(rect("fade", 320, 180, 640, 360, "#000000", 0, DUR * K, 100, keys=[d
 
 import realism
 realism.apply(objs, S1, S2, S3, DUR * K, K)
-scene = dict(title="Mullet chef: shop run and dinner", width=W, height=H, fps=FPS, duration=DUR * K,
+for o in objs:  # everything on screen at the end stays up through the final hold
+    if abs(o.get("end", 0) - DUR * K) < 1e-3: o["end"] = TOTAL
+scene = dict(title="Mullet chef: shop run and dinner", width=W, height=H, fps=FPS, duration=TOTAL,
              hold=1, background="#000000", objects=objs, audio="soundtrack.wav", output_scale=2, shade=True, shade_strength=1.0,
              post=dict(bloom=0.45, bloom_threshold=228, contrast=1.06, saturation=0.9,
                        shadows=[-4, 2, 10], highlights=[10, 4, -6], vignette=0.4, grain=3.5))

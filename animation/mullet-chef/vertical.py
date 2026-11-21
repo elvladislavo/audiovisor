@@ -61,8 +61,6 @@ fin = byid["final"]
 for k in fin["keys"]:
     k["x"], k["y"] = 452, 10
 fin["size"] = 33
-for bid in ("say_mmm_b", "say_mmm_tail", "say_mmm"):   # keep her bubble inside the frame
-    byid[bid]["x"] -= 42
 byid["fade"].update(w=4000, h=4000)
 
 

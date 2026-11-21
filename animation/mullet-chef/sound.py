@@ -14,7 +14,7 @@ rng = np.random.default_rng(7)
 
 import generate as G          # re-runs the generator (deterministic) and gives us the poses
 import girl as GL
-K, DUR, S1, S2, S3 = G.K, G.DUR * G.K, G.S1, G.S2, G.S3
+K, DUR, S1, S2, S3 = G.K, G.TOTAL, G.S1, G.S2, G.S3
 N = int(round(DUR * SR))
 mixL, mixR = np.zeros(N), np.zeros(N)
 
