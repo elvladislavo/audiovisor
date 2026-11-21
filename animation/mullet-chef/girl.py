@@ -178,8 +178,8 @@ def extra_objects():
                      x=x - 10, y=y + 14, start=t0 + 0.1, end=t1, z=31.9),
                 dict(id=id, type="text", text=txt, size=14, fill="#2b2b2f", x=x, y=y, start=t0 + 0.1, end=t1, z=33)]
     o = []
-    o += bubble("say_hej", 150, 120, "Hej! :)", S2 + 2.3, S2 + 3.3, 38)
-    o += bubble("say_his", 300, 105, "...hej", S2 + 3.0, S2 + 3.7, 34)
+    o += bubble("say_hej", 150, 120, "hej!", S2 + 2.3, S2 + 3.3, 28)
+    o += bubble("say_his", 300, 105, "hej!", S2 + 3.0, S2 + 3.7, 28)
     o += bubble("say_mmm", 590, 100, "Mmm! Pyszne!", S3 + 4.6, DUR, 56)
     for i in range(3):  # little hearts float up from her in the shop
         t0 = S2 + 2.6 + i * 0.3

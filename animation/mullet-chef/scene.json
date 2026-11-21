@@ -12815,7 +12815,7 @@
   {
    "id": "say_hej_b",
    "type": "ellipse",
-   "rx": 38,
+   "rx": 28,
    "ry": 16,
    "fill": "#ffffff",
    "stroke": "#2b2b2f",
@@ -12866,7 +12866,7 @@
   {
    "id": "say_hej",
    "type": "text",
-   "text": "Hej! :)",
+   "text": "hej!",
    "size": 14,
    "fill": "#2b2b2f",
    "x": 150,
@@ -12879,7 +12879,7 @@
   {
    "id": "say_his_b",
    "type": "ellipse",
-   "rx": 34,
+   "rx": 28,
    "ry": 16,
    "fill": "#ffffff",
    "stroke": "#2b2b2f",
@@ -12930,7 +12930,7 @@
   {
    "id": "say_his",
    "type": "text",
-   "text": "...hej",
+   "text": "hej!",
    "size": 14,
    "fill": "#2b2b2f",
    "x": 300,
