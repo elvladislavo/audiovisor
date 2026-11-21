@@ -89,12 +89,12 @@ def shape_points(obj):
         return [tuple(p) for p in obj["points"]]
     raise ValueError(f"unknown type {k!r} on object {obj.get('id')}")
 
-def transform(pts, x, y, s, sx, sy, rot, F):
+def transform(pts, x, y, s, sx, sy, rot, F, ox=0.0, oy=0.0):
     c, si = math.cos(math.radians(rot)), math.sin(math.radians(rot))
     out = []
     for px, py in pts:
         px, py = px * s * sx, py * s * sy
-        out.append(((x + px * c - py * si) * F, (y + px * si + py * c) * F))
+        out.append(((x + px * c - py * si) * F - ox, (y + px * si + py * c) * F - oy))
     return out
 
 _font_cache = {}
@@ -111,16 +111,16 @@ def font(size):
 
 _noise_cache, _static_cache = {}, {}
 
-def noise(key, w, h, grain):
-    k = (key, w, h)
+def noise(key, gw, gh, box, w, h):
+    """Texture noise anchored to the object: a fixed grid of gw x gh cells (stable while the
+    camera pans or zooms); `box` is the visible part of the object in grid coordinates."""
+    k = (key, gw, gh)
     if k not in _noise_cache:
         rng = np.random.default_rng(zlib.crc32(key.encode()))
-        n = rng.normal(0, 1, (h // grain + 2, w // grain + 2)).astype(np.float32)
-        img = Image.fromarray(((n * 40) + 128).clip(0, 255).astype(np.uint8)).resize((w, h), Image.BICUBIC)
-        _noise_cache[k] = (np.asarray(img, np.float32) - 128) / 40
-    return _noise_cache[k]
+        _noise_cache[k] = Image.fromarray(rng.normal(0, 1, (gh + 3, gw + 3)).astype(np.float32), "F")
+    return np.asarray(_noise_cache[k].resize((w, h), Image.BICUBIC, box=box), np.float32)
 
-def filled_layer(obj, scene, lp, w, h, fill, F):
+def filled_layer(obj, scene, lp, w, h, fill, F, nbox=None):
     """Polygon fill with optional gradient (explicit or auto top-light shading) and texture."""
     grad = obj.get("gradient")
     shade = scene.get("shade") and not obj.get("flat") and np is not None
@@ -138,16 +138,21 @@ def filled_layer(obj, scene, lp, w, h, fill, F):
     arr = np.array(top, np.float32) * (1 - t) + np.array(bot, np.float32) * t
     arr = np.broadcast_to(arr, (h, w, 4)).copy()
     if obj.get("texture"):
-        g = obj.get("texture_grain", 1.5) * F
-        fine = noise(obj.get("id", "x"), w, h, max(1, int(g)))           # weave / grit
-        blotch = noise(obj.get("id", "x") + "~", w, h, max(2, int(g * 14)))  # soft mottling
+        offx, offy, fw, fh = nbox or (0, 0, w, h)
+        layers = []
+        for suffix, cell in (("", 1), ("~", 14)):   # fine weave/grit, soft mottling
+            g = max(1e-3, obj.get("texture_grain", 1.5) * cell * F)       # cell size in pixels
+            gw, gh = max(2, int(fw / g) + 1), max(2, int(fh / g) + 1)
+            box = (offx / g, offy / g, (offx + w) / g, (offy + h) / g)
+            layers.append(noise(obj.get("id", "x") + suffix, gw, gh, box, w, h))
+        fine, blotch = layers
         arr[..., :3] *= (1 + (fine * 0.025 + blotch * 0.05)[..., None] * obj["texture"])
     mask = Image.new("L", (w, h), 0); ImageDraw.Draw(mask).polygon(lp, fill=255)
     arr[..., 3] *= np.asarray(mask, np.float32) / 255
     return Image.fromarray(arr.clip(0, 255).astype(np.uint8), "RGBA")
 
-def draw_object(canvas, obj, t, scene, F):
-    static = not obj.get("keys")
+def draw_object(canvas, obj, t, scene, F, ox=0.0, oy=0.0):
+    static = not obj.get("keys") and not scene.get("camera")
     if static and obj["id"] in _static_cache:
         layer, pos = _static_cache[obj["id"]]
         if layer is not None: canvas.paste(layer, pos, layer)
@@ -164,9 +169,9 @@ def draw_object(canvas, obj, t, scene, F):
         tmp = Image.new("RGBA", (size * max(1, len(obj["text"])) + 20, size * 2), (0, 0, 0, 0))
         ImageDraw.Draw(tmp).text((10, size // 4), obj["text"], font=font(size), fill=fill or (255, 255, 255, int(255 * alpha)))
         layer = tmp.crop(tmp.getbbox() or (0, 0, 1, 1)).rotate(-p["rotation"], expand=True, resample=Image.BICUBIC)
-        pos = (int(p["x"] * F - layer.width / 2), int(p["y"] * F - layer.height / 2))
+        pos = (int(p["x"] * F - ox - layer.width / 2), int(p["y"] * F - oy - layer.height / 2))
     else:
-        pts = transform(shape_points(obj), p["x"], p["y"], p["scale"], p["sx"], p["sy"], p["rotation"], F)
+        pts = transform(shape_points(obj), p["x"], p["y"], p["scale"], p["sx"], p["sy"], p["rotation"], F, ox, oy)
         pad = int(sw + blur * 3 + 2)
         xs, ys = [q[0] for q in pts], [q[1] for q in pts]
         x0, y0 = int(math.floor(min(xs))) - pad, int(math.floor(min(ys))) - pad
@@ -174,12 +179,17 @@ def draw_object(canvas, obj, t, scene, F):
         if x0 > canvas.width or y0 > canvas.height or x0 + w < 0 or y0 + h < 0 or w < 1 or h < 1:
             if static: _static_cache[obj["id"]] = (None, None)
             return
+        # clip to the canvas (big backgrounds under a zoomed camera), keep texture anchored
+        cx0, cy0 = max(x0, -pad), max(y0, -pad)
+        cx1, cy1 = min(x0 + w, canvas.width + pad), min(y0 + h, canvas.height + pad)
+        nbox = (cx0 - x0, cy0 - y0, w, h)
+        x0, y0, w, h = cx0, cy0, cx1 - cx0, cy1 - cy0
         lp = [(x - x0, y - y0) for x, y in pts]
         if obj["type"] == "line":
             layer = Image.new("RGBA", (w, h), (0, 0, 0, 0))
             ImageDraw.Draw(layer).line(lp, fill=stroke or fill, width=max(1, sw), joint="curve")
         else:
-            layer = filled_layer(obj, scene, lp, w, h, fill, F) if fill else Image.new("RGBA", (w, h), (0, 0, 0, 0))
+            layer = filled_layer(obj, scene, lp, w, h, fill, F, nbox) if fill else Image.new("RGBA", (w, h), (0, 0, 0, 0))
             if stroke and sw: ImageDraw.Draw(layer).line(lp + [lp[0]], fill=stroke, width=sw, joint="curve")
         pos = (x0, y0)
     if blur: layer = layer.filter(ImageFilter.GaussianBlur(blur))
@@ -214,12 +224,23 @@ def post(img, scene, frame_no):
     return Image.fromarray(a.clip(0, 255).astype(np.uint8))
 
 def render_frame(scene, t, frame_no=0):
+    """Without a camera the stage (width x height) is shown whole. With "camera" (keyframed
+    x, y = centre and w = visible width, in stage units) and "output_size" [w, h], the view
+    pans and zooms over the stage, e.g. a 9:16 vertical cut of a 16:9 scene."""
     W, H, OUT = scene["width"], scene["height"], scene.get("output_scale", 1)
-    F = SS * OUT
-    img = Image.new("RGBA", (W * F, H * F), hex_rgba(scene.get("background", "#ffffff")))
+    ss = scene.get("supersample", SS)
+    cam = scene.get("camera")
+    if cam:
+        OW, OH = scene["output_size"]
+        cx, cy, cw = sample(cam, "x", t), sample(cam, "y", t), sample(cam, "w", t)
+        F = ss * OW / cw
+        ox, oy = (cx - cw / 2) * F, (cy - cw * OH / OW / 2) * F
+    else:
+        OW, OH, F, ox, oy = W * OUT, H * OUT, ss * OUT, 0.0, 0.0
+    img = Image.new("RGBA", (int(OW * ss), int(OH * ss)), hex_rgba(scene.get("background", "#ffffff")))
     for obj in scene["_sorted"]:
-        if visible(obj, t): draw_object(img, obj, t, scene, F)
-    return post(img.convert("RGB").resize((W * OUT, H * OUT), Image.LANCZOS), scene, frame_no)
+        if visible(obj, t): draw_object(img, obj, t, scene, F, ox, oy)
+    return post(img.convert("RGB").resize((OW, OH), Image.LANCZOS), scene, frame_no)
 
 _SCENE = None
 def _init(scene): global _SCENE; _SCENE = scene
