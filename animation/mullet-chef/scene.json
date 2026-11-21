@@ -101,19 +101,6 @@
    "z": 3
   },
   {
-   "id": "signtxt",
-   "type": "text",
-   "x": 470,
-   "y": 141,
-   "text": "SKLEP",
-   "size": 24,
-   "fill": "#f6f1dc",
-   "start": 0.0,
-   "end": 9.6429,
-   "z": 4,
-   "flat": true
-  },
-  {
    "id": "door",
    "type": "rect",
    "x": 455,
@@ -232,37 +219,6 @@
     }
    ],
    "blur": 0.8
-  },
-  {
-   "id": "t1",
-   "type": "text",
-   "x": 160,
-   "y": 300,
-   "text": "g\u0142odny...",
-   "size": 20,
-   "fill": "#f6f1dc",
-   "start": 1.2857,
-   "end": 5.1429,
-   "z": 30,
-   "keys": [
-    {
-     "t": 1.2857,
-     "opacity": 0
-    },
-    {
-     "t": 1.9286,
-     "opacity": 1
-    },
-    {
-     "t": 4.5,
-     "opacity": 1
-    },
-    {
-     "t": 5.1429,
-     "opacity": 0
-    }
-   ],
-   "flat": true
   },
   {
    "id": "shopbg",
@@ -771,59 +727,6 @@
    "start": 9.6429,
    "end": 19.2857,
    "z": 15
-  },
-  {
-   "id": "price",
-   "type": "text",
-   "x": 560,
-   "y": 245,
-   "text": "24 z\u0142",
-   "size": 12,
-   "fill": "#7cf08a",
-   "start": 18.0,
-   "end": 19.2857,
-   "z": 16,
-   "flat": true
-  },
-  {
-   "id": "ding",
-   "type": "text",
-   "x": 540,
-   "y": 195,
-   "text": "*ding*",
-   "size": 18,
-   "fill": "#c0282d",
-   "start": 18.4286,
-   "end": 19.0714,
-   "z": 30,
-   "flat": true
-  },
-  {
-   "id": "t2",
-   "type": "text",
-   "x": 420,
-   "y": 60,
-   "text": "tomato \u00b7 pasta \u00b7 basil",
-   "size": 20,
-   "fill": "#3a2c22",
-   "start": 10.0714,
-   "end": 12.8571,
-   "z": 30,
-   "keys": [
-    {
-     "t": 10.0714,
-     "opacity": 0
-    },
-    {
-     "t": 10.7143,
-     "opacity": 1
-    },
-    {
-     "t": 12.8571,
-     "opacity": 0
-    }
-   ],
-   "flat": true
   },
   {
    "id": "kitbg",
@@ -1534,43 +1437,6 @@
    ]
   },
   {
-   "id": "final",
-   "type": "text",
-   "x": 320,
-   "y": 60,
-   "text": "SMACZNEGO!",
-   "size": 40,
-   "fill": "#c0282d",
-   "start": 28.7143,
-   "end": 32.0,
-   "z": 30,
-   "keys": [
-    {
-     "t": 28.7143,
-     "x": 320,
-     "y": 60,
-     "scale": 0.3,
-     "opacity": 0
-    },
-    {
-     "t": 29.5714,
-     "x": 320,
-     "y": 60,
-     "scale": 1.1,
-     "opacity": 1,
-     "ease": "back"
-    },
-    {
-     "t": 30.0,
-     "x": 320,
-     "y": 60,
-     "scale": 1,
-     "rotation": -4
-    }
-   ],
-   "flat": true
-  },
-  {
    "id": "spark0",
    "type": "star",
    "points": 4,
@@ -2171,19 +2037,6 @@
    "start": 0.0,
    "end": 9.6429,
    "z": 3.6
-  },
-  {
-   "id": "open",
-   "type": "text",
-   "x": 455,
-   "y": 222,
-   "text": "OTWARTE",
-   "size": 9,
-   "fill": "#2f7d4f",
-   "start": 0.0,
-   "end": 9.6429,
-   "z": 4,
-   "flat": true
   },
   {
    "id": "apple1",
@@ -10657,20 +10510,6 @@
    "blur": 0.4
   },
   {
-   "id": "logo_txt",
-   "type": "text",
-   "x": 420,
-   "y": 140,
-   "text": "\u015aWIE\u017bE",
-   "size": 13,
-   "fill": "#f6f1dc",
-   "start": 9.6429,
-   "end": 19.2857,
-   "z": 1.1,
-   "blur": 0.4,
-   "flat": true
-  },
-  {
    "id": "cord",
    "type": "rect",
    "x": 255,
@@ -11362,19 +11201,6 @@
      "rotation": 0
     }
    ]
-  },
-  {
-   "id": "thx",
-   "type": "text",
-   "x": 580,
-   "y": 175,
-   "text": "Dzi\u0119kuj\u0119!",
-   "size": 14,
-   "fill": "#2f7d4f",
-   "start": 18.2143,
-   "end": 18.8571,
-   "z": 30,
-   "flat": true
   },
   {
    "id": "basket",
@@ -12851,198 +12677,6 @@
      "scale": 1
     }
    ],
-   "flat": true
-  },
-  {
-   "id": "say_hej_b",
-   "type": "ellipse",
-   "rx": 28,
-   "ry": 16,
-   "fill": "#ffffff",
-   "stroke": "#2b2b2f",
-   "stroke_width": 2,
-   "x": 150,
-   "y": 120,
-   "start": 14.5714,
-   "end": 16.7143,
-   "z": 32,
-   "keys": [
-    {
-     "t": 14.5714,
-     "scale": 0
-    },
-    {
-     "t": 15.0,
-     "scale": 1,
-     "ease": "back"
-    }
-   ],
-   "flat": true
-  },
-  {
-   "id": "say_hej_tail",
-   "type": "polygon",
-   "points": [
-    [
-     -5,
-     0
-    ],
-    [
-     5,
-     0
-    ],
-    [
-     -2,
-     12
-    ]
-   ],
-   "fill": "#ffffff",
-   "x": 140,
-   "y": 134,
-   "start": 14.7857,
-   "end": 16.7143,
-   "z": 31.9,
-   "flat": true
-  },
-  {
-   "id": "say_hej",
-   "type": "text",
-   "text": "hej!",
-   "size": 14,
-   "fill": "#2b2b2f",
-   "x": 150,
-   "y": 120,
-   "start": 14.7857,
-   "end": 16.7143,
-   "z": 33,
-   "flat": true
-  },
-  {
-   "id": "say_his_b",
-   "type": "ellipse",
-   "rx": 28,
-   "ry": 16,
-   "fill": "#ffffff",
-   "stroke": "#2b2b2f",
-   "stroke_width": 2,
-   "x": 268,
-   "y": 112,
-   "start": 16.0714,
-   "end": 17.1429,
-   "z": 32,
-   "keys": [
-    {
-     "t": 16.0714,
-     "scale": 0
-    },
-    {
-     "t": 16.5,
-     "scale": 1,
-     "ease": "back"
-    }
-   ],
-   "flat": true
-  },
-  {
-   "id": "say_his_tail",
-   "type": "polygon",
-   "points": [
-    [
-     -5,
-     0
-    ],
-    [
-     5,
-     0
-    ],
-    [
-     -2,
-     12
-    ]
-   ],
-   "fill": "#ffffff",
-   "x": 258,
-   "y": 126,
-   "start": 16.2857,
-   "end": 17.1429,
-   "z": 31.9,
-   "flat": true
-  },
-  {
-   "id": "say_his",
-   "type": "text",
-   "text": "hej!",
-   "size": 14,
-   "fill": "#2b2b2f",
-   "x": 268,
-   "y": 112,
-   "start": 16.2857,
-   "end": 17.1429,
-   "z": 33,
-   "flat": true
-  },
-  {
-   "id": "say_mmm_b",
-   "type": "ellipse",
-   "rx": 56,
-   "ry": 16,
-   "fill": "#ffffff",
-   "stroke": "#2b2b2f",
-   "stroke_width": 2,
-   "x": 556,
-   "y": 100,
-   "start": 29.1429,
-   "end": 32.0,
-   "z": 32,
-   "keys": [
-    {
-     "t": 29.1429,
-     "scale": 0
-    },
-    {
-     "t": 29.5714,
-     "scale": 1,
-     "ease": "back"
-    }
-   ],
-   "flat": true
-  },
-  {
-   "id": "say_mmm_tail",
-   "type": "polygon",
-   "points": [
-    [
-     -5,
-     0
-    ],
-    [
-     5,
-     0
-    ],
-    [
-     -2,
-     12
-    ]
-   ],
-   "fill": "#ffffff",
-   "x": 546,
-   "y": 114,
-   "start": 29.3571,
-   "end": 32.0,
-   "z": 31.9,
-   "flat": true
-  },
-  {
-   "id": "say_mmm",
-   "type": "text",
-   "text": "Mmm! Pyszne!",
-   "size": 14,
-   "fill": "#2b2b2f",
-   "x": 556,
-   "y": 100,
-   "start": 29.3571,
-   "end": 32.0,
-   "z": 33,
    "flat": true
   },
   {
@@ -615277,6 +614911,103 @@
    "end": 28.07142857142857,
    "z": 2.55,
    "blur": 8,
+   "flat": true
+  },
+  {
+   "id": "sign_basket",
+   "type": "polygon",
+   "points": [
+    [
+     -16,
+     -6
+    ],
+    [
+     16,
+     -6
+    ],
+    [
+     11,
+     9
+    ],
+    [
+     -11,
+     9
+    ]
+   ],
+   "fill": "#f6f1dc",
+   "x": 470,
+   "y": 145,
+   "start": 0,
+   "end": 9.642857142857142,
+   "z": 4,
+   "flat": true
+  },
+  {
+   "id": "sign_handle",
+   "type": "line",
+   "points": [
+    [
+     -10,
+     -6
+    ],
+    [
+     -6,
+     -15
+    ],
+    [
+     6,
+     -15
+    ],
+    [
+     10,
+     -6
+    ]
+   ],
+   "stroke": "#f6f1dc",
+   "stroke_width": 2.5,
+   "x": 470,
+   "y": 145,
+   "start": 0,
+   "end": 9.642857142857142,
+   "z": 4
+  },
+  {
+   "id": "sign_slat0",
+   "type": "rect",
+   "w": 1.5,
+   "h": 11,
+   "fill": "#2f7d4f",
+   "x": 464,
+   "y": 146,
+   "start": 0,
+   "end": 9.642857142857142,
+   "z": 4.1,
+   "flat": true
+  },
+  {
+   "id": "sign_slat1",
+   "type": "rect",
+   "w": 1.5,
+   "h": 11,
+   "fill": "#2f7d4f",
+   "x": 470,
+   "y": 146,
+   "start": 0,
+   "end": 9.642857142857142,
+   "z": 4.1,
+   "flat": true
+  },
+  {
+   "id": "sign_slat2",
+   "type": "rect",
+   "w": 1.5,
+   "h": 11,
+   "fill": "#2f7d4f",
+   "x": 476,
+   "y": 146,
+   "start": 0,
+   "end": 9.642857142857142,
+   "z": 4.1,
    "flat": true
   }
  ],

@@ -56,11 +56,6 @@ for i in range(8):
 objs += ext
 
 # ---- titles into the frame
-t1 = byid["t1"]; t1.update(x=250, y=120, size=26)
-fin = byid["final"]
-for k in fin["keys"]:
-    k["x"], k["y"] = 452, 10
-fin["size"] = 33
 byid["fade"].update(w=4000, h=4000)
 
 

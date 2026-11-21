@@ -320,6 +320,18 @@ objs.append(rect("fade", 320, 180, 640, 360, "#000000", 0, DUR * K, 100, keys=[d
 
 import realism
 realism.apply(objs, S1, S2, S3, DUR * K, K)
+# no words on screen: drop text objects and speech bubbles (hearts and music notes stay)
+SYMBOLS = {"♥", "♪", "♫"}
+objs[:] = [o for o in objs if not (o.get("type") == "text" and o.get("text") not in SYMBOLS)
+           and not (o["id"].startswith("say_") and o["id"].endswith(("_b", "_tail")))]
+# the shop sign shows a basket icon instead of a word
+objs += [dict(id="sign_basket", type="polygon", points=[[-16, -6], [16, -6], [11, 9], [-11, 9]], fill="#f6f1dc",
+              x=470, y=145, start=0, end=S2 * K, z=4, flat=True),
+         dict(id="sign_handle", type="line", points=[[-10, -6], [-6, -15], [6, -15], [10, -6]], stroke="#f6f1dc",
+              stroke_width=2.5, x=470, y=145, start=0, end=S2 * K, z=4)]
+for i, dx in enumerate((-6, 0, 6)):
+    objs.append(dict(id=f"sign_slat{i}", type="rect", w=1.5, h=11, fill="#2f7d4f", x=470 + dx, y=146,
+                     start=0, end=S2 * K, z=4.1, flat=True))
 for o in objs:  # everything on screen at the end stays up through the final hold
     if abs(o.get("end", 0) - DUR * K) < 1e-3: o["end"] = TOTAL
 scene = dict(title="Mullet chef: shop run and dinner", width=W, height=H, fps=FPS, duration=TOTAL,
