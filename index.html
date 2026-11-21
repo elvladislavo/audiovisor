@@ -232,7 +232,7 @@ body.dragging .drop{display:grid}
     <button data-mode="radial" aria-pressed="false">Radial</button>
     <button data-mode="gram" aria-pressed="false">Spectrogram</button>
     <button data-mode="tide" aria-pressed="false">Tide</button>
-    <button data-mode="bryce" aria-pressed="false">Terrain</button>
+    <button data-mode="bryce" aria-pressed="false">Bryce</button>
   </nav>
 
   <div class="rack">
@@ -505,61 +505,104 @@ function drawTide(){
   ctx.globalAlpha=1;
 }
 
-/* Terrain: a 90s ray-traced-landscape look. Spectrum rows scroll toward
-   the camera as a heightfield, drawn back to front with fog and a sky. */
-const TC=44, TR=36; let terr=null, tHead=0, tAcc=0, tSun=0;
-function mix(a,b,t){ return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t]; }
-function landCol(h){
-  if(h<0.06) return [38,92,140];
-  if(h<0.12) return [196,180,130];
-  if(h<0.38) return mix([70,122,58],[96,104,62],(h-0.12)/0.26);
-  if(h<0.62) return mix([118,98,80],[136,128,120],(h-0.38)/0.24);
-  return [236,238,244];
+/* Bryce: a 90s ambient-jungle-video scene. Rendered small and scaled up
+   for a soft VHS look: ultramarine sky, glowing horizon, a speckled icy
+   sea that mirrors a floating planet and a pyramid, PS1-style dashed
+   rings on the beat, scanlines and tape grain. */
+let lowC=null, lctx=null, LW=0, LH=0, bT=0, bScroll=0, bRings=[], bLastBass=0, bJit=0;
+function hash2(x,y){ let n=Math.sin(x*127.1+y*311.7)*43758.5453; return n-Math.floor(n); }
+function vnoise(x,y){
+  const xi=Math.floor(x), yi=Math.floor(y), xf=x-xi, yf=y-yi;
+  const u=xf*xf*(3-2*xf), w=yf*yf*(3-2*yf);
+  const a=hash2(xi,yi), b=hash2(xi+1,yi), c=hash2(xi,yi+1), d=hash2(xi+1,yi+1);
+  return a+(b-a)*u+(c-a)*w+(a-b-c+d)*u*w;
 }
 function drawBryce(){
-  if(!terr){ terr=[]; for(let r=0;r<TR;r++) terr.push(new Float32Array(TC)); }
-  const half=TC/2, v=bands(half);
-  tAcc+=1;
-  if(tAcc>=2){ tAcc=0;
-    const row=terr[tHead]; tHead=(tHead+1)%TR;
-    for(let c=0;c<TC;c++){
-      const k=Math.abs(c-half+0.5)|0, edge=Math.abs(c-half+0.5)/half;
-      const hill=0.08+0.1*Math.sin(c*0.5+tSun*40)*Math.sin(c*0.23);
-      row[c]=Math.max(0, v[Math.min(half-1,half-1-k)]*0.85*(0.35+edge*0.9)+hill*edge);
+  const lw=Math.max(160, Math.round(W/DPR/2.6)), lh=Math.max(90, Math.round(lw*H/W));
+  if(!lowC || LW!==lw || LH!==lh){ LW=lw; LH=lh; lowC=document.createElement("canvas"); lowC.width=LW; lowC.height=LH; lctx=lowC.getContext("2d"); }
+  const v=bands(24);
+  let bass=0, mid=0, treb=0;
+  for(let i=0;i<4;i++) bass+=v[i]; bass/=4;
+  for(let i=8;i<14;i++) mid+=v[i]; mid/=6;
+  for(let i=18;i<24;i++) treb+=v[i]; treb/=6;
+  bT+=1/60; bScroll+=0.02+bass*0.08;
+  const hz=Math.round(LH*0.62);
+
+  // sky
+  const g=lctx.createLinearGradient(0,0,0,hz);
+  g.addColorStop(0,"#14139a"); g.addColorStop(0.55,"#2f43d0"); g.addColorStop(0.86,"#7f9cf0");
+  g.addColorStop(0.97,"#e8f2ff"); g.addColorStop(1,"#ffffff");
+  lctx.fillStyle=g; lctx.fillRect(0,0,LW,hz);
+
+  // pyramid on the horizon, height follows the mids
+  const px=LW*0.52, ph=LH*(0.16+mid*0.1), pw=LH*0.075;
+  lctx.fillStyle="#b9f0f4"; lctx.beginPath(); lctx.moveTo(px,hz-ph); lctx.lineTo(px+pw,hz); lctx.lineTo(px,hz); lctx.closePath(); lctx.fill();
+  lctx.fillStyle="#0e1630"; lctx.beginPath(); lctx.moveTo(px,hz-ph); lctx.lineTo(px-pw*0.9,hz); lctx.lineTo(px,hz); lctx.closePath(); lctx.fill();
+
+  const img=lctx.getImageData(0,0,LW,LH), d=img.data;
+  // floating planet: shaded per pixel with a slowly turning marbled texture
+  const cx=LW*0.5, cy=LH*(0.2+Math.sin(bT*0.4)*0.012), R=Math.min(LH*0.14,LW*0.12)*(1+bass*0.12), rot=bT*0.08;
+  for(let y=Math.max(0,cy-R|0); y<Math.min(hz,cy+R+1); y++){
+    for(let x=Math.max(0,cx-R|0); x<Math.min(LW,cx+R+1); x++){
+      const nx=(x-cx)/R, ny=(y-cy)/R, r2=nx*nx+ny*ny; if(r2>1) continue;
+      const nz=Math.sqrt(1-r2);
+      const lon=Math.atan2(nx,nz)+rot, lat=Math.asin(ny);
+      let t=vnoise(lon*3,lat*4)*0.6+vnoise(lon*7+5,lat*8)*0.3+vnoise(lon*15,lat*16)*0.1;
+      t=Math.pow(0.5+0.5*Math.sin(t*6+lat*2),1.5);
+      const lit=Math.max(0.04, nx*0.55-ny*0.45+nz*0.7);
+      const spec=Math.pow(Math.max(0,nx*0.45-ny*0.35+nz*0.82),28)*0.6;
+      const i=(y*LW+x)*4, edge=Math.min(1,(1-r2)*6);
+      const cr=(70+t*170)*lit+spec*255, cg=(90+t*165)*lit+spec*255, cb=(88+t*150)*lit+spec*255;
+      d[i]=d[i]*(1-edge)+cr*edge; d[i+1]=d[i+1]*(1-edge)+cg*edge; d[i+2]=d[i+2]*(1-edge)+cb*edge;
     }
   }
-  tSun+=0.0015;
-  const hz=H*0.4;
-  const sky=ctx.createLinearGradient(0,0,0,hz);
-  sky.addColorStop(0,"#1d3a78"); sky.addColorStop(0.65,"#7aa3cf"); sky.addColorStop(1,"#e9c79a");
-  ctx.fillStyle=sky; ctx.fillRect(0,0,W,hz+2);
-  let bass=0; for(let i=0;i<4;i++) bass+=v[i]; bass/=4;
-  const sx=W*(0.5+0.3*Math.sin(tSun*3)), sy=hz*0.55, sr=(18+bass*14)*DPR;
-  const glow=ctx.createRadialGradient(sx,sy,0,sx,sy,sr*5);
-  glow.addColorStop(0,"rgba(255,244,214,.9)"); glow.addColorStop(0.2,"rgba(255,220,160,.35)"); glow.addColorStop(1,"rgba(255,220,160,0)");
-  ctx.fillStyle=glow; ctx.fillRect(0,0,W,hz+2);
-  ctx.fillStyle="#fff6e0"; ctx.beginPath(); ctx.arc(sx,sy,sr,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle="rgb(214,196,170)"; ctx.fillRect(0,hz,W,H-hz);
-  const fogC=[214,196,170], camH=0.9, f=H*0.9, sunDir=[0.4,0.75,-0.5];
-  const P=(c,r,h)=>{ const z=1+r*0.55, x=(c-half+0.5)*0.42;
-    return [W/2+x/z*f, hz+(camH-h*1.6)/z*f*0.55]; };
-  for(let r=TR-2;r>=0;r--){
-    const a=terr[(tHead-1-r+TR*2)%TR], b=terr[(tHead-2-r+TR*2)%TR];
-    const fog=Math.min(1,Math.pow(r/(TR-1),1.4));
-    for(let c=0;c<TC-1;c++){
-      const h00=a[c],h10=a[c+1],h01=b[c],h11=b[c+1];
-      const w=0.06, q=[Math.max(h00,w),Math.max(h10,w),Math.max(h11,w),Math.max(h01,w)];
-      const p0=P(c,r,q[0]),p1=P(c+1,r,q[1]),p2=P(c+1,r+1,q[2]),p3=P(c,r+1,q[3]);
-      const dx=(h10-h00)*4, dz=(h01-h00)*4, L=Math.hypot(dx,1,dz);
-      let lit=Math.max(0.25,(-dx*sunDir[0]+sunDir[1]-dz*sunDir[2])/L);
-      const hm=(h00+h10+h01+h11)/4; let col=landCol(hm);
-      if(hm<0.06) lit=0.8+0.2*Math.sin(c+r+tSun*900);
-      col=mix(col.map(x=>x*lit*1.15),fogC,fog);
-      ctx.fillStyle="rgb("+(col[0]|0)+","+(col[1]|0)+","+(col[2]|0)+")";
-      ctx.beginPath(); ctx.moveTo(p0[0],p0[1]); ctx.lineTo(p1[0],p1[1]); ctx.lineTo(p2[0],p2[1]); ctx.lineTo(p3[0],p3[1]); ctx.closePath();
-      ctx.fill(); ctx.strokeStyle=ctx.fillStyle; ctx.lineWidth=1; ctx.stroke();
+  // icy sea: mirror of the sky, broken up by scrolling speckle and audio ripples
+  for(let y=hz;y<LH;y++){
+    const dy=(y-hz+0.5)/(LH-hz), z=1/(dy+0.02);
+    for(let x=0;x<LW;x++){
+      const wx=(x-LW/2)/LW*z*6;
+      const band=v[Math.min(23,Math.abs(x-LW/2)/(LW/2)*24|0)];
+      const wob=Math.sin(wx*2+z*3-bT*2)*(0.6+band*2.5)*(1-dy*0.4);
+      let ry=Math.round(2*hz-y+wob); ry=Math.max(0,Math.min(hz-1,ry));
+      const rx=Math.max(0,Math.min(LW-1,Math.round(x+wob*0.6)));
+      const j=(ry*LW+rx)*4, i=(y*LW+x)*4;
+      const sp=hash2(Math.floor(wx*14), Math.floor(z*14+bScroll*10));
+      const sp2=hash2(Math.floor(wx*5)+3, Math.floor(z*5+bScroll*4));
+      let k=0.42+dy*0.5;
+      let r=d[j]*(1-k)+200*k, gg=d[j+1]*(1-k)+220*k, bb=d[j+2]*(1-k)+250*k;
+      if(sp<0.28+dy*0.15){ const m=0.55+sp2*0.25; r*=m; gg*=m; bb*=m*1.08; }
+      else if(sp>0.985-treb*0.05){ r=gg=bb=255; }
+      const fog=Math.pow(1-dy,8);
+      d[i]=r*(1-fog)+255*fog; d[i+1]=gg*(1-fog)+255*fog; d[i+2]=bb*(1-fog)+255*fog; d[i+3]=255;
     }
   }
+  lctx.putImageData(img,0,0);
+
+  // PS1-style dashed rings around the pyramid, spawned on bass hits
+  if(bass-bLastBass>0.12 && bass>0.45 && bRings.length<6) bRings.push({r:0.02, red:Math.random()<0.4});
+  bLastBass=bLastBass*0.85+bass*0.15;
+  lctx.save(); lctx.beginPath(); lctx.rect(0,hz,LW,LH-hz); lctx.clip();
+  lctx.lineWidth=1.4; lctx.setLineDash([3,4]);
+  bRings=bRings.filter(o=>{
+    o.r+=0.006; if(o.r>1.4) return false;
+    lctx.strokeStyle=o.red?"rgba(232,70,70,"+(1-o.r/1.4)+")":"rgba(120,140,255,"+(1-o.r/1.4)+")";
+    lctx.beginPath(); lctx.ellipse(px,hz+2,o.r*LW*0.5,o.r*(LH-hz)*0.6,0,0,Math.PI*2); lctx.stroke(); return true;
+  });
+  lctx.setLineDash([]); lctx.restore();
+
+  // upscale with smoothing for a soft tape look, then VHS finishing
+  ctx.imageSmoothingEnabled=true;
+  if(Math.random()<0.01+bass*0.02) bJit=6;
+  const jit=bJit>0 ? (bJit--, (Math.random()-0.5)*6*DPR) : 0;
+  ctx.drawImage(lowC,jit,0,W,H);
+  ctx.save(); ctx.globalCompositeOperation="screen"; ctx.globalAlpha=0.18;
+  ctx.drawImage(lowC,2.5*DPR,0,W,H); ctx.restore();          // chroma bleed
+  ctx.fillStyle="rgba(0,0,20,.16)";
+  for(let y=0;y<H;y+=3*DPR) ctx.fillRect(0,y,W,DPR);         // scanlines
+  const by=((bT*40*DPR)%(H+60*DPR))-30*DPR;                  // rolling tracking band
+  ctx.fillStyle="rgba(255,255,255,.05)"; ctx.fillRect(0,by,W,14*DPR);
+  ctx.fillStyle="rgba(255,255,255,.35)";
+  for(let n=0;n<40;n++) ctx.fillRect(Math.random()*W,Math.random()*H,(1+Math.random()*3)*DPR,DPR);
 }
 
 /* ───────── meters ───────── */
