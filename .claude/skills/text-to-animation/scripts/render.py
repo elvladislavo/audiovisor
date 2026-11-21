@@ -281,9 +281,14 @@ def main():
         sys.exit("ffmpeg not found; PNG frames were written")
     pat = os.path.join(frames_dir, "f%05d.png")
     if a.mp4:
-        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-framerate", str(fps), "-i", pat,
-                        "-c:v", "libx264", "-crf", "23", "-preset", "slow", "-pix_fmt", "yuv420p",
-                        "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2", os.path.join(out, "animation.mp4")], check=True)
+        cmd = ["ffmpeg", "-y", "-loglevel", "error", "-framerate", str(fps), "-i", pat]
+        audio = scene.get("audio")  # optional soundtrack, path relative to the scene file
+        if audio:
+            audio = os.path.join(os.path.dirname(os.path.abspath(a.scene)), audio)
+            if os.path.exists(audio): cmd += ["-i", audio, "-map", "0:v", "-map", "1:a", "-c:a", "aac", "-b:a", "192k", "-shortest"]
+            else: print(f"warning: audio {audio} not found, rendering silent video")
+        subprocess.run(cmd + ["-c:v", "libx264", "-crf", "23", "-preset", "slow", "-pix_fmt", "yuv420p",
+                              "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2", os.path.join(out, "animation.mp4")], check=True)
         print(f"-> {out}/animation.mp4")
     if a.gif:
         subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-framerate", str(fps), "-i", pat, "-vf",

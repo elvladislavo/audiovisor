@@ -108,9 +108,15 @@ def add_details(objs, rect, circ, text, S1, S2, S3, DUR, GROUND):
         objs.append(rect(f"tile{c}", 20 + c * 40, 340, 40, 40, ("#d9c49a", "#b8a27a")[c % 2], S2, S3, 1.1))
     # wall clock, poster, ceiling lamp
     objs += [circ("sclock", 600, 60, 20, "#ffffff", S2, S3, 1, stroke="#3a2c22", stroke_width=3),
-             rect("poster", 420, 120, 90, 60, "#c0282d", S2, S3, 1),
-             text("promo", 420, 112, "PROMOCJA", 13, "#ffffff", S2, S3, 1.1),
-             text("promo2", 420, 132, "-30%", 16, "#ffe36b", S2, S3, 1.1),
+             # generic shop logo: a leaf in a circle over "ŚWIEŻE" (fresh)
+             rect("logo_board", 420, 120, 96, 70, "#2f7d4f", S2, S3, 1, stroke="#1f5a37", stroke_width=3),
+             circ("logo_ring", 420, 108, 18, "#f6f1dc", S2, S3, 1.05),
+             dict(id="logo_leaf", type="ellipse", rx=6, ry=12, fill="#3f9b44", x=416, y=108, rotation=-30,
+                  start=S2, end=S3, z=1.1),
+             dict(id="logo_leaf2", type="ellipse", rx=5, ry=9, fill="#7cc25a", x=426, y=110, rotation=30,
+                  start=S2, end=S3, z=1.1),
+             rect("logo_stem", 421, 120, 2, 8, "#2f6b3a", S2, S3, 1.1),
+             text("logo_txt", 420, 140, "ŚWIEŻE", 13, "#f6f1dc", S2, S3, 1.1),
              rect("cord", 255, 20, 2, 40, "#333", S2, S3, 1)]
     o(id="shade", type="polygon", points=[[-20, 10], [20, 10], [10, -8], [-10, -8]], fill="#2f7d4f",
       x=255, y=48, start=S2, end=S3, z=1.2,

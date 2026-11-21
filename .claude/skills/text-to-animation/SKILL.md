@@ -53,6 +53,8 @@ See `examples/bouncing-ball.json`.
   `"blur": px` (depth of field, soft shadows, glows), `"flat": true` to opt out of shading.
 - Add contact shadows (blurred dark ellipse at the feet), light pools and ambient-occlusion gradients
   where walls meet floors. Example: `animation/mullet-chef/realism.py`.
+- Sound: set `"audio": "soundtrack.wav"` (relative to the scene file) and `--mp4` muxes it in.
+  Synthesise effects with numpy and time them from the same story clock; see `animation/mullet-chef/sound.py`.
 - Rendering runs in parallel (`-j N`, default all cores); static objects are cached.
 
 ## 3. Render

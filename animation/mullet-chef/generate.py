@@ -43,8 +43,10 @@ def pose(t, rt):
             u = lt - GRAB_T0 - k * GRAB_DT
             _, ix, iy = GRABS[k]
             p["armF"] = ("scr", ix, iy) if u < REACH else ("tgt", -16, -98)
-        elif lt < 3.9:       # walk to till
-            p.update(x=lerp(250, 470, (lt - 3.0) / 0.9), walk=1, phase=rt * 2 * math.pi * 1.6)
+        elif lt < 3.45:      # turns to face her, waves: "hej!"
+            p.update(x=250, d=-1, armF=("ang", -125, -165 + 22 * math.sin(rt * 10)), armB=("ang", 4, -8))
+        elif lt < 4.0:       # walk to till
+            p.update(x=lerp(250, 470, (lt - 3.45) / 0.55), walk=1, phase=rt * 2 * math.pi * 2.1)
         else:                # pay: taps card on the counter by the till
             p.update(x=470, armF=("scr", 512, 236 + 3 * math.sin(rt * 8)), armB=("ang", 4, -8))
         p["y"] = GROUND[2]
@@ -184,7 +186,7 @@ objs += [rect("sky", 320, 90, 640, 180, C["night"], S1, S2, 0),
 for i, x in enumerate((50, 230, 600)):
     objs.append(circ(f"star{i}", x, 25 + 12 * i, 2, "#ffffff", S1, S2, 0.6,
                      keys=[{"t": S1 + 0.3 * i, "opacity": 0.2}, {"t": 2 + 0.3 * i, "opacity": 1}, {"t": 4, "opacity": 0.3}]))
-objs.append(text("t1", 160, 300, "Hungry...", 20, "#f6f1dc", 0.6, 2.4, 30,
+objs.append(text("t1", 160, 300, "głodny...", 20, "#f6f1dc", 0.6, 2.4, 30,
                  keys=[{"t": 0.6, "opacity": 0}, {"t": 0.9, "opacity": 1}, {"t": 2.1, "opacity": 1}, {"t": 2.4, "opacity": 0}]))
 
 # ---- scene 2: shop interior
@@ -317,7 +319,7 @@ objs.append(rect("fade", 320, 180, 640, 360, "#000000", 0, DUR * K, 100, keys=[d
 import realism
 realism.apply(objs, S1, S2, S3, DUR * K, K)
 scene = dict(title="Mullet chef: shop run and dinner", width=W, height=H, fps=FPS, duration=DUR * K,
-             hold=1, background="#000000", objects=objs, output_scale=2, shade=True, shade_strength=1.0,
+             hold=1, background="#000000", objects=objs, audio="soundtrack.wav", output_scale=2, shade=True, shade_strength=1.0,
              post=dict(bloom=0.45, bloom_threshold=228, contrast=1.06, saturation=0.9,
                        shadows=[-4, 2, 10], highlights=[10, 4, -6], vignette=0.4, grain=3.5))
 out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "scene.json")

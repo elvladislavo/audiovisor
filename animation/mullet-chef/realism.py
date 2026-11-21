@@ -5,9 +5,9 @@ ambient occlusion. Works on the finished object list (times already in real seco
 BLUR = {
     "sky": 2, "moon": 2.5, "roofline": 1.2, "kmoon": 2, "window": 0.8,
     "lampglow": 10, "lightcone": 6, "candleglow": 8,
-    "shopbg": 0.6, "kitbg": 0.6, "tiles": 0.5, "poster": 0.4, "promo": 0.4, "promo2": 0.4,
+    "shopbg": 0.6, "kitbg": 0.6, "tiles": 0.5, 
 }
-BLUR_PREFIX = {"upwin": 1.2, "star": 0.8, "brick": 0.6, "steam": 3, "cab": 0.3, "bottle": 0.3}
+BLUR_PREFIX = {"logo_": 0.4, "upwin": 1.2, "star": 0.8, "brick": 0.6, "steam": 3, "cab": 0.3, "bottle": 0.3}
 
 # rough surfaces: plaster, asphalt, wool, suede, wood, tiles
 TEXTURE = {

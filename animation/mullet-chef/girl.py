@@ -179,8 +179,14 @@ def extra_objects():
                 dict(id=id, type="text", text=txt, size=14, fill="#2b2b2f", x=x, y=y, start=t0 + 0.1, end=t1, z=33)]
     o = []
     o += bubble("say_hej", 150, 120, "hej!", S2 + 2.3, S2 + 3.3, 28)
-    o += bubble("say_his", 300, 105, "hej!", S2 + 3.0, S2 + 3.7, 28)
+    o += bubble("say_his", 268, 112, "hej!", S2 + 3.0, S2 + 3.5, 28)
     o += bubble("say_mmm", 590, 100, "Mmm! Pyszne!", S3 + 4.6, DUR, 56)
+    for i in range(3):  # and from him, as he answers
+        t0 = S2 + 3.05 + i * 0.12
+        o.append(dict(id=f"hhrt{i}", type="text", text="♥", size=14, fill="#e0303a", start=t0, end=t0 + 1.1, z=30,
+                      keys=[{"t": t0, "x": 240 - 8 * i, "y": 175, "opacity": 0},
+                            {"t": t0 + 0.2, "x": 236 - 8 * i, "y": 160, "opacity": 1},
+                            {"t": t0 + 1.1, "x": 228 - 10 * i, "y": 118, "opacity": 0}]))
     for i in range(3):  # little hearts float up from her in the shop
         t0 = S2 + 2.6 + i * 0.3
         o.append(dict(id=f"ghrt{i}", type="text", text="♥", size=14, fill="#e0303a", start=t0, end=t0 + 1.1, z=30,
