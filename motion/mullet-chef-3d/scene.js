@@ -112,12 +112,41 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
     g.fillStyle = fg; g.fillText(text, w / 2, h / 2 + fs * 0.05); });
   const signPlane = (tex, w, h, p, parent, basic = false) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), basic ? new THREE.MeshBasicMaterial({ map: tex, toneMapped: false, transparent: true }) : new THREE.MeshToonMaterial({ map: tex, gradientMap: ramp, transparent: true })); m.position.set(...p); parent.add(m); return m; };
 
+  // slim oval wraparound shades (both photos): dark glossy lenses, thin silver frame
   const shadesOn = (g, head) => { const sh = new THREE.Group(); sh.position.set(0, 0.182, 0.15); head.add(sh);
-    const lensM = new THREE.MeshStandardMaterial({ color: 0x08080a, metalness: 0.7, roughness: 0.15 }), frameM = toon(0x0d0d0f);
-    for (const sx of [1, -1]) { const l = new THREE.Mesh(new RoundedBoxGeometry(0.075, 0.048, 0.012, 2, 0.012), lensM); l.position.set(sx * 0.047, 0, 0); l.add(new THREE.Mesh(l.geometry, g.outlineMat)); sh.add(l);
-      const arm = new THREE.Mesh(new THREE.BoxGeometry(0.006, 0.01, 0.15), frameM); arm.position.set(sx * 0.088, 0.008, -0.072); sh.add(arm); }
-    const br = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.008, 0.008), frameM); br.position.set(0, 0.012, 0); sh.add(br); return sh; };
+    const lensM = new THREE.MeshStandardMaterial({ color: 0x0a0a0d, metalness: 0.75, roughness: 0.12 }), frameM = toon(0xb9bcc4);
+    for (const sx of [1, -1]) { const l = new THREE.Mesh(new RoundedBoxGeometry(0.082, 0.034, 0.012, 3, 0.016), lensM); l.position.set(sx * 0.047, 0, 0); l.rotation.y = -sx * 0.18;
+      l.add(new THREE.Mesh(l.geometry, g.outlineMat)); sh.add(l);
+      const arm = new THREE.Mesh(new THREE.BoxGeometry(0.006, 0.008, 0.15), frameM); arm.position.set(sx * 0.09, 0.006, -0.072); sh.add(arm); }
+    const br = new THREE.Mesh(new THREE.BoxGeometry(0.026, 0.006, 0.008), frameM); br.position.set(0, 0.01, 0.004); sh.add(br); return sh; };
   shadesOn(man, man.J.head);
+  const isUnder = (o, joints) => { for (let p = o.parent; p; p = p.parent) if (joints.includes(p)) return true; return false; };
+
+  /* the MC from photo 2: long camel double-breasted coat over the suit, white shirt, red tie, one white stripe on the
+     trousers, red croc shoes, blue shopping bag on a black strap over his right shoulder */
+  { const { M, J } = man;
+    const coatTex = noiseTex('#b4a58e', ['#9c8d76', '#c8baa3', '#8a7c66'], 1400, 3, 3);
+    M.blazer.color.set(0xffffff); M.blazer.map = coatTex; M.blazer.needsUpdate = true;
+    M.shirt.color.set(0xf6f4ef);
+    man.system.traverse(o => { if (!o.isMesh || o.material !== M.stripe) return;
+      if (isUnder(o, [J.shoulderL, J.shoulderR, J.elbowL, J.elbowR]) || Math.abs(o.position.z) > 0.01) o.visible = false; });
+    const coatM = M.blazer;
+    // long skirt of the coat, open at the front so the trousers and belt show
+    const skirt = new THREE.CylinderGeometry(0.155, 0.245, 0.66, 28, 1, true, PI / 2 + 0.38, 2 * PI - 0.76);
+    add(skirt, new THREE.MeshToonMaterial({ map: coatTex, gradientMap: ramp, side: THREE.DoubleSide }), [0, -0.27, 0], J.hips, true);
+    for (const sx of [1, -1]) {                         // front edges with a turned-back facing
+      const e = add(new THREE.BoxGeometry(0.03, 0.62, 0.02), coatM, [sx * 0.07, -0.28, 0.17], J.hips, true); e.rotation.set(-0.16, 0, -sx * 0.1); }
+    // wide peak lapels and the double-breasted button stance
+    for (const sx of [1, -1]) {
+      const lap = add(new THREE.BoxGeometry(0.075, 0.24, 0.012), coatM, [sx * 0.07, 0.34, 0.083], J.spine, true); lap.rotation.z = sx * 0.28;
+      for (const y of [0.1, 0.19]) add(new THREE.CylinderGeometry(0.011, 0.011, 0.006, 12), toon(0x2a221b), [sx * 0.05, y, 0.1], J.spine, false, [PI / 2, 0, 0]);
+    }
+    add(new THREE.BoxGeometry(0.15, 0.2, 0.012), coatM, [0, 0.11, 0.092], J.spine, false);       // coat crossed over below the tie
+    // blue shopping bag on his right side, black strap over the right shoulder
+    const bag = add(rbox(0.07, 0.36, 0.34, 0.02), toon(0x1f4fd6), [-0.2, -0.05, 0.02], J.spine, true); bag.rotation.z = 0.08;
+    add(new THREE.BoxGeometry(0.075, 0.05, 0.35), toon(0xf2c93a), [-0.2, 0.08, 0.02], J.spine, false).rotation.z = 0.08;
+    const strap = add(new THREE.BoxGeometry(0.012, 0.42, 0.02), toon(0x111114), [-0.165, 0.29, 0.06], J.spine, false); strap.rotation.z = -0.12;
+  }
 
   // re-dress the same rig for the girl and the cashier (as makeGoon does in stickman-fight-30)
   function redress(g, map) {
@@ -126,13 +155,42 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
       for (const [mats, to] of map) if (mats.some(n => o.material === M[n])) { if (to === null) o.visible = false; else o.material = to; break; } });
   }
   const lady = buildStickman({ seed: 21 }); scene.add(lady.system); lady.system.scale.setScalar(0.92);
-  { const dress = toon(0x2b2326), tights = toon(0x1c1a1f);
-    redress(lady, [[['blazer', 'shirt'], dress], [['tie', 'tieKnot', 'beard', 'stripe'], null], [['trousers'], tights], [['hair'], toon(0x1d1517)], [['hairLight'], toon(0x3b2622)], [['shoe', 'sole'], toon(0x111114)], [['buckle'], toon(0xd8aa3e)]]);
-    add(new THREE.CylinderGeometry(0.14, 0.27, 0.44, 20, 1, true), dress, [0, -0.2, 0], lady.J.hips, true);
-    const hairM = toon(0x1d1517);
-    for (const [x, y, z, r] of [[0, 0.05, -0.12, 0.13], [0.1, 0.0, -0.1, 0.1], [-0.1, 0.0, -0.1, 0.1], [0.13, -0.08, -0.06, 0.08], [-0.13, -0.08, -0.06, 0.08], [0, -0.07, -0.12, 0.11]]) add(new THREE.SphereGeometry(r, 14, 10), hairM, [x, y + 0.15, z], lady.J.head, true);
-    add(new THREE.TorusGeometry(0.02, 0.008, 6, 12, PI), toon(0xc8141e), [0, 0.093, 0.143], lady.J.head, false, [0, 0, PI]);
-    shadesOn(lady, lady.J.head); }
+  /* the girl from photo 1: brown suede halter mini dress with a plunging V, pleated skirt, wide suede belt with a big
+     silver square buckle, sheer dark tights, gold bangles, drop earrings, dark curly updo with loose tendrils,
+     sunglasses pushed up on her head, smoky eyes, dark lips */
+  { const { M, J } = lady;
+    const suedeTex = noiseTex('#6e5644', ['#5a4535', '#866c58', '#4b3a2d'], 1600, 3, 3);
+    const suede = new THREE.MeshToonMaterial({ map: suedeTex, gradientMap: ramp }), suedeD = toon(0x5a4536), skin = M.skin;
+    lady.system.traverse(o => { if (o.isMesh && o.material === M.blazer && isUnder(o, [J.shoulderL, J.shoulderR, J.elbowL, J.elbowR])) o.material = skin; });  // bare arms
+    redress(lady, [[['blazer'], suede], [['shirt'], skin], [['tie', 'tieKnot', 'beard', 'stripe'], null], [['trousers'], toon(0x3b3034)],
+      [['hair'], toon(0x2e1c14)], [['hairLight'], toon(0x4a2e20)], [['shoe', 'sole'], toon(0x1a1416)], [['belt'], suedeD], [['buckle'], toon(0xd7dae0)]]);
+    J.head.children.forEach(o => { if (o.isMesh && (o.material === M.hair || o.material === M.hairLight) && o.position.y < 0.1 && o.position.z < -0.07) o.visible = false; });  // no mullet: updo
+    // pleated mini skirt: alternate hem vertices pushed out
+    const sk = new THREE.CylinderGeometry(0.15, 0.25, 0.3, 36, 1, true), pa = sk.attributes.position;
+    for (let i = 0; i < pa.count; i++) if (pa.getY(i) < 0 && (i % 2)) { pa.setX(i, pa.getX(i) * 1.09); pa.setZ(i, pa.getZ(i) * 1.09); }
+    sk.computeVertexNormals();
+    add(sk, new THREE.MeshToonMaterial({ map: suedeTex, gradientMap: ramp, side: THREE.DoubleSide }), [0, -0.17, 0], J.hips, true);
+    // wide belt + big square silver buckle with eyelets
+    add(new THREE.CylinderGeometry(0.152, 0.152, 0.08, 28, 1, true), suedeD, [0, 0.0, 0], J.hips, true);
+    const silver = toon(0xdfe2e8);
+    for (const [w, h, x, y] of [[0.1, 0.014, 0, 0.035], [0.1, 0.014, 0, -0.035], [0.014, 0.084, 0.046, 0], [0.014, 0.084, -0.046, 0]]) add(new THREE.BoxGeometry(w, h, 0.012), silver, [x, y, 0.156], J.hips, true);
+    for (const x of [0.07, 0.095]) add(new THREE.TorusGeometry(0.008, 0.003, 6, 10), silver, [x, 0, 0.146], J.hips, false, [0, 0.5, 0]);
+    // halter strap round the neck
+    add(new THREE.TorusGeometry(0.05, 0.012, 6, 16, PI * 1.2), suede, [0, 0.5, 0.0], J.spine, false, [-1.2, 0, -0.3]);
+    // gold bangles, drop earrings
+    const gold = toon(0xd9aa45);
+    for (const el of [J.elbowL, J.elbowR]) { add(new THREE.TorusGeometry(0.037, 0.009, 8, 18), gold, [0, -0.215, 0], el, true, [PI / 2, 0, 0]); add(new THREE.TorusGeometry(0.036, 0.006, 8, 18), gold, [0, -0.19, 0], el, false, [PI / 2, 0, 0]); }
+    for (const sx of [1, -1]) { add(new THREE.ConeGeometry(0.012, 0.05, 6), silver, [sx * 0.165, 0.06, 0.02], J.head, false, [PI, 0, 0]); }
+    // updo: bun on top, loose tendrils by the temples and ears
+    const hairM = toon(0x2e1c14);
+    add(new THREE.SphereGeometry(0.085, 16, 12), hairM, [0, 0.31, -0.06], J.head, true);
+    for (const [x, y, z] of [[0.03, 0.36, -0.02], [-0.04, 0.35, -0.08], [0.05, 0.32, -0.11]]) add(new THREE.SphereGeometry(0.045, 10, 8), toon(0x4a2e20), [x, y, z], J.head, true);
+    for (const sx of [1, -1]) for (let i = 0; i < 3; i++) add(new THREE.TorusGeometry(0.014, 0.0045, 5, 10), hairM, [sx * (0.128 + i * 0.006), 0.16 - i * 0.026, 0.07], J.head, false, [0, PI / 2, i]);
+    // smoky eyes, dark lips
+    for (const sx of [1, -1]) add(new THREE.SphereGeometry(0.026, 12, 8), toon(0x4c3c44), [sx * 0.05, 0.183, 0.128], J.head, false).scale.set(1.2, 0.75, 0.5);
+    J.head.children.forEach(o => { if (o.isMesh && o.geometry.type === 'TorusGeometry' && o.material === M.dark) o.material = toon(0x5e343e); });
+    // sunglasses pushed up into the hair
+    const up = shadesOn(lady, J.head); up.position.set(0, 0.3, 0.075); up.rotation.x = -0.75; }
   const cashier = buildStickman({ seed: 33 }); scene.add(cashier.system); cashier.system.scale.setScalar(0.95);
   redress(cashier, [[['blazer', 'shirt'], toon(0x2f8a4a)], [['tie', 'tieKnot', 'beard', 'stripe'], null], [['hair'], toon(0xd9a441)], [['hairLight'], toon(0xeec66a)]]);
 
