@@ -15,7 +15,7 @@
 //   17–19.3  to the till: "dzyń!", 24 zł on the display, cashier "Dziękuję!" · fade
 //   19.6–26  kitchen: walks behind the island, tosses the tomato in the pan, stirs over flames, steam, music notes
 //   25.4–27  the girl walks in; the plate of spaghetti pops onto the counter
-//   27.3–32  he punches the air, "SMACZNEGO!", her "Mmm, pyszne!", hearts · elvladislavo.com from 29.6
+//   27.3–32  he punches the air, "SMACZNEGO!", her "Mmm, pyszne!", hearts (no elvladislavo.com end card in this one)
 //
 // Render: node .claude/skills/text-to-3d-motion/scripts/render.mjs motion/mullet-chef-3d/scene.js --width 1080 --height 1920 --out mullet-chef-3d.mp4
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
@@ -26,6 +26,7 @@ import { dressUp } from '/assets/costume.js';
 const PI = Math.PI, E = ease, lerp = (a, b, k) => a + (b - a) * k;
 const sm = (a, b, x) => { const u = Math.min(1, Math.max(0, (x - a) / (b - a))); return u * u * (3 - 2 * u); };
 const T_END = 32;
+const SHOW_URL = false;   // this video ends without elvladislavo.com
 export const meta = { duration: T_END, fps: 30, background: '#000000' };
 
 const T_SHOP = 9.75, T_KIT = 19.6;
@@ -583,7 +584,7 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
       { const a = popIn(t, T_PYSZNE, T_END + 1); T.pyszne.material.opacity = Math.min(1, a * 1.5); const p = headTop(lady, 0.6); p.x -= 0.5; world(T.pyszne, p, 0.85 * Math.max(0.01, a)); }
       { const a = E.outBack(range(t, T_TITLE, T_TITLE + 0.5)); T.title.material.opacity = range(t, T_TITLE, T_TITLE + 0.15); hud(T.title, 0, 0.7, 0.95 * Math.max(0.01, a));
         T.title.material.rotation = -0.06; }
-      T.url.material.opacity = sm(T_URL, T_URL + 0.5, t); hud(T.url, 0, -0.78, 0.85);
+      T.url.material.opacity = SHOW_URL ? sm(T_URL, T_URL + 0.5, t) : 0; hud(T.url, 0, -0.78, 0.85);
 
       /* hearts (shop hej, kitchen ending) and humming notes */
       hearts.forEach((h, i) => {
