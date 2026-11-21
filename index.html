@@ -232,6 +232,7 @@ body.dragging .drop{display:grid}
     <button data-mode="radial" aria-pressed="false">Radial</button>
     <button data-mode="gram" aria-pressed="false">Spectrogram</button>
     <button data-mode="tide" aria-pressed="false">Tide</button>
+    <button data-mode="bryce" aria-pressed="false">Terrain</button>
   </nav>
 
   <div class="rack">
@@ -504,6 +505,63 @@ function drawTide(){
   ctx.globalAlpha=1;
 }
 
+/* Terrain: a 90s ray-traced-landscape look. Spectrum rows scroll toward
+   the camera as a heightfield, drawn back to front with fog and a sky. */
+const TC=44, TR=36; let terr=null, tHead=0, tAcc=0, tSun=0;
+function mix(a,b,t){ return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t]; }
+function landCol(h){
+  if(h<0.06) return [38,92,140];
+  if(h<0.12) return [196,180,130];
+  if(h<0.38) return mix([70,122,58],[96,104,62],(h-0.12)/0.26);
+  if(h<0.62) return mix([118,98,80],[136,128,120],(h-0.38)/0.24);
+  return [236,238,244];
+}
+function drawBryce(){
+  if(!terr){ terr=[]; for(let r=0;r<TR;r++) terr.push(new Float32Array(TC)); }
+  const half=TC/2, v=bands(half);
+  tAcc+=1;
+  if(tAcc>=2){ tAcc=0;
+    const row=terr[tHead]; tHead=(tHead+1)%TR;
+    for(let c=0;c<TC;c++){
+      const k=Math.abs(c-half+0.5)|0, edge=Math.abs(c-half+0.5)/half;
+      const hill=0.08+0.1*Math.sin(c*0.5+tSun*40)*Math.sin(c*0.23);
+      row[c]=Math.max(0, v[Math.min(half-1,half-1-k)]*0.85*(0.35+edge*0.9)+hill*edge);
+    }
+  }
+  tSun+=0.0015;
+  const hz=H*0.4;
+  const sky=ctx.createLinearGradient(0,0,0,hz);
+  sky.addColorStop(0,"#1d3a78"); sky.addColorStop(0.65,"#7aa3cf"); sky.addColorStop(1,"#e9c79a");
+  ctx.fillStyle=sky; ctx.fillRect(0,0,W,hz+2);
+  let bass=0; for(let i=0;i<4;i++) bass+=v[i]; bass/=4;
+  const sx=W*(0.5+0.3*Math.sin(tSun*3)), sy=hz*0.55, sr=(18+bass*14)*DPR;
+  const glow=ctx.createRadialGradient(sx,sy,0,sx,sy,sr*5);
+  glow.addColorStop(0,"rgba(255,244,214,.9)"); glow.addColorStop(0.2,"rgba(255,220,160,.35)"); glow.addColorStop(1,"rgba(255,220,160,0)");
+  ctx.fillStyle=glow; ctx.fillRect(0,0,W,hz+2);
+  ctx.fillStyle="#fff6e0"; ctx.beginPath(); ctx.arc(sx,sy,sr,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle="rgb(214,196,170)"; ctx.fillRect(0,hz,W,H-hz);
+  const fogC=[214,196,170], camH=0.9, f=H*0.9, sunDir=[0.4,0.75,-0.5];
+  const P=(c,r,h)=>{ const z=1+r*0.55, x=(c-half+0.5)*0.42;
+    return [W/2+x/z*f, hz+(camH-h*1.6)/z*f*0.55]; };
+  for(let r=TR-2;r>=0;r--){
+    const a=terr[(tHead-1-r+TR*2)%TR], b=terr[(tHead-2-r+TR*2)%TR];
+    const fog=Math.min(1,Math.pow(r/(TR-1),1.4));
+    for(let c=0;c<TC-1;c++){
+      const h00=a[c],h10=a[c+1],h01=b[c],h11=b[c+1];
+      const w=0.06, q=[Math.max(h00,w),Math.max(h10,w),Math.max(h11,w),Math.max(h01,w)];
+      const p0=P(c,r,q[0]),p1=P(c+1,r,q[1]),p2=P(c+1,r+1,q[2]),p3=P(c,r+1,q[3]);
+      const dx=(h10-h00)*4, dz=(h01-h00)*4, L=Math.hypot(dx,1,dz);
+      let lit=Math.max(0.25,(-dx*sunDir[0]+sunDir[1]-dz*sunDir[2])/L);
+      const hm=(h00+h10+h01+h11)/4; let col=landCol(hm);
+      if(hm<0.06) lit=0.8+0.2*Math.sin(c+r+tSun*900);
+      col=mix(col.map(x=>x*lit*1.15),fogC,fog);
+      ctx.fillStyle="rgb("+(col[0]|0)+","+(col[1]|0)+","+(col[2]|0)+")";
+      ctx.beginPath(); ctx.moveTo(p0[0],p0[1]); ctx.lineTo(p1[0],p1[1]); ctx.lineTo(p2[0],p2[1]); ctx.lineTo(p3[0],p3[1]); ctx.closePath();
+      ctx.fill(); ctx.strokeStyle=ctx.fillStyle; ctx.lineWidth=1; ctx.stroke();
+    }
+  }
+}
+
 /* ───────── meters ───────── */
 let peakL=0, peakR=0, pLt=0, pRt=0;
 function rms(an,buf){ an.getFloatTimeDomainData(buf); let s=0; for(let i=0;i<buf.length;i++) s+=buf[i]*buf[i]; return Math.sqrt(s/buf.length); }
@@ -527,6 +585,7 @@ function frame(now){
   else if(mode==="scope") drawScope();
   else if(mode==="radial") drawRadial();
   else if(mode==="gram") drawGram();
+  else if(mode==="bryce") drawBryce();
   else drawTide();
   meters(now);
   if(mediaEl && !seeking && isFinite(mediaEl.duration)){
