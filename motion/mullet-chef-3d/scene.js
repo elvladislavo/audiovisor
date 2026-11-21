@@ -512,10 +512,10 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
         catLegs.forEach((l, i) => l.rotation.x = moving ? Math.sin(t * 16 + (i % 2) * PI + (i > 1 ? PI : 0)) * 0.5 : 0);
         cat.userData.tail.rotation.y = Math.sin(t * 3) * 0.4; }
       { // the poof: smoke puffs swell and fade, sparkles fly out
-        const pc = V3(OX.shop - 0.95, 0.5 + 0.35 * range(t, T_MORPH, T_MORPH + 0.6), 0.75), on = at === 'shop';
+        const pc = V3(OX.shop - 0.95, 0.3 + 0.5 * range(t, T_MORPH, T_MORPH + 0.6), 0.75), on = at === 'shop';
         poof.smoke.forEach((m, i) => { const k = range(t, T_MORPH - 0.15 + i * 0.015, T_MORPH + 0.95);
-          m.s.position.copy(pc).add(m.d.clone().multiplyScalar(0.35 * E.outCubic(k))); m.s.scale.setScalar((0.5 + 0.9 * E.outCubic(k)) * m.r);
-          m.s.material.opacity = on && k > 0 && k < 1 ? 0.9 * (1 - k) : 0; });
+          m.s.position.copy(pc).add(m.d.clone().multiplyScalar(0.35 * E.outCubic(k))); m.s.scale.setScalar((0.9 + 0.7 * E.outCubic(k)) * m.r);
+          m.s.material.opacity = on && k > 0 && k < 1 ? Math.min(1, k * 8) * (1 - k * k) : 0; });
         poof.stars.forEach((m, i) => { const k = range(t, T_MORPH, T_MORPH + 0.8);
           m.s.position.copy(pc).add(m.d.clone().multiplyScalar(0.9 * E.outCubic(k))); m.s.scale.setScalar(0.12 * (1 - k * 0.6));
           m.s.material.rotation = t * 6 + i; m.s.material.opacity = on && k > 0 && k < 1 ? 1 - k * k : 0; }); }
