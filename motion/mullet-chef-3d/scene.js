@@ -9,6 +9,7 @@
 //   0–2.4    street: crane from his croc shoes up to the night street; the cat sits by the shop window
 //   1.6–4.4  "głodny…": he stops, rubs his belly, head down
 //   4.2–9.3  walks on, the cat trots in first, the door swings open, he steps into the light · fade
+//   9.8–12.6 shop: the cat trots in, sits by the fridge, poof (smoke + sparkles): the cat turns into the girl
 //   9.8–14.4 shop: walks in with a red basket; list "pomidory · makaron · bazylia"; picks the three off the shelf
 //   14.4–17  the girl by the fridge: "hej!" — he turns, "hej!", hearts
 //   17–19.3  to the till: "dzyń!", 24 zł on the display, cashier "Dziękuję!" · fade
@@ -42,7 +43,8 @@ const MC_YAW = [[0, PI / 2], [7.4, PI / 2], [7.8, PI], [T_SHOP - 0.01, PI], [T_S
   [T_KIT, PI / 2], [20.8, PI / 2], [21.2, 0]];
 const LADY_X = [[0, -0.95], [T_KIT, -0.95], [T_KIT + 0.001, 2.6], [25.4, 2.6], [27.0, 1.55, E.outQuad]];
 const LADY_Z = [[0, 0.7], [T_KIT, 0.55], [T_KIT + 0.001, -0.25]];
-const LADY_YAW = [[0, PI + 0.35], [14.1, PI + 0.35], [14.5, 1.15], [T_KIT, 1.15], [T_KIT + 0.001, -PI / 2], [26.8, -PI / 2], [27.2, -0.55]];
+const T_MORPH = 11.9;   // the cat turns into the girl
+const LADY_YAW = [[0, 0.15], [12.9, 0.15], [13.3, PI + 0.35], [14.1, PI + 0.35], [14.5, 1.15], [T_KIT, 1.15], [T_KIT + 0.001, -PI / 2], [26.8, -PI / 2], [27.2, -0.55]];
 const STRIDE = 1.3;   // metres per full walk cycle
 
 // shop picks: [reach start, grab, into basket]
@@ -420,6 +422,12 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
   };
   const hearts = Array.from({ length: 10 }, (_, i) => ({ s: sprite(heartTex, 1, 11), ph: rnd(), dx: (rnd() - 0.5) * 0.5, side: i % 2 }));
   const notes = Array.from({ length: 6 }, (_, i) => ({ s: sprite(noteTex, 1, 11), ph: i / 6, dx: (rnd() - 0.5) * 0.3 }));
+  const poof = { smoke: [], stars: [] };
+  { const smokeT = ctex(128, 128, (g) => { const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.6, 'rgba(240,236,250,0.85)'); gr.addColorStop(1, 'rgba(240,236,250,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); });
+    const starT = ctex(128, 128, (g) => { g.fillStyle = '#ffe27a'; g.strokeStyle = '#111'; g.lineWidth = 6; g.beginPath();
+      for (let i = 0; i < 10; i++) { const a = -PI / 2 + i * PI / 5, r = i % 2 ? 22 : 56; g.lineTo(64 + Math.cos(a) * r, 64 + Math.sin(a) * r); } g.closePath(); g.stroke(); g.fill(); });
+    for (let i = 0; i < 12; i++) { const a = i / 12 * PI * 2; poof.smoke.push({ s: sprite(smokeT, 1, 12), d: V3(Math.cos(a), Math.sin(a) * 0.8 + 0.3, 0.2), r: 0.5 + rnd() * 0.3 }); }
+    for (let i = 0; i < 9; i++) { const a = i / 9 * PI * 2 + 0.3; poof.stars.push({ s: sprite(starT, 1, 13), d: V3(Math.cos(a), Math.sin(a) + 0.2, 0.1) }); } }
   const black = sprite(ctex(4, 4, (g) => { g.fillStyle = '#000'; g.fillRect(0, 0, 4, 4); }), 1, 50);
 
   const vTan = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2), hTan = vTan * (width / height);
@@ -456,7 +464,8 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
   const ladyWave = t => ({ ...stand(t), head: [-0.05, 0, -0.12], shoulderL: [-0.3, 0, 2.45 - 0.28 * Math.sin(t * 13)], elbowL: [-0.55, 0, 0] });
   const ladyClasp = t => ({ ...stand(t), head: [-0.05, 0, 0.12 * Math.sin(t * 1.5)], shoulderL: [-0.7, 0, -0.1], elbowL: [-1.2, 0, 0], shoulderR: [-0.7, 0, 0.1], elbowR: [-1.2, 0, 0], hipR: [0.08, 0, -0.08], kneeR: [0.15, 0, 0] });
   const ladyBrowse = t => ({ ...stand(t), head: [0.1, 0.15 * Math.sin(t * 0.8), 0], shoulderR: [-0.9, 0, -0.05], elbowR: [-0.9, 0, 0] });
-  const LADY_KEYS = [[0, ladyBrowse], [14.1, ladyBrowse], [14.45, t => stand(t)], [T_HEJ1, ladyWave], [15.9, ladyWave], [16.2, ladyClasp], [T_KIT - 0.01, ladyClasp],
+  const ladyTada = t => ({ ...stand(t), head: [-0.08, 0, 0.1], shoulderL: [-0.2, 0, 1.9], elbowL: [-0.3, 0, 0], shoulderR: [-0.2, 0, -1.9], elbowR: [-0.3, 0, 0], hipR: [-0.12, 0, -0.1], kneeR: [0.25, 0, 0] });
+  const LADY_KEYS = [[0, ladyTada], [12.85, ladyTada], [13.2, ladyBrowse], [14.1, ladyBrowse], [14.45, t => stand(t)], [T_HEJ1, ladyWave], [15.9, ladyWave], [16.2, ladyClasp], [T_KIT - 0.01, ladyClasp],
     [T_KIT, LW], [26.85, LW], [27.2, t => stand(t)], [T_PYSZNE - 0.2, t => stand(t)], [T_PYSZNE + 0.1, ladyClasp], [T_END + 1, ladyClasp]];
   const cashStand = t => ({ ...stand(t), shoulderL: [-0.5, 0, 0.1], elbowL: [-1.0, 0, 0], shoulderR: [-0.5, 0, -0.1], elbowR: [-1.0, 0, 0] });
   const cashWave = t => ({ ...cashStand(t), shoulderR: [-0.3, 0, -2.3 + 0.25 * Math.sin(t * 12)], elbowR: [-0.5, 0, 0] });
@@ -477,7 +486,8 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
       basket.visible = at === 'shop'; spoon.visible = at === 'kitchen' && t > 22.1 && t < 26.2;
 
       /* the girl */
-      lady.system.visible = at !== 'street';
+      lady.system.visible = at === 'kitchen' || (at === 'shop' && t > T_MORPH);
+      lady.system.scale.setScalar(at === 'shop' ? 0.92 * Math.max(0.001, E.outBack(range(t, T_MORPH + 0.05, T_MORPH + 0.5))) : 0.92);
       lady.system.position.set(ox + key(t, LADY_X), 0, key(t, LADY_Z)); lady.system.rotation.y = key(t, LADY_YAW);
       lady.applyPose(LADY_KEYS, t);
       cashier.system.visible = at === 'shop';
@@ -485,14 +495,30 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
       cashier.applyPose(CASH_KEYS, t);
 
       /* cat: sits by the shop window, trots in ahead of him */
-      cat.visible = at === 'street' && t < 8.1;
-      { const walkK = range(t, 6.4, 7.5), inK = range(t, 7.5, 8.1);
+      cat.visible = (at === 'street' && t < 8.1) || (at === 'shop' && t < T_MORPH + 0.25);
+      if (at === 'street') { cat.scale.setScalar(1); const walkK = range(t, 6.4, 7.5), inK = range(t, 7.5, 8.1);
         const x = lerp(2.75, 1.45, E.inOutQuad(walkK)), z = lerp(-0.55, lerp(-0.4, -1.5, inK), 1);
         cat.position.set(OX.street + x, 0, walkK < 1 ? lerp(-0.55, -0.4, walkK) : z);
         cat.rotation.y = t < 6.3 ? 0.4 : walkK < 1 ? -PI / 2 : PI;
         const moving = t > 6.4 && t < 8.1;
         catLegs.forEach((l, i) => l.rotation.x = moving ? Math.sin(t * 16 + (i % 2) * PI + (i > 1 ? PI : 0)) * 0.5 : 0);
         cat.userData.tail.rotation.y = Math.sin(t * 2.5) * 0.35; }
+      else if (at === 'shop') {          // trots in ahead of him, sits by the fridge facing us, shrinks into the poof
+        const k = range(t, T_SHOP + 0.1, 11.2);
+        cat.position.set(OX.shop + lerp(-2.4, -0.95, E.outQuad(k)), 0, 0.7);
+        cat.rotation.y = t < 11.25 ? PI / 2 : lerp(PI / 2, 0, E.inOutCubic(range(t, 11.25, 11.5)));
+        cat.scale.setScalar(Math.max(0.001, 1 - E.inBack(range(t, T_MORPH - 0.05, T_MORPH + 0.2))));
+        const moving = k > 0 && k < 1;
+        catLegs.forEach((l, i) => l.rotation.x = moving ? Math.sin(t * 16 + (i % 2) * PI + (i > 1 ? PI : 0)) * 0.5 : 0);
+        cat.userData.tail.rotation.y = Math.sin(t * 3) * 0.4; }
+      { // the poof: smoke puffs swell and fade, sparkles fly out
+        const pc = V3(OX.shop - 0.95, 0.5 + 0.35 * range(t, T_MORPH, T_MORPH + 0.6), 0.75), on = at === 'shop';
+        poof.smoke.forEach((m, i) => { const k = range(t, T_MORPH - 0.15 + i * 0.015, T_MORPH + 0.95);
+          m.s.position.copy(pc).add(m.d.clone().multiplyScalar(0.35 * E.outCubic(k))); m.s.scale.setScalar((0.5 + 0.9 * E.outCubic(k)) * m.r);
+          m.s.material.opacity = on && k > 0 && k < 1 ? 0.9 * (1 - k) : 0; });
+        poof.stars.forEach((m, i) => { const k = range(t, T_MORPH, T_MORPH + 0.8);
+          m.s.position.copy(pc).add(m.d.clone().multiplyScalar(0.9 * E.outCubic(k))); m.s.scale.setScalar(0.12 * (1 - k * 0.6));
+          m.s.material.rotation = t * 6 + i; m.s.material.opacity = on && k > 0 && k < 1 ? 1 - k * k : 0; }); }
 
       /* street extras */
       door.rotation.y = 1.55 * E.inOutCubic(range(t, 7.35, 7.95)) * (1 - E.inOutCubic(range(t, 9.2, 9.7)));
@@ -530,7 +556,7 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
         const pk = range(t, T_PLATE, T_PLATE + 0.45); plate.scale.setScalar(Math.max(0.001, E.outBack(pk))); plate.visible = pk > 0; }
 
       /* camera */
-      if (at === 'street') {
+      if (at === 'street') { cat.scale.setScalar(1);
         const mx = key(t, MC_X), cx = lerp(-1.4, 1.35, sm(-2.6, 1.4, mx)) * 0.9 + 0.12, k = E.inOutCubic(range(t, 0.2, 2.6));
         camera.position.set(lerp(mx + 0.55, cx, k), lerp(0.32, 1.95, k), lerp(1.9, 6.4, k));
         camLook.set(lerp(mx, cx, k), lerp(0.22, 1.85, k), lerp(0.3, -0.6, k));
