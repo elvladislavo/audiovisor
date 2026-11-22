@@ -607,6 +607,50 @@ window.PHOTOS = [
   "lqip": "data:image/webp;base64,UklGRrYAAABXRUJQVlA4IKoAAACwBACdASoSABgAPu1srFEppaQiqAqpMB2JYgCxHyGBA1djjy+FwYtv4R2YN1WAAP3pI32najpj8nrxspKLIgXtCyDKPArg0XT/8/bdYxRs4NaGm30Gc6unnCpqFFnGWL6/CpP8eFB/VIWrN4QEObdRoa264xjQZaq64aB874rvzBVuxCn6vAvcjTNrJgPTD77jpNMKQhLgxo3CKcwSBoJv4/754L4KgAAAAA=="
  },
  {
+  "name": "main-banya-fonari",
+  "cat": "main",
+  "w": 960,
+  "h": 1280,
+  "widths": [
+   480,
+   960
+  ],
+  "lqip": "data:image/webp;base64,UklGRqAAAABXRUJQVlA4IJQAAACwBACdASoSABgAPu1mq08ppaOiKA1RMB2JaACxHwnBqfDefvAuCojseWR2BbmgAPx8iSrhzqKGEB+pj4uvBhndE4b1Kmh8bo9Tao1VVr9d+I0h4j11XEPEI3ltUhdc1B8SV3Uj0HF977aq0AF6OuX6iiW7Ql/ceUtV8pNHcaqZE59bPh7VI0DpyGJoC5Jvv8RnTAAA"
+ },
+ {
+  "name": "main-banya-holl-2",
+  "cat": "main",
+  "w": 960,
+  "h": 1280,
+  "widths": [
+   480,
+   960
+  ],
+  "lqip": "data:image/webp;base64,UklGRtYAAABXRUJQVlA4IMoAAABwBQCdASoSABgAPu1srVEppaQiqAqpMB2JYgCdMuov/jeBcMZcBqn+vXClHaqlLXF6erAAAP7ccUdk8hGIEpqMipSXer+sYfs8eswuzxwiuhjSaaaEo/uVteOFNEh3uYG3R5QV/Uj8JhD0Gqnuo62AqAe8yAp+cyAL/d+x5IPqiwqH5pxJHYsFTsDhA0M85XjQEoxj8qhu9/8p2L2LLnb3ArUfjSzxv8b8GA40RQCKNkjIJOA6/eBAoR/wzKxRBjLznwu1290UAAAA"
+ },
+ {
+  "name": "main-banya-holl",
+  "cat": "main",
+  "w": 960,
+  "h": 1280,
+  "widths": [
+   480,
+   960
+  ],
+  "lqip": "data:image/webp;base64,UklGRtAAAABXRUJQVlA4IMQAAAAwBQCdASoSABgAPu1qrVCppaQiqAqpMB2JYgCdMoM1wCFoBBJPQR5BLg+9xq0QrJY9eAD+4053nwLuGWLntIqafHKANJK2dp1ff+361WlHd8wBrZPWKAnXPpnHnWaY0vW4h8tgVWX8dqpDiCn9EZCZYAa5HG5DBbOzQ6euIFknjbkDdpGGqoW/YfHoTBnD8JrTtT90rvScIkn30o+pljftHURf93qMSofmZ/HXpNtH0xI69dN1RpH0rbW7kgaNV3SNEAAA"
+ },
+ {
+  "name": "main-banya-ozero",
+  "cat": "main",
+  "w": 960,
+  "h": 1280,
+  "widths": [
+   480,
+   960
+  ],
+  "lqip": "data:image/webp;base64,UklGRrAAAABXRUJQVlA4IKQAAABwBQCdASoSABgAPu1kq1AppSOisBgIATAdiWwAnTKDKtV/s/+AYKQ4M+57cDQlYJzr3ixIAN1qZZgvJEvHiI8BjgVRglBpZ2BlBORWrn5HIyLNSOt+O3FQLPv52u+q83UMlm0JxypQZMpRjzsPZtU1V2XzMjFzfOpNq75gaMYfjO0eq0uhKD/klX2ccaSnWe7vCnfDsBOcyjUW50jazCzdwYAAAA=="
+ },
+ {
   "name": "main-dom-srub",
   "cat": "main",
   "w": 960,

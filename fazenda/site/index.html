@@ -162,6 +162,9 @@ picture img{opacity:0;transition:opacity 1.2s var(--ease)}picture.is-loaded img{
 .banya .extra b{display:block;font:400 22px Cormorant;margin-bottom:6px}
 .banya .extra span{font-size:15px;color:#4a443b}
 .banya .small{margin-top:60px;aspect-ratio:16/10}
+.banya .hall{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:50px}
+.banya .hall>div{aspect-ratio:3/4}
+.banya .hall p{grid-column:1/-1;margin:6px 0 0;font:italic 300 20px/1.4 Cormorant;color:var(--muted)}
 
 /* сезоны – аккордеон */
 .seasons{padding:clamp(110px,14vw,200px) 0 0}
@@ -303,7 +306,7 @@ picture img{opacity:0;transition:opacity 1.2s var(--ease)}picture.is-loaded img{
         <div><div class="num">02</div><h3>Площадка в саду</h3><div class="cap2">до 400 гостей</div><p>Праздник под открытым небом для любого количества гостей. Весной среди цветущих яблонь, летом в зелени.</p></div>
       </article>
       <article class="panel">
-        <div class="ph wipe" data-reveal><div style="height:100%" data-photo="main-dom-srub" data-sizes="(max-width:1000px) 100vw, 50vw" aria-label="Дом из сруба"></div></div>
+        <div class="ph wipe" data-reveal><div style="height:100%" data-photo="main-banya-holl" data-sizes="(max-width:1000px) 100vw, 50vw" aria-label="Холл банного дома"></div></div>
         <div><div class="num">03</div><h3>Холл банного дома</h3><div class="cap2">до 20 гостей</div><p>Камерное пространство на первом этаже банного дома для небольших встреч и семейных праздников.</p></div>
       </article>
     </div>
@@ -326,7 +329,7 @@ picture img{opacity:0;transition:opacity 1.2s var(--ease)}picture.is-loaded img{
 <div class="preview" id="preview" aria-hidden="true"></div>
 
 <section class="banya" id="banya"><div class="wrap grid">
-  <div class="stick"><div class="ph wipe" data-reveal><div style="height:100%" data-photo="main-ozero" data-sizes="(max-width:1000px) 100vw, 45vw" aria-label="Собственное озеро"></div></div></div>
+  <div class="stick"><div class="ph wipe" data-reveal><div style="height:100%" data-photo="main-banya-ozero" data-sizes="(max-width:1000px) 100vw, 45vw" aria-label="Озеро у банного дома осенью"></div></div></div>
   <div>
     <div class="label" style="color:var(--muted)">Банный дом</div>
     <h2 data-reveal>Пар на дровах, <em>своё озеро</em> и прорубь</h2>
@@ -339,7 +342,12 @@ picture img{opacity:0;transition:opacity 1.2s var(--ease)}picture.is-loaded img{
       <div data-reveal><b>Баня на дровах</b><span>Настоящий жар и мягкий пар</span></div>
       <div data-reveal="100"><b>Своё озеро</b><span>Летом купание, зимой прорубь</span></div>
     </div>
-    <div class="small wipe" data-reveal><div style="height:100%" data-photo="main-terrasa-luna" data-sizes="(max-width:1000px) 100vw, 45vw" aria-label="Терраса у озера ночью"></div></div>
+    <div class="hall">
+      <div class="wipe" data-reveal><div style="height:100%" data-photo="main-banya-holl" data-sizes="(max-width:1000px) 50vw, 22vw" aria-label="Холл банного дома, накрытый стол"></div></div>
+      <div class="wipe" data-reveal="120"><div style="height:100%" data-photo="main-banya-holl-2" data-sizes="(max-width:1000px) 50vw, 22vw" aria-label="Холл банного дома"></div></div>
+      <p>Холл на первом этаже: окна на озеро, стены из сруба, стол до 20 гостей.</p>
+    </div>
+    <div class="small wipe" data-reveal><div style="height:100%" data-photo="main-banya-fonari" data-sizes="(max-width:1000px) 100vw, 45vw" aria-label="Кованые фонари у озера"></div></div>
   </div>
 </div></section>
 
