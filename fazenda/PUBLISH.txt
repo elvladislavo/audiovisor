@@ -1,0 +1,21 @@
+КАК ОПУБЛИКОВАТЬ САЙТ «ФАЗЕНДА» НА CLOUDFLARE
+
+Готовый сайт — папка fazenda/site (или архив fazenda-site.zip, это то же самое).
+554 файла, ~108 МБ — укладывается в лимиты Cloudflare Pages (до 20 000 файлов, до 25 МБ на файл).
+
+Вариант 1 — вручную (проще всего):
+  1. dash.cloudflare.com → Workers & Pages → Create → вкладка Pages → Upload assets.
+  2. Имя проекта, например fazenda-brest → Create project.
+  3. Перетащить ПАПКУ site (распакованный архив) → Deploy site.
+  4. Сайт откроется по адресу вида fazenda-brest.pages.dev.
+
+Вариант 2 — автоматически из GitHub (обновляется сам при каждом изменении):
+  Create → Pages → Connect to Git → репозиторий audiovisor, ветка с сайтом,
+  Framework preset: None, Build command: пусто, Build output directory: fazenda/site.
+
+Свой домен (.by): в проекте Pages → Custom domains → Set up a custom domain,
+затем у регистратора домена поставить DNS-записи, которые покажет Cloudflare.
+
+Новые фото: положить в fazenda/photo-originals/ с префиксом категории
+(svadba-, lokaciya-, dekor-, eda-, torty-; main- — только для главной),
+затем:  python3 fazenda/tools/optimize_photos.py  и заново загрузить папку site.

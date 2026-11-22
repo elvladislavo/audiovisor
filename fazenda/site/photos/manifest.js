@@ -594,6 +594,18 @@ window.PHOTOS = [
   "lqip": "data:image/webp;base64,UklGRt4AAABXRUJQVlA4INIAAAAQBQCdASoSABgAPu1urlIppiQiqAgBMB2JYwC06d0Vg2FfBtO1lW+odgVyoBVAbvwAAP3jfVwTfJnXj5K04+mpb5VHne+J49lk7vQfYwyKYs3tcHqztqyWJl3/42mH1tNYME2+C0akhhdVxNItBsDxfTsZPWVFoFkXgBkupS5rO9fPF8YlnPkqEVBQlHdq43CZLDHlP9Tco3r68ugLB3BeuWAQQVlLMppQpK7HabZ01r0rUJrACcg5zCQPCGxBfe0NCTltVHBGY6CNBlYSAoQAAAA="
  },
  {
+  "name": "lokaciya-05",
+  "cat": "lokaciya",
+  "w": 1512,
+  "h": 2016,
+  "widths": [
+   480,
+   960,
+   1512
+  ],
+  "lqip": "data:image/webp;base64,UklGRp4AAABXRUJQVlA4IJIAAADQBACdASoSABgAPu1or1AppaSiqAqpMB2JZQDCgAw/mL1JSjQp8IcXDqFWG5sIAAD+wGas/ytT4DDdZdc+x0ghpKIZ0Q+KxbI/r+xsbLOfQviOyoNmL5XYKlPDYfyX6v930KQIdnqtyKgTewCzdTXqLssYiYeXmy7H79KP1XmmGRd3xgv7lvuLpbhXq4ZYasAAAA=="
+ },
+ {
   "name": "main-arka-sad",
   "cat": "main",
   "w": 1600,
@@ -748,18 +760,6 @@ window.PHOTOS = [
    1320
   ],
   "lqip": "data:image/webp;base64,UklGRqIAAABXRUJQVlA4IJYAAAAwBQCdASoSABgAPu1ur1KppiQiqAgBMB2JYgCdMxgBGX3WOnAZweAEUHlJqJj5YGNmEADKJ4V8M5h+w9BMqIIWYB29TYiBuliTc7+fuo2HWWtzgndHbl3OVds/+jbvd9LuCWiJrgV7lFHJsTayYrYAWRUgbiBdDJZ7q/TQJUOZcPkQ3PWdqQTAIYBFQAjcABQwA4gAAAA="
- },
- {
-  "name": "main-terrasa-luna",
-  "cat": "main",
-  "w": 1512,
-  "h": 2016,
-  "widths": [
-   480,
-   960,
-   1512
-  ],
-  "lqip": "data:image/webp;base64,UklGRp4AAABXRUJQVlA4IJIAAADQBACdASoSABgAPu1or1AppaSiqAqpMB2JZQDCgAw/mL1JSjQp8IcXDqFWG5sIAAD+wGas/ytT4DDdZdc+x0ghpKIZ0Q+KxbI/r+xsbLOfQviOyoNmL5XYKlPDYfyX6v930KQIdnqtyKgTewCzdTXqLssYiYeXmy7H79KP1XmmGRd3xgv7lvuLpbhXq4ZYasAAAA=="
  },
  {
   "name": "main-tort-belyj",
