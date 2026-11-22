@@ -22,7 +22,8 @@
   --ease:cubic-bezier(.19,1,.22,1);
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
+html{scroll-behavior:auto}
+section[id],footer[id]{scroll-margin-top:64px}
 body{margin:0;background:var(--bone);color:var(--ink);font:300 17px/1.7 Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:clip}
 a{color:inherit;text-decoration:none}
 img{display:block;width:100%;height:100%;object-fit:cover}
@@ -234,6 +235,25 @@ picture img{opacity:0;transition:opacity 1.2s var(--ease)}picture.is-loaded img{
 .cursor.big{width:64px;height:64px;margin:-32px 0 0 -32px}
 @media (hover:none),(pointer:coarse){.cursor,.preview{display:none}}
 
+
+/* меню */
+.burger{display:none;width:44px;height:44px;margin-left:10px;border:1px solid currentColor;border-radius:50%;background:none;color:inherit;cursor:pointer;position:relative}
+.burger i{position:absolute;left:13px;right:13px;height:1px;background:currentColor;transition:transform .5s var(--ease),top .5s var(--ease)}
+.burger i:first-child{top:18px}.burger i:last-child{top:25px}
+.menu-open .burger i:first-child{top:21px;transform:rotate(45deg)}.menu-open .burger i:last-child{top:21px;transform:rotate(-45deg)}
+.menu{position:fixed;inset:0;z-index:45;background:var(--ink);color:var(--bone);display:flex;flex-direction:column;justify-content:center;padding:100px clamp(16px,6vw,56px) 40px;opacity:0;visibility:hidden;transition:opacity .4s var(--ease),visibility 0s .4s}
+.menu-open .menu{opacity:1;visibility:visible;transition:opacity .4s var(--ease)}
+.menu nav{display:flex;flex-direction:column}
+.menu nav a{display:flex;align-items:baseline;gap:18px;padding:12px 0;border-bottom:1px solid var(--lineL);font:300 clamp(34px,9vw,64px)/1.05 Cormorant;transform:translateY(16px);opacity:0;transition:transform .7s var(--ease),opacity .7s var(--ease),color .3s}
+.menu nav a small{font:500 11px Manrope;letter-spacing:.2em;color:#8f8676}
+.menu-open .menu nav a{transform:none;opacity:1}
+.menu-open .menu nav a:nth-child(2){transition-delay:.04s}.menu-open .menu nav a:nth-child(3){transition-delay:.08s}.menu-open .menu nav a:nth-child(4){transition-delay:.12s}.menu-open .menu nav a:nth-child(5){transition-delay:.16s}.menu-open .menu nav a:nth-child(6){transition-delay:.2s}
+.menu nav a:hover{color:#e2b8a4}
+.mfoot{display:flex;flex-wrap:wrap;gap:10px 24px;margin-top:36px;font-size:14px;color:#b9b0a1}
+.menu-open{overflow:hidden}
+.menu-open .nav{mix-blend-mode:normal;color:var(--bone);background:transparent;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+@media (max-width:1000px){.burger{display:inline-block}}
+@media (max-width:560px){.burger{width:38px;height:38px}.burger i{left:11px;right:11px}.burger i:first-child{top:15px}.burger i:last-child{top:21px}.menu-open .burger i{top:18px!important}}
 @media (max-width:1000px){
   .nav .links{display:none}.nav .wrap{grid-template-columns:1fr auto}.nav .logo{justify-self:start}
   .hero .meta{flex-direction:column;align-items:flex-start;top:auto;bottom:30%}.hero .side,.scrollcue{display:none}
@@ -260,12 +280,23 @@ picture img{opacity:0;transition:opacity 1.2s var(--ease)}picture.is-loaded img{
 <div class="curtain" aria-hidden="true"><div class="word"><span>Ф</span><span style="animation-delay:.05s">а</span><span style="animation-delay:.1s">з</span><span style="animation-delay:.15s">е</span><span style="animation-delay:.2s">н</span><span style="animation-delay:.25s">д</span><span style="animation-delay:.3s">а</span></div><div class="label">Усадьба · Брест</div></div>
 
 <nav class="nav"><div class="wrap">
-  <div class="links"><a href="#venues">Площадки</a><a href="#services">Услуги</a><a href="#banya">Банный дом</a><a href="#gallery">Фото</a></div>
+  <div class="links"><a href="#venues">Площадки</a><a href="#services">Услуги</a><a href="#banya">Банный дом</a><a href="#gallery">Фото</a><a href="#contact">Контакты</a></div>
   <a class="logo" href="#">Фазенда</a>
-  <div class="r"><a href="#contact" data-cursor>Забронировать</a></div>
+  <div class="r"><a href="#contact" data-cursor>Забронировать</a><button class="burger" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="menu"><i></i><i></i></button></div>
 </div></nav>
+<div class="menu" id="menu" aria-hidden="true">
+  <nav aria-label="Меню">
+    <a href="#top"><small>01</small>Главная</a>
+    <a href="#venues"><small>02</small>Площадки</a>
+    <a href="#services"><small>03</small>Услуги</a>
+    <a href="#banya"><small>04</small>Банный дом</a>
+    <a href="#gallery"><small>05</small>Фотографии</a>
+    <a href="#contact"><small>06</small>Контакты</a>
+  </nav>
+  <div class="mfoot"><a href="tel:+375292172921">+375 (29) 217-29-21</a><a href="https://t.me/Keitering_Fazenda_Brest" target="_blank" rel="noopener">Telegram</a><a href="https://instagram.com/fazenda.brest" target="_blank" rel="noopener">Instagram</a></div>
+</div>
 
-<header class="hero">
+<header class="hero" id="top">
   <div class="bg" id="heroBg" data-photo="main-hero-nevesta" data-sizes="100vw" data-eager aria-label="Невеста в яблоневом саду усадьбы"></div>
   <div class="wrap meta">
     <h1>Ваш праздник под ключ <em>рядом с&nbsp;Брестом</em></h1>
@@ -447,6 +478,20 @@ picture img{opacity:0;transition:opacity 1.2s var(--ease)}picture.is-loaded img{
     el.addEventListener('mouseenter',function(){c.classList.add('big')});el.addEventListener('mouseleave',function(){c.classList.remove('big')});
   });
 
+
+  // меню: открыть/закрыть; переход к разделу — мгновенно, без прокрутки
+  var root=document.documentElement,burger=document.querySelector('.burger'),menu=document.getElementById('menu');
+  function setMenu(open){root.classList.toggle('menu-open',open);burger.setAttribute('aria-expanded',open);menu.setAttribute('aria-hidden',!open)}
+  burger.addEventListener('click',function(){setMenu(!root.classList.contains('menu-open'))});
+  addEventListener('keydown',function(e){if(e.key==='Escape')setMenu(false)});
+  document.addEventListener('click',function(e){
+    var a=e.target.closest('a[href^="#"]');if(!a)return;
+    var id=a.getAttribute('href').slice(1),el=id?document.getElementById(id):null;if(!el&&id!=='top')return;
+    e.preventDefault();setMenu(false);
+    var y=id==='top'||!el?0:el.getBoundingClientRect().top+scrollY-(id==='venues'?0:64);
+    window.scrollTo({top:y,behavior:'instant'});
+    history.replaceState(null,'','#'+id);
+  });
   // сезоны: на касание
   document.querySelectorAll('.sea').forEach(function(s){s.addEventListener('click',function(){document.querySelectorAll('.sea').forEach(function(o){o.classList.toggle('open',o===s)})})});
 
