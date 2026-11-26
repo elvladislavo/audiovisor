@@ -33,49 +33,63 @@ export async function setup({ THREE, renderer, scene, camera, width, height }) {
 
   /* ── white seamless studio ── */
   scene.background = new THREE.Color(0xf3f2ef);
-  scene.add(new THREE.HemisphereLight(0xffffff, 0xd8d2ca, 1.9));
-  const sun = new THREE.DirectionalLight(0xfffaf0, 1.5); sun.position.set(-2, 4, 3); sun.castShadow = true; sun.shadow.mapSize.set(512, 512);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0xe6e0d8, 2.7));
+  const sun = new THREE.DirectionalLight(0xfffaf0, 1.3); sun.position.set(-1.5, 4, 4); sun.castShadow = true; sun.shadow.mapSize.set(512, 512);
   Object.assign(sun.shadow.camera, { left: -1.5, right: 1.5, top: 1.5, bottom: -1.5, near: 0.5, far: 10 }); sun.shadow.bias = -0.002; scene.add(sun);
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.ShadowMaterial({ opacity: 0.18 })); floor.rotation.x = -PI / 2; floor.receiveShadow = true; scene.add(floor);
 
-  /* ── kitten builder (one rig, two coats) ── */
+  /* ── kitten builder (one rig, two coats) — proportions from the photo: big round head, big eyes,
+        small rounded ears, small fluffy body; fluff = jittered low-poly shells, flat shaded ── */
+  const stripes = (g, col, step, vertical) => { for (let i = 1; i < 64; i += step) for (let j = 0; j < 64; j++) {
+    const w = Math.round(Math.sin(j / 5 + i) * 1.5); vertical ? px(g, col, i + w, j, 2, 1) : px(g, col, j, i + w, 1, 2); } };
   const FUR = {
-    tabby: tex64(g => { speckle(g, '#a39a90', ['#b3aba1', '#8c8379', '#c4bdb4'], 260);
-      for (let y = 3; y < 64; y += 8) for (let x = 0; x < 64; x++) { const yy = y + Math.round(Math.sin(x / 6 + y) * 1.5); px(g, '#4a433c', x, yy, 1, 1 + (x % 9 < 4 ? 1 : 0)); } }),
-    tabbyBelly: tex64(g => speckle(g, '#e6e0d8', ['#d6cec4', '#f2eee8', '#b9b0a6'], 160)),
-    cream: tex64(g => speckle(g, '#e0d3c2', ['#ecE2d4', '#cdbda8', '#f4ece0'], 420)),
-    creamBelly: tex64(g => speckle(g, '#f1ebe2', ['#e5ddd1', '#faf6f0'], 200)),
+    tabbyHead: tex64(g => { speckle(g, '#a8a19a', ['#b9b3ad', '#918a83', '#c8c3bd'], 300);
+      for (let x = 2; x < 64; x += 5) for (let y = 0; y < 24; y++) px(g, '#36312d', x + Math.round(Math.sin(y / 4 + x) * 1), y, 2, 1);   // stripes from the brow over the crown
+      for (const y of [38, 43]) for (let x = 0; x < 64; x++) if (x % 16 > 10) px(g, '#36312d', x, y + (x % 3 === 0 ? 1 : 0), 1, 1); }),       // cheek lines
+    tabbyBody: tex64(g => { speckle(g, '#a8a19a', ['#b9b3ad', '#918a83', '#c8c3bd'], 300); stripes(g, '#36312d', 6, false); }),
+    tabbyLeg: tex64(g => { speckle(g, '#a8a19a', ['#b9b3ad', '#918a83'], 200); stripes(g, '#36312d', 7, false); speckle(g, '#f1eee9', ['#e2ddd6'], 40, 0, 0, 64, 14); }),
+    white: tex64(g => speckle(g, '#f1eee9', ['#e2ddd6', '#fbf9f6', '#d4cec6'], 200)),
+    cream: tex64(g => speckle(g, '#ddd3c6', ['#e9e2d8', '#cbbfb0', '#f3eee6', '#c0b2a1'], 480)),
+    creamLeg: tex64(g => { speckle(g, '#ddd3c6', ['#e9e2d8', '#cbbfb0'], 300); speckle(g, '#efe9e1', ['#e2dbd1'], 60, 0, 0, 64, 14); }),
+    creamEar: tex64(g => speckle(g, '#a8957f', ['#97836d', '#b9a892'], 200)),
+    tabbyEar: tex64(g => speckle(g, '#5e5650', ['#4a433d', '#746b64'], 200)),
   };
-  function kitten({ fur, belly, bow }) {
-    const fM = lam(fur), bM = lam(belly), root = new THREE.Group(), J = {};
+  // jitter an icosahedron's vertices outward (same offset for shared corners) → faceted fluff
+  const fluffy = (r, detail, amt, sd) => { const geo = new THREE.IcosahedronGeometry(r, detail), pa = geo.attributes.position, mem = new Map();
+    let s2 = sd; const rr = () => (s2 = (s2 * 16807) % 2147483647) / 2147483647;
+    for (let i = 0; i < pa.count; i++) { const k = `${pa.getX(i).toFixed(4)},${pa.getY(i).toFixed(4)},${pa.getZ(i).toFixed(4)}`;
+      if (!mem.has(k)) mem.set(k, 1 + (rr() - 0.3) * amt); const f = mem.get(k); pa.setXYZ(i, pa.getX(i) * f, pa.getY(i) * f, pa.getZ(i) * f); }
+    geo.computeVertexNormals(); return geo; };
+  function kitten({ head: headT, body: bodyT, leg: legT, ear: earT, belly: bellyT, bow, sd }) {
+    const hM = lam(headT), fM = lam(bodyT), lM = lam(legT), eM = lam(earT), bM = lam(bellyT), root = new THREE.Group(), J = {};
     const pivot = (name, parent, p) => { const g = new THREE.Group(); g.position.set(...p); parent.add(g); J[name] = g; return g; };
-    add(new THREE.DodecahedronGeometry(0.2, 0), fM, root, [0, 0.19, -0.02], null, [0.82, 1.0, 0.85]);              // body
-    add(new THREE.IcosahedronGeometry(0.13, 0), bM, root, [0, 0.2, 0.09], null, [0.95, 1.2, 0.6]);                 // chest
-    for (const sx of [1, -1]) add(new THREE.IcosahedronGeometry(0.11, 0), fM, root, [sx * 0.12, 0.09, -0.03], null, [0.8, 0.85, 1.25]);   // haunches
-    for (const [n, sx] of [['legL', 1], ['legR', -1]]) { const l = pivot(n, root, [sx * 0.07, 0.25, 0.1]);
-      add(new THREE.BoxGeometry(0.075, 0.25, 0.085), fM, l, [0, -0.12, 0]); }
-    const head = pivot('head', root, [0, 0.37, 0.04]);
-    add(new THREE.IcosahedronGeometry(0.16, 1), fM, head, [0, 0.12, 0], null, [1.12, 0.95, 0.95]);
-    for (const [n, sx] of [['earL', 1], ['earR', -1]]) { const e = pivot(n, head, [sx * 0.1, 0.235, 0.0]);
-      add(new THREE.ConeGeometry(0.06, 0.1, 3), fM, e, [0, 0.04, 0], [0, PI / 6, -sx * 0.35]); }
-    add(new THREE.IcosahedronGeometry(0.052, 0), bM, head, [0, 0.07, 0.14], null, [1.25, 0.8, 0.8]);              // muzzle
-    add(new THREE.OctahedronGeometry(0.016, 0), flat(0xd98a8a), head, [0, 0.096, 0.185]);                         // nose
+    add(fluffy(0.17, 1, 0.22, sd), fM, root, [0, 0.17, -0.02], null, [0.9, 1.0, 0.92]);                         // fluffy body
+    add(fluffy(0.11, 0, 0.18, sd + 1), bM, root, [0, 0.19, 0.08], null, [0.95, 1.15, 0.6]);                       // white chest
+    for (const sx of [1, -1]) add(new THREE.OctahedronGeometry(0.1, 0), fM, root, [sx * 0.11, 0.08, -0.01], null, [0.75, 0.8, 1.2]);   // haunches
+    for (const [n, sx] of [['legL', 1], ['legR', -1]]) { const l = pivot(n, root, [sx * 0.06, 0.22, 0.09]);
+      add(new THREE.BoxGeometry(0.07, 0.22, 0.08), lM, l, [0, -0.105, 0]); }                                    // front legs, white paws at the bottom
+    const head = pivot('head', root, [0, 0.33, 0.04]);
+    add(fluffy(0.19, 1, 0.1, sd + 2), hM, head, [0, 0.14, 0], null, [1.12, 0.96, 0.95]);                       // big round fluffy head
+    for (const [n, sx] of [['earL', 1], ['earR', -1]]) { const e = pivot(n, head, [sx * 0.125, 0.28, -0.01]);
+      add(new THREE.ConeGeometry(0.068, 0.095, 4), eM, e, [0, 0.03, 0], [0, PI / 4, -sx * 0.55], [1, 1, 0.7]); }  // small, rounded, set wide
+    add(new THREE.OctahedronGeometry(0.062, 0), bM, head, [0, 0.07, 0.165], [0, PI / 4, 0], [1.35, 0.85, 0.75]);                   // white muzzle + chin
+    add(new THREE.OctahedronGeometry(0.016, 0), flat(0xe3a3a6), head, [0, 0.1, 0.21], null, [1.2, 0.8, 1]);       // pink nose
     const eyes = [];
-    for (const sx of [1, -1]) eyes.push(add(new THREE.OctahedronGeometry(0.032, 0), flat(0x161a28), head, [sx * 0.064, 0.135, 0.142], null, [1, 1.15, 0.55]));
-    const shine = new THREE.Points(new THREE.BufferGeometry().setFromPoints([V3(0.074, 0.152, 0.162), V3(-0.054, 0.152, 0.162)]),
-      new THREE.PointsMaterial({ color: 0xffffff, size: 2, sizeAttenuation: false })); head.add(shine);
-    const tail = pivot('tail', root, [0, 0.06, -0.17]);
-    add(new THREE.CylinderGeometry(0.026, 0.034, 0.3, 4, 1), fM, tail, [0, 0.15, 0]);
-    tail.rotation.set(-1.25, 0, 0.6);
-    if (bow) { const b = pivot('bow', head, [0.085, 0.255, 0.07]); b.rotation.z = -0.35; const pink = flat(0xf4b6c8);
-      for (const sx of [1, -1]) add(new THREE.ConeGeometry(0.03, 0.05, 3), pink, b, [sx * 0.028, 0, 0], [0, 0, sx * PI / 2]);
-      add(new THREE.OctahedronGeometry(0.014, 0), flat(0xe88aa6), b); }
+    for (const sx of [1, -1]) eyes.push(add(new THREE.OctahedronGeometry(0.043, 0), flat(0x1b2333), head, [sx * 0.078, 0.15, 0.16], null, [1, 1.1, 0.5]));
+    const shine = new THREE.Points(new THREE.BufferGeometry().setFromPoints([V3(0.09, 0.172, 0.185), V3(-0.066, 0.172, 0.185)]),
+      new THREE.PointsMaterial({ color: 0xffffff, size: 3, sizeAttenuation: false })); head.add(shine);
+    const tail = pivot('tail', root, [0, 0.05, -0.16]);
+    add(new THREE.CylinderGeometry(0.024, 0.036, 0.28, 3, 1), fM, tail, [0, 0.14, 0]);
+    tail.rotation.set(-1.3, 0, 0.6);
+    if (bow) { const b = pivot('bow', head, [0.1, 0.3, 0.06]); b.rotation.z = -0.4; const pink = flat(0xf6c4d2);
+      for (const sx of [1, -1]) add(new THREE.ConeGeometry(0.028, 0.045, 3), pink, b, [sx * 0.025, 0, 0], [0, 0, sx * PI / 2]);
+      add(new THREE.OctahedronGeometry(0.013, 0), flat(0xeb97b0), b); }
     let tris = 0; root.traverse(o => { if (o.isMesh) tris += (o.geometry.index ? o.geometry.index.count : o.geometry.attributes.position.count) / 3; });
     return { root, J, eyes, tris };
   }
-  const tabby = kitten({ fur: FUR.tabby, belly: FUR.tabbyBelly });
+  const tabby = kitten({ head: FUR.tabbyHead, body: FUR.tabbyBody, leg: FUR.tabbyLeg, ear: FUR.tabbyEar, belly: FUR.white, sd: 5 });
   tabby.root.position.set(-0.3, 0, 0.55); tabby.root.rotation.y = 0.35; tabby.root.scale.setScalar(1.25); scene.add(tabby.root);
-  const dream = kitten({ fur: FUR.cream, belly: FUR.creamBelly, bow: true });
+  const dream = kitten({ head: FUR.cream, body: FUR.cream, leg: FUR.creamLeg, ear: FUR.creamEar, belly: FUR.white, bow: true, sd: 11 });
   scene.add(dream.root); dream.root.traverse(o => { o.castShadow = false; });
   console.log(`[scene] tabby ${tabby.tris} tris · dream kitten ${dream.tris} tris`);
 
@@ -127,10 +141,10 @@ export async function setup({ THREE, renderer, scene, camera, width, height }) {
       const J = tabby.J, think = E.inOutCubic(range(t, 1.1, 1.7));
       const look = t < 1.1 ? Math.sin(t * 3.2) * 0.35 * (1 - range(t, 0.8, 1.1)) : 0;
       J.head.rotation.set(lerp(0.05, -0.55, think) + Math.sin(t * 1.6) * 0.03, lerp(look, -0.35, think), lerp(0, 0.18, think) + (t > 4.5 ? Math.sin(t * 2.2) * 0.06 : 0));
-      J.legR.rotation.set(lerp(0, -2.05, think), lerp(0, 0.45, think), lerp(0, 0.35, think));       // paw up under the chin
-      J.legR.position.y = 0.25 + 0.03 * think;
+      J.legL.rotation.set(lerp(0, -2.1, think), lerp(0, -0.45, think), lerp(0, -0.4, think));       // its left paw up under the chin (screen right, as in the photo)
+      J.legL.position.y = 0.22 + 0.03 * think;
       const perk = E.outBack(range(t, 4.9, 5.2));
-      J.earL.rotation.set(-0.15 * perk, 0, 0.1 * perk); J.earR.rotation.set(-0.15 * perk, 0, -0.1 * perk);
+      J.earL.rotation.set(-0.15 * perk, 0, -0.12 * perk); J.earR.rotation.set(-0.15 * perk, 0, 0.12 * perk);
       J.earL.scale.setScalar(1 + 0.12 * perk); J.earR.scale.setScalar(1 + 0.12 * perk);
       J.tail.rotation.set(-1.25, 0, 0.6 + Math.sin(t * (t > 4.9 ? 7 : 2.2)) * (t > 4.9 ? 0.35 : 0.15));
       tabby.root.position.y = Math.sin(t * 2.6) * 0.004;
