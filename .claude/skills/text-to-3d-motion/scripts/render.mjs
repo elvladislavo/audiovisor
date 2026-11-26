@@ -76,7 +76,8 @@ if (still !== null) {
 } else {
   const frames = Math.round((to - from) * fps);
   let sink, done;
-  if (out.endsWith('/') || out.endsWith(path.sep)) {
+  const rawOut = opt('out', '');
+  if (rawOut.endsWith('/') || rawOut.endsWith(path.sep)) {   // path.resolve drops the trailing slash, so test the raw flag
     fs.mkdirSync(out, { recursive: true });
     sink = { write: (buf, i) => fs.writeFileSync(path.join(out, `f${String(i).padStart(5, '0')}.png`), buf) };
     done = Promise.resolve();
