@@ -31,6 +31,7 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
   const P = ([x, y], z = 0) => V3(PX(x), PY(y), z);
   const hTan = Math.tan(THREE.MathUtils.degToRad(25)) * width / height;
 
+  { const f = new FontFace('Tag', `url(${asset('ArchivoBlack.ttf')})`); await f.load(); document.fonts.add(f); }
   const loader = new THREE.TextureLoader(), T = {};
   for (const k of ['face', 'body', 'shirt', 'wallL', 'wallR', 'ceiling', 'tiles']) {
     const t = await loader.loadAsync(asset(`tex/${k}.png`)); t.colorSpace = THREE.SRGBColorSpace; t.magFilter = t.minFilter = THREE.NearestFilter; t.generateMipmaps = false;
@@ -129,10 +130,14 @@ export async function setup({ THREE, renderer, scene, camera, width, height, ass
       g.quadraticCurveTo(s2 * 0.45, -s2 * 0.75, s2 * 0.45, 0); g.lineTo(s2 * 0.45, s2 * 0.9); g.stroke();
       g.lineWidth = 1.6; for (const [dx, dy] of [[0, -s2 * 0.38], [-s2 * 0.17, -s2 * 0.08], [s2 * 0.17, -s2 * 0.08]]) { g.beginPath(); g.arc(dx, dy, s2 * 0.16, 0, 7); g.stroke(); }
       g.fillStyle = INK; g.fillRect(-s2 * 0.04, s2 * 0.15, s2 * 0.08, s2 * 0.7); };
-    const ROW = [['fleur', -PI / 2], ['quat', 0], ['cross', 0], ['arch', 0], ['quat', 0], ['cross', PI / 4], ['quat', 0], ['arch', PI], ['cross', 0], ['quat', 0], ['fleur', PI / 2]];
-    ROW.forEach(([kind, rot], i) => { const x = 58 + i * 39.6, y = 24;
-      at(x, y, rot, () => ({ quat: () => quatrefoil(13), cross: () => cross(12), fleur: () => fleur(13), arch: () => arch(13) })[kind]());
-      if (i < ROW.length - 1) { g.fillStyle = INK; g.beginPath(); g.moveTo(x + 19.8, 20); g.lineTo(x + 22.3, 24); g.lineTo(x + 19.8, 28); g.lineTo(x + 17.3, 24); g.closePath(); g.fill(); } });
+    // layout: fleur · quatrefoil · LEGIA · cross · WARSZAWA · quatrefoil · fleur, diamonds in the gaps
+    const ITEMS = [['fleur', 50, -PI / 2], ['quat', 84, 0], ['text', 153, 'LEGIA'], ['cross', 222, PI / 4], ['text', 316, 'WARSZAWA'], ['quat', 410, 0], ['fleur', 444, PI / 2]];
+    const draw = { quat: () => quatrefoil(13), cross: () => cross(12), fleur: () => fleur(13) };
+    for (const [kind, x, arg] of ITEMS) {
+      if (kind === 'text') { g.font = '22px Tag'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+        g.strokeStyle = INK; g.lineWidth = 5; g.strokeText(arg, x, 25); g.fillStyle = '#ffffff'; g.fillText(arg, x, 25); }
+      else at(x, 24, arg, draw[kind]); }
+    for (const x of [67, 117, 189, 255, 377, 427]) { g.fillStyle = INK; g.beginPath(); g.moveTo(x, 20); g.lineTo(x + 2.5, 24); g.lineTo(x, 28); g.lineTo(x - 2.5, 24); g.closePath(); g.fill(); }
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.generateMipmaps = false; return t; })();
   const N = 48, SW = 0.12;
   const sGeo = new THREE.BufferGeometry(), sPos = new Float32Array((N + 1) * 2 * 3), sUv = new Float32Array((N + 1) * 2 * 2), sIdx = [];
