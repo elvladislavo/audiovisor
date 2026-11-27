@@ -183,6 +183,9 @@ footer p{margin:0 0 8px;max-width:62ch}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .drop{position:fixed;inset:0;background:rgba(10,12,15,.9);display:none;place-content:center;text-align:center;z-index:9;font-size:20px;font-weight:700}
 body.dragging .drop{display:grid}
+.panel code{font-size:12.5px;background:#14181c;border:1px solid var(--rule);padding:1px 5px;border-radius:var(--radius);word-break:break-word}
+.panel a{color:var(--amber)}
+select.val{background:var(--deck-hi);border:1px solid var(--rule);border-radius:var(--radius);padding:4px 6px}
 @media(prefers-reduced-motion:reduce){*{transition-duration:.01ms !important}}
 </style>
 
@@ -232,6 +235,7 @@ body.dragging .drop{display:grid}
     <button data-mode="radial" aria-pressed="false">Radial</button>
     <button data-mode="gram" aria-pressed="false">Spectrogram</button>
     <button data-mode="tide" aria-pressed="false">Tide</button>
+    <button data-mode="motion" aria-pressed="false">Kimodo</button>
   </nav>
 
   <div class="rack">
@@ -277,6 +281,29 @@ body.dragging .drop{display:grid}
   <button class="btn rec" id="recBtn" disabled>Start recording</button>
   <button class="btn" id="clipBtn" disabled>Save clip</button>
   <p class="status" id="recStatus"></p>
+</section>
+
+<section class="panel">
+  <h2>Kimodo motion</h2>
+  <p class="note">Load a motion made with <a href="https://github.com/nv-tlabs/kimodo" target="_blank" rel="noopener">NVIDIA Kimodo</a>, the text-to-motion model, and watch it dance to the track in the <b>Kimodo</b> view. Generate one on a GPU machine with <code>kimodo_gen "a person dances to upbeat music" --duration 10</code>, then load the default <b>.npz</b> here. The file is read on this device.</p>
+  <button class="btn primary" id="motionBtn">Load Kimodo motion</button>
+  <input type="file" id="motionFile" accept=".npz,.json,application/zip,application/json" class="sr">
+  <div class="field">
+    <label for="fpsSel">Motion frame rate</label>
+    <select id="fpsSel" class="val" aria-label="Motion frame rate">
+      <option value="20">20 fps</option><option value="24">24 fps</option>
+      <option value="30" selected>30 fps</option><option value="60">60 fps</option>
+    </select>
+  </div>
+  <div class="field">
+    <label for="syncSw">Follow the playhead</label>
+    <button class="switch" id="syncSw" aria-pressed="true" role="switch" aria-label="Follow the playhead"></button>
+  </div>
+  <div class="field">
+    <label for="orbitSw">Orbit camera</label>
+    <button class="switch" id="orbitSw" aria-pressed="true" role="switch" aria-label="Orbit camera"></button>
+  </div>
+  <p class="status" id="motionStatus"></p>
 </section>
 
 <section class="panel">
@@ -502,6 +529,231 @@ function drawTide(){
   ctx.globalAlpha=1;
 }
 
+/* ───────── Kimodo motion ───────── */
+/* Reads Kimodo's default NPZ export (posed_joints [T,J,3], optionally [N,T,J,3])
+   or a JSON file {fps, posed_joints, parents}. Everything stays in the browser. */
+let motion=null, orbit=true, follow=true, yaw=0.6, motionClock=0, lastNow=0;
+
+function readU16(b,o){ return b[o]|b[o+1]<<8; }
+function readU32(b,o){ return (b[o]|b[o+1]<<8|b[o+2]<<16|b[o+3]<<24)>>>0; }
+function readU64(b,o){ return readU32(b,o) + readU32(b,o+4)*4294967296; }
+
+async function inflateRaw(bytes){
+  if(!window.DecompressionStream) throw new Error("This browser can't unzip compressed .npz files. Save with np.savez instead of savez_compressed, or use a newer browser.");
+  const ds = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+  return new Uint8Array(await new Response(ds).arrayBuffer());
+}
+
+/* minimal ZIP reader: uses the central directory, understands zip64 sizes (numpy writes them) */
+async function unzip(buf){
+  const b = new Uint8Array(buf), out = {};
+  let eocd=-1;
+  for(let i=b.length-22; i>=Math.max(0,b.length-65557); i--) if(readU32(b,i)===0x06054b50){ eocd=i; break; }
+  if(eocd<0) throw new Error("That isn't a valid .npz (zip) file.");
+  let count = readU16(b,eocd+10), cd = readU32(b,eocd+16);
+  if(cd===0xFFFFFFFF || count===0xFFFF){
+    const loc = eocd-20;
+    if(loc>=0 && readU32(b,loc)===0x07064b50){ const z=readU64(b,loc+8); count=readU64(b,z+32); cd=readU64(b,z+48); }
+  }
+  let p = cd;
+  for(let n=0;n<count;n++){
+    if(readU32(b,p)!==0x02014b50) break;
+    const method=readU16(b,p+10), nl=readU16(b,p+28), el=readU16(b,p+30), cl=readU16(b,p+32);
+    let csize=readU32(b,p+20), usize=readU32(b,p+24), off=readU32(b,p+42);
+    const name = new TextDecoder().decode(b.subarray(p+46,p+46+nl));
+    let e=p+46+nl; const eEnd=e+el;
+    while(e+4<=eEnd){
+      const id=readU16(b,e), sz=readU16(b,e+2); let q=e+4;
+      if(id===1){
+        if(usize===0xFFFFFFFF){ usize=readU64(b,q); q+=8; }
+        if(csize===0xFFFFFFFF){ csize=readU64(b,q); q+=8; }
+        if(off===0xFFFFFFFF){ off=readU64(b,q); q+=8; }
+      }
+      e+=4+sz;
+    }
+    const data0 = off+30+readU16(b,off+26)+readU16(b,off+28);
+    const raw = b.subarray(data0, data0+csize);
+    if(method===0) out[name]=raw;
+    else if(method===8) out[name]=await inflateRaw(raw);
+    p = eEnd+cl;
+  }
+  return out;
+}
+
+/* .npy → {shape, data:Float32Array} */
+function parseNpy(b){
+  if(b[0]!==0x93 || String.fromCharCode(b[1],b[2],b[3],b[4],b[5])!=="NUMPY") throw new Error("Not a .npy array.");
+  const major=b[6], hl = major===1 ? readU16(b,8) : readU32(b,8), hs = major===1 ? 10 : 12;
+  const head = new TextDecoder().decode(b.subarray(hs,hs+hl));
+  const descr = (head.match(/'descr'\s*:\s*'([^']+)'/)||[])[1];
+  if(/'fortran_order'\s*:\s*True/.test(head)) throw new Error("Fortran-ordered arrays aren't supported.");
+  const shape = ((head.match(/'shape'\s*:\s*\(([^)]*)\)/)||[])[1]||"").split(",").map(s=>s.trim()).filter(Boolean).map(Number);
+  const n = shape.reduce((a,c)=>a*c,1);
+  const bytes = b.slice(hs+hl, hs+hl+n*(parseInt(descr.slice(2))||1)).buffer;   // copy → aligned
+  const T = {"<f4":Float32Array,"<f8":Float64Array,"<i4":Int32Array,"<i8":BigInt64Array,"<i2":Int16Array,"|u1":Uint8Array,"|b1":Uint8Array,"|i1":Int8Array}[descr];
+  if(!T) throw new Error("Unsupported array type "+descr+".");
+  const src = new T(bytes), data = new Float32Array(n);
+  for(let i=0;i<n;i++) data[i]=Number(src[i]);
+  return {shape, data};
+}
+
+/* estimate bones: bones are the joint pairs whose distance stays constant and short over time */
+function inferParents(P,T,J){
+  const S = Math.min(T,24), cost = new Float32Array(J*J);
+  for(let a=0;a<J;a++) for(let c=a+1;c<J;c++){
+    let m=0, m2=0;
+    for(let s=0;s<S;s++){
+      const f=Math.floor(s*(T-1)/Math.max(1,S-1))*J*3, i=f+a*3, k=f+c*3;
+      const d=Math.hypot(P[i]-P[k],P[i+1]-P[k+1],P[i+2]-P[k+2]); m+=d; m2+=d*d;
+    }
+    m/=S; const sd=Math.sqrt(Math.max(0,m2/S-m*m));
+    cost[a*J+c]=cost[c*J+a]=m+6*sd;
+  }
+  const parents=new Int32Array(J).fill(-1), inTree=new Uint8Array(J), best=new Float32Array(J).fill(Infinity), from=new Int32Array(J).fill(-1);
+  best[0]=0;
+  for(let it=0;it<J;it++){
+    let u=-1; for(let j=0;j<J;j++) if(!inTree[j] && (u<0||best[j]<best[u])) u=j;
+    inTree[u]=1; parents[u]=from[u];
+    for(let j=0;j<J;j++) if(!inTree[j] && cost[u*J+j]<best[j]){ best[j]=cost[u*J+j]; from[j]=u; }
+  }
+  return parents;
+}
+
+function buildMotion(P,T,J,parents,fps,extra){
+  /* up axis: the axis with the largest per-frame extent (a standing body is tall) */
+  const ext=[0,0,0];
+  for(let t=0;t<T;t+=Math.max(1,T>>5)) for(let a=0;a<3;a++){
+    let lo=Infinity,hi=-Infinity; for(let j=0;j<J;j++){ const v=P[(t*J+j)*3+a]; if(v<lo)lo=v; if(v>hi)hi=v; }
+    ext[a]+=hi-lo;
+  }
+  const up = ext.indexOf(Math.max(...ext));
+  /* most joints (spine, arms, hands) sit above the pelvis (joint 0): use that for the sign */
+  let above=0; for(let j=1;j<J;j++) if(P[j*3+up]>P[up]) above++;
+  const sign = above >= (J-1)/2 ? 1 : -1;
+  const h = [0,1,2].filter(a=>a!==up);
+  /* re-express as [x, height, z] with the floor at height 0 */
+  const Q = new Float32Array(T*J*3);
+  let floor=Infinity, top=-Infinity;
+  for(let i=0;i<T*J;i++){ const v=P[i*3+up]*sign; if(v<floor) floor=v; }
+  for(let i=0;i<T*J;i++){
+    Q[i*3]=P[i*3+h[0]]; Q[i*3+1]=P[i*3+up]*sign-floor; Q[i*3+2]=P[i*3+h[1]];
+    if(Q[i*3+1]>top) top=Q[i*3+1];
+  }
+  /* depth per joint for colouring: low joints → bass, high joints → treble */
+  const rest = new Float32Array(J); for(let j=0;j<J;j++) rest[j]=Q[j*3+1]/(top||1);
+  return {Q,T,J,parents,fps,height:top||1,rest,extra};
+}
+
+async function loadMotion(file){
+  const st=$("motionStatus");
+  say(st,"Reading "+file.name+"…","work");
+  try{
+    let P, shape, parents=null, fps=null, samples=1;
+    if(/\.json$/i.test(file.name)){
+      const o = JSON.parse(await file.text());
+      const arr = o.posed_joints || o.joints || o.positions;
+      if(!arr) throw new Error("No posed_joints array in that JSON.");
+      const T=arr.length, J=arr[0].length; P=new Float32Array(T*J*3); shape=[T,J,3];
+      for(let t=0;t<T;t++) for(let j=0;j<J;j++) for(let a=0;a<3;a++) P[(t*J+j)*3+a]=arr[t][j][a];
+      if(o.parents) parents=Int32Array.from(o.parents);
+      if(o.fps) fps=+o.fps;
+    } else {
+      const files = await unzip(await file.arrayBuffer());
+      const get = k => files[k+".npy"] ? parseNpy(files[k+".npy"]) : null;
+      const pj = get("posed_joints");
+      if(!pj){
+        const keys = Object.keys(files).map(k=>k.replace(/\.npy$/,"")).join(", ");
+        throw new Error(/poses|trans/.test(keys) ? "This looks like an AMASS export. Load Kimodo's default .npz (it has posed_joints) instead."
+                                                 : "No posed_joints array in that file (found: "+keys+").");
+      }
+      P=pj.data; shape=pj.shape;
+      if(shape.length===4){ samples=shape[0]; shape=shape.slice(1); P=P.subarray(0,shape[0]*shape[1]*3); }
+      if(shape.length!==3 || shape[2]!==3) throw new Error("posed_joints has shape ["+pj.shape+"], expected [frames, joints, 3].");
+      const par = get("parents") || get("joint_parents") || get("skeleton_parents");
+      if(par && par.data.length===shape[1]) parents=Int32Array.from(par.data);
+      const fr = get("fps") || get("mocap_framerate") || get("framerate");
+      if(fr && fr.data[0]>0) fps=fr.data[0];
+    }
+    const [T,J]=shape;
+    if(T<1 || J<2) throw new Error("That motion is empty.");
+    const guessed = !parents;
+    if(guessed) parents = inferParents(P,T,J);
+    if(fps){ const sel=$("fpsSel"); if(![...sel.options].some(o=>+o.value===fps)) sel.add(new Option(fps+" fps",fps)); sel.value=fps; }
+    motion = buildMotion(P,T,J,parents,+$("fpsSel").value,{});
+    motionClock=0;
+    initAudio(); size(); start();
+    well.classList.remove("empty");
+    const b=[...$("modes").children].find(x=>x.dataset.mode==="motion"); if(b && mode!=="motion") b.click();
+    say(st, file.name+" · "+T+" frames · "+J+" joints · "+(T/motion.fps).toFixed(1)+" s"
+      +(samples>1?" · showing sample 1 of "+samples:"")+(guessed?" · skeleton estimated from the motion":""));
+  }catch(err){ say(st, err.message||"Couldn't read that motion file.", "bad"); }
+}
+
+function drawMotion(now){
+  trails?fade(0.34):paintBg();
+  const dt = Math.min(0.1, (now-(lastNow||now))/1000); lastNow=now;
+  if(!motion){
+    ctx.fillStyle="#8f949c"; ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.font=300+" "+(15*DPR)+"px 'Bricolage Grotesque', system-ui, sans-serif";
+    ctx.fillText("Load a Kimodo motion in the Kimodo motion panel", W/2, H/2);
+    return;
+  }
+  const v = bands(24);
+  let energy=0; for(let i=0;i<6;i++) energy+=v[i]; energy/=6;
+  const playing = mediaEl && !mediaEl.paused;
+  if(follow && mediaEl && !live) motionClock = mediaEl.currentTime;
+  else if(!follow || live || !mediaEl) motionClock += dt;
+  if(orbit) yaw += dt*(0.18 + energy*0.9) * (playing||live||!mediaEl ? 1 : 0.25);
+
+  const {Q,T,J,parents,fps,height,rest} = motion;
+  const ft = (motionClock*fps) % T, f0=Math.floor(ft), f1=(f0+1)%T, w=ft-f0;
+  const pos = new Float32Array(J*3);
+  for(let i=0;i<J*3;i++) pos[i]=Q[f0*J*3+i]*(1-w)+Q[f1*J*3+i]*w;
+  const rx=pos[0], rz=pos[2];                                  // follow the root across the floor
+
+  const cy=Math.cos(yaw), sy=Math.sin(yaw), tilt=0.22, ct=Math.cos(tilt), stt=Math.sin(tilt);
+  const scale = Math.min(H*0.72/height, W*0.42/height), D=4.2*height, baseY=H*0.88, cx=W/2;
+  const proj = (x,y,z,o) => {
+    x-=rx; z-=rz;
+    const X=x*cy-z*sy, Z=x*sy+z*cy;
+    const Y=y*ct+Z*stt, d=Z*ct-y*stt, k=D/(D+d);
+    o[0]=cx+X*k*scale; o[1]=baseY-(Y-height*0.08)*k*scale; o[2]=d; return o;
+  };
+  const tmp=[0,0,0], tmp2=[0,0,0];
+
+  /* floor grid, scrolling under the figure */
+  ctx.lineWidth=DPR; ctx.strokeStyle="rgba(51,59,67,.8)";
+  const step=height*0.3, R=height*1.5, ox=rx-((rx%step)+step)%step, oz=rz-((rz%step)+step)%step;
+  ctx.beginPath();
+  for(let g=-5;g<=5;g++){
+    proj(ox+g*step,0,oz-R,tmp); ctx.moveTo(tmp[0],tmp[1]); proj(ox+g*step,0,oz+R,tmp); ctx.lineTo(tmp[0],tmp[1]);
+    proj(ox-R,0,oz+g*step,tmp); ctx.moveTo(tmp[0],tmp[1]); proj(ox+R,0,oz+g*step,tmp); ctx.lineTo(tmp[0],tmp[1]);
+  }
+  ctx.stroke();
+
+  /* shadow */
+  ctx.strokeStyle="rgba(0,0,0,.55)"; ctx.lineCap="round"; ctx.lineWidth=5*DPR; ctx.beginPath();
+  for(let j=0;j<J;j++){ const p=parents[j]; if(p<0) continue;
+    proj(pos[j*3],0,pos[j*3+2],tmp); proj(pos[p*3],0,pos[p*3+2],tmp2); ctx.moveTo(tmp[0],tmp[1]); ctx.lineTo(tmp2[0],tmp2[1]); }
+  ctx.stroke();
+
+  /* bones, far to near; colour from the band that matches each joint's height */
+  const bones=[];
+  for(let j=0;j<J;j++){ const p=parents[j]; if(p<0) continue;
+    const a=proj(pos[j*3],pos[j*3+1],pos[j*3+2],[0,0,0]), b=proj(pos[p*3],pos[p*3+1],pos[p*3+2],[0,0,0]);
+    bones.push({a,b,d:(a[2]+b[2])/2,v:v[Math.min(23,Math.floor(rest[j]*23.99))]});
+  }
+  bones.sort((m,n)=>n.d-m.d);
+  const lw = (2.6+energy*3.4)*DPR*Math.min(1.6,Math.max(.7,W/(900*DPR)));
+  for(const bn of bones){
+    ctx.strokeStyle = ramp(Math.min(1, 0.15+bn.v*0.85));
+    ctx.lineWidth = lw*(1+bn.v*0.6);
+    ctx.beginPath(); ctx.moveTo(bn.a[0],bn.a[1]); ctx.lineTo(bn.b[0],bn.b[1]); ctx.stroke();
+  }
+  ctx.fillStyle="rgba(236,230,218,.9)";
+  for(let j=0;j<J;j++){ proj(pos[j*3],pos[j*3+1],pos[j*3+2],tmp); ctx.fillRect(tmp[0]-DPR,tmp[1]-DPR,2*DPR,2*DPR); }
+}
+
 /* ───────── meters ───────── */
 let peakL=0, peakR=0, pLt=0, pRt=0;
 function rms(an,buf){ an.getFloatTimeDomainData(buf); let s=0; for(let i=0;i<buf.length;i++) s+=buf[i]*buf[i]; return Math.sqrt(s/buf.length); }
@@ -525,6 +777,7 @@ function frame(now){
   else if(mode==="scope") drawScope();
   else if(mode==="radial") drawRadial();
   else if(mode==="gram") drawGram();
+  else if(mode==="motion") drawMotion(now);
   else drawTide();
   meters(now);
   if(mediaEl && !seeking && isFinite(mediaEl.duration)){
@@ -779,10 +1032,17 @@ $("smoothIn").oninput = e => { const v=e.target.value/100; $("smoothVal").textCo
 $("glowSw").onclick = e => { trails=!trails; e.currentTarget.setAttribute("aria-pressed",trails); };
 $("loopSw").onclick = e => { loop=!loop; e.currentTarget.setAttribute("aria-pressed",loop); if(mediaEl) mediaEl.loop=loop; };
 
+/* Kimodo motion wiring */
+$("motionBtn").onclick = () => $("motionFile").click();
+$("motionFile").onchange = e => { const f=e.target.files[0]; if(f) loadMotion(f); e.target.value=""; };
+$("fpsSel").onchange = e => { if(motion) motion.fps=+e.target.value; };
+$("syncSw").onclick = e => { follow=!follow; e.currentTarget.setAttribute("aria-pressed",follow); };
+$("orbitSw").onclick = e => { orbit=!orbit; e.currentTarget.setAttribute("aria-pressed",orbit); };
+
 /* drag and drop */
 ["dragenter","dragover"].forEach(t=>document.addEventListener(t,e=>{e.preventDefault();document.body.classList.add("dragging");}));
 ["dragleave","drop"].forEach(t=>document.addEventListener(t,e=>{ if(t==="drop")e.preventDefault(); if(e.relatedTarget===null||t==="drop") document.body.classList.remove("dragging"); }));
-document.addEventListener("drop", e => { const f=e.dataTransfer.files[0]; if(f) load(f); });
+document.addEventListener("drop", e => { const f=e.dataTransfer.files[0]; if(f) (/\.(npz|json)$/i.test(f.name) ? loadMotion(f) : load(f)); });
 
 /* keyboard */
 document.addEventListener("keydown", e => {
